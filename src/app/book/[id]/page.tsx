@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import { formatPrice } from "@/lib/types";
+import { AGE_LABEL } from "@/lib/content";
 
 type BookDetail = {
   id: number | string;
@@ -98,7 +99,7 @@ export default async function BookPage({
               {book.status ? <span className="badge">{book.status}</span> : null}
               {book.age_rating ? (
                 <span className="badge" style={{ background: "rgba(124,124,180,0.2)", color: "#B7B7E6" }}>
-                  {book.age_rating}
+                  {AGE_LABEL[book.age_rating] ?? book.age_rating}
                 </span>
               ) : null}
             </div>

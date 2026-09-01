@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { AGE_RATINGS } from "@/lib/content";
+import { AGE_RATINGS, AGE_LABEL } from "@/lib/content";
 
 export default function NewBookForm({
   userId,
@@ -21,7 +21,7 @@ export default function NewBookForm({
   const [description, setDescription] = useState("");
   const [type, setType] = useState("Fiction");
   const [price, setPrice] = useState("0");
-  const [age, setAge] = useState("All Ages");
+  const [age, setAge] = useState("Everyday");
   const [content, setContent] = useState("");
 
   async function publish() {
@@ -132,7 +132,7 @@ export default function NewBookForm({
           <label style={label}>Age rating</label>
           <select style={field} value={age} onChange={(e) => setAge(e.target.value)}>
             {AGE_RATINGS.map((r) => (
-              <option key={r}>{r}</option>
+              <option key={r} value={r}>{AGE_LABEL[r]}</option>
             ))}
           </select>
         </div>

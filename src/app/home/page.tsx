@@ -20,12 +20,13 @@ export default async function Home() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, username, prefs")
+    .select("full_name, username")
     .eq("id", user.id)
     .maybeSingle();
   const firstName = (profile?.full_name || profile?.username || "").split(" ")[0];
-  const agePref = (profile?.prefs as { age?: string } | null)?.age ?? null;
-  const allowed = allowedRatings(agePref);
+  // show_mature is added by migration 0006 — guard for pre-migration.
+  const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+  const allowed = allowedRatings(sm.data?.show_mature ?? false);
 
   const { stats, quests } = await loadGamification(user.id);
 
@@ -63,7 +64,7 @@ export default async function Home() {
   }
   const recommended = ((promoData ?? []) as unknown as PromoRow[])
     .map((p) => (Array.isArray(p.books) ? p.books[0] : p.books))
-    .filter((b): b is Book => b != null && allowed.includes(b.age_rating ?? "All Ages"));
+    .filter((b): b is Book => b != null && allowed.includes(b.age_rating ?? "Everyday"));
 
   return (
     <>
@@ -91,7 +92,7 @@ export default async function Home() {
       {recommended.length > 0 ? (
         <section className="section" style={{ paddingTop: "1.5rem", paddingBottom: 0 }}>
           <div className="section-header">
-            <h2>Recommended for you</h2>
+            <h2>Featured Stories</h2>
           </div>
           <div style={{ display: "flex", gap: "1.2rem", overflowX: "auto", paddingBottom: "0.6rem" }}>
             {recommended.map((b) => (

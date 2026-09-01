@@ -181,21 +181,23 @@ export default async function Landing() {
             </div>
             <div>
               <h4>Discover</h4>
-              <a className="fx" href="/catalog">
-                Browse books
-              </a>
-              <a className="fx" href="/onboarding">
-                Start reading
-              </a>
+              <a className="fx" href="/catalog">Explore</a>
+              <a className="fx" href="/discover?filter=editors-pick">Editor&apos;s Pick</a>
+              <a className="fx" href="/discover?filter=free">Free reads</a>
+              <a className="fx" href="/discover?filter=interactive">Interactive</a>
             </div>
             <div>
               <h4>Create</h4>
-              <a className="fx" href="/onboarding">
-                Publish &amp; earn 70%
-              </a>
-              <a className="fx" href="/login">
-                Log in
-              </a>
+              <a className="fx" href="/onboarding">Publish &amp; earn 70%</a>
+              <a className="fx" href="/royalty-calculator">Royalty Calculator</a>
+              <a className="fx" href="/creator-hub/docs?tab=api">Publishing API</a>
+              <a className="fx" href="/creator-hub/docs?tab=analytics">Creator Hub</a>
+            </div>
+            <div>
+              <h4>Legal</h4>
+              <a className="fx" href="/docs?tab=terms">Terms of Service</a>
+              <a className="fx" href="/docs?tab=privacy">Privacy Policy</a>
+              <a className="fx" href="/docs?tab=guidelines">Guidelines</a>
             </div>
           </div>
           <div className={s.footBar}>

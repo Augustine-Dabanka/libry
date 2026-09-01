@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { AGE_RATINGS } from "@/lib/content";
+import { AGE_RATINGS, AGE_LABEL } from "@/lib/content";
 
 type BookEdit = {
   id: number | string;
@@ -42,7 +42,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
   const [content, setContent] = useState(book.content ?? "");
   const [type, setType] = useState(book.type ?? "Fiction");
   const [price, setPrice] = useState(String(book.price ?? 0));
-  const [age, setAge] = useState(book.age_rating ?? "All Ages");
+  const [age, setAge] = useState(book.age_rating ?? "Everyday");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -103,7 +103,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
           <label style={label}>Age rating</label>
           <select style={field} value={age} onChange={(e) => setAge(e.target.value)}>
             {AGE_RATINGS.map((r) => (
-              <option key={r}>{r}</option>
+              <option key={r} value={r}>{AGE_LABEL[r]}</option>
             ))}
           </select>
         </div>

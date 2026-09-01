@@ -52,9 +52,9 @@ export default async function AppNav() {
         </form>
         {user ? (
           <>
-            <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>
+            <a href="/settings" style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }} title="Reader settings">
               {name}
-            </span>
+            </a>
             <form action="/auth/signout" method="post">
               <button className="btn btn-outline" type="submit">
                 Sign out

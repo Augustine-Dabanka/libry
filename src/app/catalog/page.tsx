@@ -17,13 +17,8 @@ export default async function Catalog({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("prefs")
-    .eq("id", user.id)
-    .maybeSingle();
-  const agePref = (profile?.prefs as { age?: string } | null)?.age ?? null;
-  const allowed = allowedRatings(agePref);
+  const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+  const allowed = allowedRatings(sm.data?.show_mature ?? false);
 
   const term = (q ?? "").trim();
   // Strip chars that would break PostgREST's or() filter grammar.

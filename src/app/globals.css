@@ -860,6 +860,23 @@ footer.site-footer { display: block; background: var(--stone); border-top: 1px s
 @keyframes lb-reward { 0% { opacity: 0; transform: translate(-50%, 4px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -26px); } }
 .lb-reward { position: absolute; left: 50%; top: -8px; color: var(--gold); font-weight: 800; font-family: var(--sans); font-size: 0.85rem; pointer-events: none; animation: lb-reward 0.9s ease-out forwards; }
 
+/* ===== Docs / tabbed viewer ===== */
+.docs-grid { display: grid; grid-template-columns: 210px 1fr; gap: 2.2rem; align-items: start; }
+@media (max-width: 720px) { .docs-grid { grid-template-columns: 1fr; } }
+.docs-side { display: flex; flex-direction: column; gap: 0.3rem; position: sticky; top: 90px; }
+@media (max-width: 720px) { .docs-side { position: static; flex-direction: row; flex-wrap: wrap; margin-bottom: 1rem; } }
+.docs-side a { display: block; padding: 0.55rem 0.9rem; border-radius: 10px; color: var(--muted); font-family: var(--sans); font-weight: 600; font-size: 0.92rem; }
+.docs-side a:hover { background: rgba(196,163,90,0.10); color: var(--ivory); }
+.docs-side a.active { background: rgba(196,163,90,0.16); color: var(--gold); }
+.docs-prose { max-width: 68ch; line-height: 1.75; color: var(--ivory-muted); font-family: var(--sans); }
+.docs-prose h3 { font-family: var(--sans); font-size: 1.5rem; margin: 0 0 0.8rem; color: var(--ivory); }
+.docs-prose h4 { font-family: var(--sans); font-size: 1.05rem; margin: 1.6rem 0 0.4rem; color: var(--ivory); }
+.docs-prose p, .docs-prose li { margin-bottom: 0.7rem; }
+.docs-prose ul { padding-left: 1.2rem; margin-bottom: 0.8rem; }
+.docs-prose code { background: var(--stone); border: 1px solid var(--border); border-radius: 6px; padding: 0.1rem 0.4rem; font-size: 0.85em; }
+.docs-prose pre { background: var(--stone); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; overflow-x: auto; font-size: 0.85rem; }
+.docs-prose pre code { background: none; border: none; padding: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   .lb-bob, .lb-cheer, .lb-pop, .lb-ring, .lb-chest, .lb-float-in { animation: none !important; }
 }

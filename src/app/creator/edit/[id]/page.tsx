@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import EditBookForm from "@/components/EditBookForm";
+import CollaboratorsPanel from "@/components/CollaboratorsPanel";
 
 export default async function EditBook({
   params,
@@ -28,12 +29,13 @@ export default async function EditBook({
       .select("id, title, description, content, price, type, user_id")
       .eq("id", id)
       .maybeSingle();
-    book = alt.data ? { ...alt.data, age_rating: "All Ages" } : null;
+    book = alt.data ? { ...alt.data, age_rating: "Everyday" } : null;
   }
 
   let allowed = false;
+  const isOwner = !!book && book.user_id === user.id;
   if (book) {
-    if (book.user_id === user.id) {
+    if (isOwner) {
       allowed = true;
     } else {
       const { data: collab } = await supabase
@@ -43,6 +45,21 @@ export default async function EditBook({
         .eq("user_id", user.id)
         .maybeSingle();
       allowed = !!collab;
+    }
+  }
+
+  // Current co-authors (owner manages them in project settings).
+  const collaborators: { userId: string; name: string }[] = [];
+  if (isOwner) {
+    const { data: collabs } = await supabase.from("book_collaborators").select("user_id").eq("book_id", id);
+    const ids = (collabs ?? []).map((c: { user_id: string }) => c.user_id);
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, username, full_name").in("id", ids);
+      const nameMap = new Map<string, string>();
+      (profs ?? []).forEach((p: { id: string; username: string | null; full_name: string | null }) =>
+        nameMap.set(p.id, p.username || p.full_name || "reader")
+      );
+      ids.forEach((uid) => collaborators.push({ userId: uid, name: nameMap.get(uid) || "reader" }));
     }
   }
 
@@ -60,7 +77,18 @@ export default async function EditBook({
             You don&apos;t have edit access to this story.
           </p>
         ) : (
-          <EditBookForm book={book} />
+          <>
+            <EditBookForm book={book} />
+            {isOwner ? (
+              <div style={{ marginTop: "2.5rem", maxWidth: 640 }}>
+                <h3 style={{ marginBottom: "0.3rem" }}>Project settings · Co-authors</h3>
+                <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginBottom: "0.8rem" }}>
+                  Invite collaborators by @username to draft and publish this story with you.
+                </p>
+                <CollaboratorsPanel bookId={Number(book.id)} collaborators={collaborators} />
+              </div>
+            ) : null}
+          </>
         )}
       </section>
     </>

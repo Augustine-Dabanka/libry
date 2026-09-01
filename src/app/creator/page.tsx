@@ -4,6 +4,7 @@ import AppNav from "@/components/AppNav";
 import NewBookForm from "@/components/NewBookForm";
 import PromoteButton from "@/components/PromoteButton";
 import CollaboratorsPanel from "@/components/CollaboratorsPanel";
+import MonetizationTracker from "@/components/MonetizationTracker";
 import { formatPrice } from "@/lib/types";
 
 type MyBook = {
@@ -86,6 +87,16 @@ export default async function CreatorDashboard() {
     sharedBooks = (sb ?? []) as MyBook[];
   }
 
+  // Monetization milestone counts (guarded — purchases/referrals from 0006).
+  const ownedBookIds = books.map((b) => Number(b.id));
+  let salesCount = 0;
+  if (ownedBookIds.length) {
+    const sc = await supabase.from("purchases").select("*", { count: "exact", head: true }).in("book_id", ownedBookIds);
+    salesCount = sc.count ?? 0;
+  }
+  const rc = await supabase.from("referrals").select("*", { count: "exact", head: true }).eq("referrer_id", user.id);
+  const referralCount = rc.count ?? 0;
+
   return (
     <>
       <AppNav />
@@ -96,6 +107,8 @@ export default async function CreatorDashboard() {
         <p style={{ color: "var(--muted)", marginTop: "-1.5rem", marginBottom: "2rem" }}>
           Welcome, {authorName}. Publish a story and it goes live in the catalog.
         </p>
+
+        <MonetizationTracker sales={salesCount} referrals={referralCount} />
 
         <div style={{ marginBottom: "2.5rem" }}>
           <NewBookForm userId={user.id} authorName={authorName} />
