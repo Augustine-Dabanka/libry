@@ -877,6 +877,14 @@ footer.site-footer { display: block; background: var(--stone); border-top: 1px s
 .docs-prose pre { background: var(--stone); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; overflow-x: auto; font-size: 0.85rem; }
 .docs-prose pre code { background: none; border: none; padding: 0; }
 
+/* ===== Luxury theme presets — swap the accent via data-brand on <html> ===== */
+:root[data-brand="obsidian"] { --gold: #7C83FF; --gold-hover: #6366F1; --terracotta: #A5B4FC; --brand-accent: #7C83FF; --brand-glow: rgba(124,131,255,0.40); --brand-surface: #171826; }
+:root[data-brand="emerald"]  { --gold: #34D399; --gold-hover: #10B981; --terracotta: #6EE7B7; --brand-accent: #34D399; --brand-glow: rgba(52,211,153,0.40); --brand-surface: #12211B; }
+:root[data-brand="gold"]     { --gold: #D4AF37; --gold-hover: #B8944A; --terracotta: #E0B84C; --brand-accent: #D4AF37; --brand-glow: rgba(212,175,55,0.40); --brand-surface: #221C10; }
+:root[data-brand="amethyst"] { --gold: #C084FC; --gold-hover: #A855F7; --terracotta: #D8B4FE; --brand-accent: #C084FC; --brand-glow: rgba(192,132,252,0.40); --brand-surface: #1E1630; }
+
+html { scroll-behavior: smooth; }
+
 @media (prefers-reduced-motion: reduce) {
   .lb-bob, .lb-cheer, .lb-pop, .lb-ring, .lb-chest, .lb-float-in { animation: none !important; }
 }

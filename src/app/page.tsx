@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import StoryChoiceDemo from "@/components/StoryChoiceDemo";
 import s from "./landing.module.css";
 
 // Public marketing landing. Signed-in users are sent straight to their app home.
@@ -23,8 +24,10 @@ export default async function Landing() {
             Libry<span>.</span>
           </a>
           <div className={s.navLinks}>
-            <a href="/catalog">Browse</a>
-            <a href="/onboarding">For creators</a>
+            <a href="#features">Features</a>
+            <a href="#interactive">Interactive</a>
+            <a href="#creators">Creators</a>
+            <a href="#pricing">Pricing</a>
           </div>
           <div className={s.navRight}>
             <a href="/login" className={s.txt}>
@@ -48,18 +51,12 @@ export default async function Landing() {
               Curated books and interactive, choose-your-path storybooks — with a
               comments section better than your group chat.
             </p>
-            <form action="/catalog" method="get" className={s.heroSearch} role="search">
-              <input name="q" placeholder="Try a title, author, or “interactive”…" aria-label="Search stories" />
-              <button type="submit" className={`${s.btn} ${s.btnGold}`}>
-                Search
-              </button>
-            </form>
-            <div className={s.heroCta}>
+            <div className={s.heroCta} style={{ marginTop: "1.7rem" }}>
               <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding">
-                Start reading free
+                Start Reading Free
               </a>
-              <a className={`${s.btn} ${s.btnGhost} ${s.btnLg}`} href="/onboarding">
-                Publish your book
+              <a className={`${s.btn} ${s.btnGhost} ${s.btnLg}`} href="/onboarding?intent=creator">
+                Publish Your Story
               </a>
             </div>
             <div className={s.heroNote}>
@@ -67,19 +64,8 @@ export default async function Landing() {
             </div>
           </div>
 
-          <div className={s.heroArt} aria-hidden="true">
-            <div className={`${s.artCover} ${s.ac1}`}>
-              <span className="ct">The Forgotten Forest</span>
-              <span className="ca">Elena Marsh</span>
-            </div>
-            <div className={`${s.artCover} ${s.ac2}`}>
-              <span className="ct">Letters from the Moon</span>
-              <span className="ca">Libry Originals</span>
-            </div>
-            <div className={`${s.artCover} ${s.ac3}`}>
-              <span className="ct">Ocean Secrets</span>
-              <span className="ca">M. Awuah</span>
-            </div>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <StoryChoiceDemo />
           </div>
         </div>
       </header>
@@ -97,10 +83,26 @@ export default async function Landing() {
         </div>
       </div>
 
-      <section className={`${s.band} ${s.sky}`}>
+      <section className={s.band}>
+        <div className={s.wrap}>
+          <div className={s.secHead} style={{ textAlign: "center", marginInline: "auto" }}>
+            <span className={s.eyebrow}>See it in action</span>
+            <h2>A quick walkthrough.</h2>
+          </div>
+          <video
+            controls
+            preload="metadata"
+            style={{ width: "100%", maxWidth: 900, margin: "0 auto", display: "block", borderRadius: 16, border: "1px solid var(--line)", boxShadow: "var(--shadow)" }}
+          >
+            <source src="/video/walkthrough.mp4" type="video/mp4" />
+          </video>
+        </div>
+      </section>
+
+      <section id="features" className={`${s.band} ${s.sky}`} style={{ scrollMarginTop: 70 }}>
         <div className={s.wrap}>
           <div className={s.secHead}>
-            <span className={s.eyebrow}>Why Libry</span>
+            <span className={s.eyebrow}>Features</span>
             <h2>Reading, but social.</h2>
             <p>A shelf that learns your taste, streaks that keep you turning pages, and a comment tray on every chapter.</p>
           </div>
@@ -124,7 +126,34 @@ export default async function Landing() {
         </div>
       </section>
 
-      <section className={`${s.band} ${s.cardBg}`}>
+      <section id="interactive" className={`${s.band} ${s.peach}`} style={{ scrollMarginTop: 70 }}>
+        <div className={s.wrap}>
+          <div className={s.secHead}>
+            <span className={s.eyebrow}>Interactive</span>
+            <h2>Choose-your-path storybooks.</h2>
+            <p>Every choice bends the tale — branching endings, paragraph reactions, and a comments tray that reads like your group chat.</p>
+          </div>
+          <div className={s.cards}>
+            <div className={s.fcard}>
+              <div className={s.ic}>🌿</div>
+              <h3>Branch the story</h3>
+              <p>Tap a choice and the plot forks — try the live demo up in the hero.</p>
+            </div>
+            <div className={s.fcard}>
+              <div className={s.ic}>💬</div>
+              <h3>React in the margins</h3>
+              <p>Drop reactions on any paragraph and argue about the twist with other readers.</p>
+            </div>
+            <div className={s.fcard}>
+              <div className={s.ic}>🎧</div>
+              <h3>Read or listen</h3>
+              <p>Every book has read-aloud, so your story travels with you.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="creators" className={`${s.band} ${s.cardBg}`} style={{ scrollMarginTop: 70 }}>
         <div className={`${s.wrap} ${s.earn}`}>
           <div>
             <span className={s.eyebrow}>For creators</span>
@@ -156,6 +185,36 @@ export default async function Landing() {
               <span>
                 <strong>Publish</strong> — it goes live in the catalog instantly. Keep 70%, always.
               </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" className={s.band} style={{ scrollMarginTop: 70 }}>
+        <div className={s.wrap}>
+          <div className={s.secHead} style={{ textAlign: "center", marginInline: "auto" }}>
+            <span className={s.eyebrow}>Pricing</span>
+            <h2>Simple, honest pricing.</h2>
+            <p>Reading is free to start. Pay only if you want to binge faster or publish.</p>
+          </div>
+          <div className={s.cards}>
+            <div className={s.fcard}>
+              <h3>Reader · Free</h3>
+              <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "var(--gold-soft)", margin: "0.4rem 0 0.8rem" }}>$0</div>
+              <p>A taste-quiz shelf, streaks &amp; XP, read-aloud, and a generous free shelf.</p>
+              <a className={`${s.btn} ${s.btnGold}`} href="/onboarding" style={{ marginTop: "1rem" }}>Start reading free</a>
+            </div>
+            <div className={s.fcard} style={{ borderColor: "rgba(196,163,90,0.4)" }}>
+              <h3>Token bundles</h3>
+              <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "var(--gold-soft)", margin: "0.4rem 0 0.8rem" }}>from $2</div>
+              <p>Reading tokens refill on their own — top up for instant refills when you&apos;re on a binge.</p>
+              <a className={`${s.btn} ${s.btnGhost}`} href="/onboarding" style={{ marginTop: "1rem" }}>See the shop</a>
+            </div>
+            <div className={s.fcard}>
+              <h3>Creator</h3>
+              <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "var(--gold-soft)", margin: "0.4rem 0 0.8rem" }}>Free · keep 70%</div>
+              <p>Publish unlimited stories, real analytics, and paid Featured Stories promotion.</p>
+              <a className={`${s.btn} ${s.btnGhost}`} href="/onboarding?intent=creator" style={{ marginTop: "1rem" }}>Publish your story</a>
             </div>
           </div>
         </div>

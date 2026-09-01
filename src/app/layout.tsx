@@ -14,6 +14,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var b=localStorage.getItem('libry-brand');if(b)document.documentElement.setAttribute('data-brand',b);}catch(e){}`,
+          }}
+        />
         <Splash />
         {children}
       </body>

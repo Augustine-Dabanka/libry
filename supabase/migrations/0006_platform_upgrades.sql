@@ -34,15 +34,23 @@ create policy books_update on public.books for update to authenticated
   with check (auth.uid() = user_id or exists (select 1 from public.book_collaborators c where c.book_id = id and c.user_id = auth.uid()));
 
 -- ---------- 3-tier age ratings: Everyday / Teen / Mature ----------
+-- Drop any prior age_rating constraint (e.g. the old 0005 one) BEFORE touching
+-- data, or the UPDATE below trips the old rule.
+alter table public.books drop constraint if exists books_age_rating_check;
 alter table public.books add column if not exists age_rating text not null default 'Everyday';
--- Remap any legacy values (from a prior 0005 run) to the new tiers.
-update public.books set age_rating = case age_rating
-  when 'All Ages' then 'Everyday'
-  when '9+'       then 'Everyday'
-  when '13+'      then 'Teen'
-  when '18+'      then 'Mature'
-  else age_rating end
-where age_rating in ('All Ages', '9+', '13+', '18+');
+-- Normalize EVERY row to a valid tier (unknown/legacy values → Everyday) so the
+-- check constraint can't fail on existing data.
+update public.books set age_rating = case btrim(coalesce(age_rating, ''))
+  when 'All Ages'    then 'Everyday'
+  when '9+'          then 'Everyday'
+  when 'Everyone'    then 'Everyday'
+  when '13+'         then 'Teen'
+  when 'Teen'        then 'Teen'
+  when '18+'         then 'Mature'
+  when 'Mature 18+'  then 'Mature'
+  when 'Mature'      then 'Mature'
+  when 'Everyday'    then 'Everyday'
+  else 'Everyday' end;
 alter table public.books drop constraint if exists books_age_rating_check;
 alter table public.books add constraint books_age_rating_check
   check (age_rating in ('Everyday', 'Teen', 'Mature'));
@@ -55,6 +63,8 @@ create index if not exists idx_books_editors_pick on public.books (is_editors_pi
 alter table public.profiles add column if not exists show_mature boolean not null default false;
 
 -- ---------- purchases (drives the "books sold" milestone) ----------
+-- Replace the retired PHP-era purchases table (had a different shape).
+drop table if exists public.purchases cascade;
 create table if not exists public.purchases (
   id         bigint generated always as identity primary key,
   book_id    bigint not null references public.books (id) on delete cascade,
@@ -71,6 +81,7 @@ drop policy if exists purchases_insert on public.purchases;
 create policy purchases_insert on public.purchases for insert to authenticated with check (auth.uid() = buyer_id);
 
 -- ---------- referrals (drives the "referrals" milestone) ----------
+drop table if exists public.referrals cascade;
 create table if not exists public.referrals (
   id          bigint generated always as identity primary key,
   referrer_id uuid not null references auth.users (id) on delete cascade,

@@ -3,7 +3,7 @@ export type AgeRating = (typeof AGE_RATINGS)[number];
 
 // Display labels for the stored values.
 export const AGE_LABEL: Record<string, string> = {
-  Everyday: "Everyday / Kids",
+  Everyday: "Everyone (Kids)",
   Teen: "Teen (13+)",
   Mature: "Mature (18+)",
 };
