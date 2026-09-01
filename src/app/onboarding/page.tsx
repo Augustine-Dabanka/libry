@@ -161,8 +161,8 @@ export default function OnboardingPage() {
     } catch {
       /* cookies disabled — proceed anyway */
     }
-    // Onboarding runs BEFORE signup: hand off to Google sign-in, then home.
-    window.location.assign("/login?next=%2F");
+    // Onboarding runs BEFORE signup: hand off to the gate's Sign up tab, then home.
+    window.location.assign("/login?auth=signup&next=%2F");
   }
 
   function pick(key: string, value: string) {
