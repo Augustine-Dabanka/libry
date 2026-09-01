@@ -1,0 +1,55 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { createClient } from "@/lib/supabase/server";
+
+// OAuth callback: Supabase redirects here with a `code` after Google sign-in.
+// We exchange it for a session (stored in httpOnly cookies), persist any
+// onboarding answers the guest picked before signing up, then redirect on.
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get("code");
+  const next = searchParams.get("next") ?? "/";
+
+  if (code) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      await persistOnboardingPrefs();
+
+      const forwardedHost = request.headers.get("x-forwarded-host");
+      const isLocalEnv = process.env.NODE_ENV === "development";
+      if (isLocalEnv) {
+        return NextResponse.redirect(`${origin}${next}`);
+      } else if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`);
+      }
+      return NextResponse.redirect(`${origin}${next}`);
+    }
+  }
+
+  return NextResponse.redirect(`${origin}/login?error=auth`);
+}
+
+// If the visitor completed onboarding before signing up, their answers are in
+// a `libry_prefs` cookie. Move them into the profile, then clear the cookie.
+async function persistOnboardingPrefs() {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get("libry_prefs")?.value;
+  if (!raw) return;
+
+  let prefs: Record<string, string>;
+  try {
+    prefs = JSON.parse(decodeURIComponent(raw));
+  } catch {
+    return;
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    await supabase.from("profiles").update({ prefs }).eq("id", user.id);
+  }
+  cookieStore.delete("libry_prefs");
+}
