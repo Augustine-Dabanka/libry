@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
-import NewBookForm from "@/components/NewBookForm";
+import QuickUpload from "@/components/QuickUpload";
 import PublishToggle from "@/components/PublishToggle";
 import ReferralLink from "@/components/ReferralLink";
 import RevenueChart from "@/components/RevenueChart";
@@ -125,9 +125,9 @@ export default async function CreatorDashboard() {
           <RevenueChart daily={revenue7} />
         </div>
 
-        {/* New story */}
+        {/* Create — upload a manuscript or start a blank draft */}
         <div style={{ marginBottom: "2.5rem" }}>
-          <NewBookForm userId={user.id} authorName={authorName} />
+          <QuickUpload userId={user.id} authorName={authorName} />
         </div>
 
         {/* Your Books table */}
@@ -168,7 +168,7 @@ export default async function CreatorDashboard() {
           </div>
         ) : (
           <p style={{ color: "var(--muted)", marginBottom: "3rem" }}>
-            You haven&apos;t published anything yet. Use “＋ New Story” above to start your first title.
+            You haven&apos;t created anything yet. Upload a manuscript or start a blank draft above to begin your first title.
           </p>
         )}
 

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
+import BackButton from "@/components/BackButton";
 import AddToCartButton from "@/components/AddToCartButton";
 import { formatPrice } from "@/lib/types";
 import { AGE_LABEL } from "@/lib/content";
@@ -51,6 +52,9 @@ export default async function BookPage({
       <>
         <AppNav />
         <section className="section" style={{ textAlign: "center" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
+            <BackButton />
+          </div>
           <h2>Story not found</h2>
           <p style={{ color: "var(--muted)", marginTop: "0.6rem" }}>
             This story may have been removed. <a href="/catalog" style={{ color: "var(--gold)" }}>Back to catalog →</a>
@@ -64,6 +68,9 @@ export default async function BookPage({
     <>
       <AppNav />
       <section className="section">
+        <div style={{ marginBottom: "1.5rem" }}>
+          <BackButton />
+        </div>
         <div
           style={{
             display: "grid",
