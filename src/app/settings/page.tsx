@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import AppearanceMode from "@/components/AppearanceMode";
+import ThemePicker from "@/components/ThemePicker";
+import SharedAccess from "@/components/SharedAccess";
 import AvatarSettings from "@/components/AvatarSettings";
 import AccountSettings from "@/components/AccountSettings";
 import BackgroundPicker from "@/components/BackgroundPicker";
@@ -39,11 +41,13 @@ export default async function Settings() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, username, avatar_url")
+    .select("full_name, username, avatar_url, prefs")
     .eq("id", user.id)
     .maybeSingle();
   const displayName = profile?.full_name || profile?.username || user.email || "";
   const refCode = profile?.username || user.id;
+  const prefs = (profile?.prefs && typeof profile.prefs === "object" ? profile.prefs : {}) as Record<string, unknown>;
+  const sharedWith = Array.isArray(prefs.shared_with) ? (prefs.shared_with as string[]) : [];
 
   const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
   const showMature = sm.data?.show_mature ?? false;
@@ -64,6 +68,13 @@ export default async function Settings() {
           <h3 style={cardTitle}>Appearance</h3>
           <p style={cardLead}>Choose how Libry looks. Saved on this device.</p>
           <AppearanceMode />
+        </div>
+
+        {/* Luxury theme (accent) */}
+        <div style={card}>
+          <h3 style={cardTitle}>Luxury theme</h3>
+          <p style={cardLead}>Recolour the app&apos;s accent with a premium palette. Saved on this device.</p>
+          <ThemePicker />
         </div>
 
         {/* Profile photo */}
@@ -103,6 +114,13 @@ export default async function Settings() {
             </div>
           </div>
           <MatureToggle initial={showMature} />
+        </div>
+
+        {/* Shared access */}
+        <div style={card}>
+          <h3 style={cardTitle}>Shared access</h3>
+          <p style={cardLead}>Invite another reader to share your Libry — reading together, one library.</p>
+          <SharedAccess userId={user.id} myUsername={profile?.username || ""} initial={sharedWith} />
         </div>
 
         {/* Refer & earn (ReferralLink is self-boxed) */}

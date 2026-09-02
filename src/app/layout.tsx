@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import BackgroundFX from "@/components/BackgroundFX";
+import AppFooter from "@/components/AppFooter";
 
 export const metadata: Metadata = {
   title: "Libry — Stories worth lingering in",
@@ -20,11 +21,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body suppressHydrationWarning>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('libry-theme')||'system';var d=t==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;document.documentElement.setAttribute('data-theme',d);}catch(e){}`,
+            __html: `try{var r=document.documentElement;var t=localStorage.getItem('libry-theme')||'system';var d=t==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;r.setAttribute('data-theme',d);var b=localStorage.getItem('libry-brand');if(b)r.setAttribute('data-brand',b);}catch(e){}`,
           }}
         />
         <BackgroundFX />
         {children}
+        <AppFooter />
       </body>
     </html>
   );
