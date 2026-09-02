@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function GoogleButton({ next }: { next?: string }) {
+export default function GoogleButton({
+  next,
+  className = "btn btn-gold",
+  style,
+}: {
+  next?: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -29,10 +37,10 @@ export default function GoogleButton({ next }: { next?: string }) {
     <>
       <button
         type="button"
-        className="btn btn-gold"
+        className={className}
         onClick={signIn}
         disabled={loading}
-        style={{ width: "100%", justifyContent: "center", gap: "0.6rem" }}
+        style={{ width: "100%", justifyContent: "center", gap: "0.6rem", ...style }}
       >
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
           <path

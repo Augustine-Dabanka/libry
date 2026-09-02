@@ -9,15 +9,22 @@ type Tab = "login" | "signup";
 
 const field: React.CSSProperties = {
   width: "100%",
-  padding: "0.78rem 1rem",
-  background: "var(--charcoal)",
-  border: "1px solid var(--border)",
+  padding: "0.72rem 0.95rem",
+  background: "#E9E6EE",
+  border: "1px solid rgba(43,38,34,0.10)",
   borderRadius: 12,
-  color: "var(--ivory)",
+  color: "#2B2622",
   fontFamily: "var(--sans)",
-  fontSize: "0.98rem",
+  fontSize: "0.96rem",
   outline: "none",
-  marginTop: "0.6rem",
+  marginTop: "0.35rem",
+};
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: "0.8rem",
+  color: "var(--muted)",
+  fontFamily: "var(--sans)",
+  marginTop: "0.85rem",
 };
 
 export default function LoginGate({
@@ -47,6 +54,7 @@ export default function LoginGate({
   const [identifier, setIdentifier] = useState(""); // login: email or username
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(serverError ? "Sign-in failed. Please try again." : null);
   const [info, setInfo] = useState<string | null>(null);
@@ -133,27 +141,67 @@ export default function LoginGate({
     window.location.assign(dest);
   }
 
-  const head = tab === "login" ? "Welcome back." : "Join Libry.";
-  const sub =
-    tab === "login" ? "Sign in to pick up where you left off." : "Create an account and start reading free.";
+  const pwType = showPw ? "text" : "password";
 
   return (
-    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "2rem" }}>
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        padding: "2rem",
+        position: "relative",
+        overflow: "hidden",
+        background:
+          "radial-gradient(circle at 22% 18%, rgba(196,163,90,0.22), transparent 42%)," +
+          "radial-gradient(circle at 80% 84%, rgba(180,83,9,0.16), transparent 46%)," +
+          "#1C1917",
+      }}
+    >
+      {/* ambient floating motes */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        {[
+          { top: "18%", left: "14%", s: 26, r: -12 },
+          { top: "68%", left: "22%", s: 18, r: 20 },
+          { top: "30%", left: "82%", s: 22, r: 8 },
+          { top: "74%", left: "76%", s: 16, r: -18 },
+        ].map((m, i) => (
+          <span
+            key={i}
+            style={{
+              position: "absolute",
+              top: m.top,
+              left: m.left,
+              width: m.s,
+              height: m.s,
+              borderRadius: 5,
+              background: "rgba(196,163,90,0.14)",
+              transform: `rotate(${m.r}deg)`,
+              filter: "blur(0.5px)",
+            }}
+          />
+        ))}
+      </div>
+
       <div
         style={{
+          position: "relative",
           width: "100%",
           maxWidth: 430,
-          background: "var(--stone)",
-          border: "1px solid var(--border)",
-          borderRadius: 20,
-          padding: "2.2rem 2rem",
-          boxShadow: "var(--shadow)",
+          background: "#221C18",
+          border: "1px solid rgba(250,247,242,0.08)",
+          borderRadius: 22,
+          padding: "2.3rem 2.1rem",
+          boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: "1.2rem" }}>
+        <div style={{ textAlign: "center", marginBottom: "1.3rem" }}>
           <span className="logo" style={{ fontSize: "2rem" }}>
             Libry<span>.</span>
           </span>
+          <p style={{ color: "var(--muted)", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.92rem", marginTop: "0.25rem" }}>
+            Stories worth lingering in
+          </p>
         </div>
 
         <div
@@ -189,32 +237,52 @@ export default function LoginGate({
                 color: tab === t ? "#20180a" : "var(--muted)",
               }}
             >
-              {t === "login" ? "Log in" : "Sign up"}
+              {t === "login" ? "Sign in" : "Create account"}
             </button>
           ))}
         </div>
 
-        <h1 style={{ fontSize: "1.5rem", textAlign: "center", marginBottom: "0.3rem" }}>{head}</h1>
-        <p style={{ color: "var(--muted)", textAlign: "center", fontFamily: "var(--sans)", marginBottom: "1.2rem" }}>{sub}</p>
-
         <form onSubmit={submit}>
           {tab === "signup" ? (
             <>
-              <input style={{ ...field, marginTop: 0 }} placeholder="Full name" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-              <input style={field} placeholder="Username" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} />
-              <input style={field} type="email" placeholder="Email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              <input style={field} type="password" placeholder="Password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              <input style={field} type="password" placeholder="Confirm password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              <label style={{ ...labelStyle, marginTop: 0 }}>Full name</label>
+              <input className="auth-input" style={field} placeholder="Ada Lovelace" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              <label style={labelStyle}>Username</label>
+              <input className="auth-input" style={field} placeholder="ada" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} />
+              <label style={labelStyle}>Email</label>
+              <input className="auth-input" style={field} type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <label style={labelStyle}>Password</label>
+              <input className="auth-input" style={field} type={pwType} placeholder="Create a password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <label style={labelStyle}>Confirm password</label>
+              <input className="auth-input" style={field} type={pwType} placeholder="Repeat it" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
             </>
           ) : (
             <>
-              <input style={{ ...field, marginTop: 0 }} placeholder="Username or email" autoComplete="username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
-              <input style={field} type="password" placeholder="Password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <label style={{ ...labelStyle, marginTop: 0 }}>Username or email</label>
+              <input className="auth-input" style={field} placeholder="ada  ·  you@example.com" autoComplete="username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
+              <label style={labelStyle}>Password</label>
+              <input className="auth-input" style={field} type={pwType} placeholder="Your password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </>
           )}
 
-          <button className="btn btn-gold lb-press" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center", marginTop: "1.1rem" }}>
-            {busy ? "…" : tab === "login" ? "Log in" : "Create account"}
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              marginTop: "0.9rem",
+              color: "var(--muted)",
+              fontFamily: "var(--sans)",
+              fontSize: "0.85rem",
+              cursor: "pointer",
+            }}
+          >
+            <input type="checkbox" checked={showPw} onChange={(e) => setShowPw(e.target.checked)} style={{ accentColor: "var(--gold)", width: 15, height: 15 }} />
+            Show password
+          </label>
+
+          <button className="btn btn-gold" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center", marginTop: "1.1rem" }}>
+            {busy ? "…" : tab === "login" ? "Sign in" : "Create account"}
           </button>
         </form>
 
@@ -227,7 +295,19 @@ export default function LoginGate({
           <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
         </div>
 
-        <GoogleButton next={next} />
+        <GoogleButton
+          next={next}
+          className="btn"
+          style={{
+            background: "#E9E6EE",
+            color: "#2B2622",
+            border: "1px solid rgba(43,38,34,0.10)",
+          }}
+        />
+
+        <p style={{ color: "var(--muted)", textAlign: "center", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "1.3rem" }}>
+          By continuing you agree to explore beautiful stories.
+        </p>
       </div>
     </main>
   );

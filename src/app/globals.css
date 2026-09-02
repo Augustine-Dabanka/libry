@@ -642,6 +642,10 @@ img {
   font-family: var(--sans);
 }
 
+/* ========== AUTH (light frosted inputs on the login card) ========== */
+.auth-input::placeholder { color: #8A8178; opacity: 1; }
+.auth-input:focus { box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.55); }
+
 /* ========== FOOTER ========== */
 footer {
   background: var(--footer-bg);

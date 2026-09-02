@@ -105,6 +105,15 @@ const COUNTRIES = [
 
 const CHEERS = ["Lovely choice.", "Ooh, good taste.", "Noted!", "That tells me a lot.", "Perfect."];
 
+// Fixed confetti burst for the "shelf is ready" screen — warm brand colours.
+const CONFETTI_COLORS = ["#C4A35A", "#B45309", "#97692F", "#E0B84C", "#8B8680", "#D2793B"];
+const CONFETTI = Array.from({ length: 46 }, (_, i) => ({
+  left: (i * 37) % 100,
+  color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+  dur: 2.6 + ((i * 7) % 18) / 10,
+  delay: ((i * 13) % 12) / 10,
+}));
+
 function Koala() {
   return (
     <svg className={styles.owl} viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -212,8 +221,7 @@ export default function OnboardingPage() {
         <div className={styles.progress}>
           <div className={styles.progressFill} style={{ width: `${pct}%` }} />
         </div>
-        <span className={`${styles.pill} ${styles.streak}`}>🔥 <b>1</b></span>
-        <span className={`${styles.pill} ${styles.hearts}`}>❤️ <b>5</b></span>
+        <span className={styles.pctLabel}>{pct}% complete</span>
       </div>
 
       <div className={styles.stage}>
@@ -224,7 +232,9 @@ export default function OnboardingPage() {
             <h1 className={styles.introTitle}>
               Before you begin,
               <br />
-              let’s make Libry <span>yours</span>.
+              let’s make Libry
+              <br />
+              <span>yours</span>.
             </h1>
             <p className={styles.tag}>
               A few quick questions and we’ll set up a shelf that feels handpicked for you.
@@ -322,13 +332,29 @@ export default function OnboardingPage() {
         {/* Done */}
         {idx >= total && (
           <div className={styles.screen} key="done">
+            <div className={styles.confetti} aria-hidden="true">
+              {CONFETTI.map((c, i) => (
+                <span
+                  key={i}
+                  className={styles.confettiPiece}
+                  style={{
+                    left: `${c.left}%`,
+                    background: c.color,
+                    animationDuration: `${c.dur}s`,
+                    animationDelay: `${c.delay}s`,
+                  }}
+                />
+              ))}
+            </div>
             <Koala />
-            <h1 className={styles.doneTitle}>Your shelf is ready.</h1>
+            <h1 className={styles.doneTitle}>
+              Your shelf is <span>ready</span>.
+            </h1>
             <p className={styles.tag}>
-              Create your free account and we’ll drop you straight into stories picked for you.
+              We’ve lined up stories we think you’ll love. One quick step and you’re in.
             </p>
             <button className={styles.btn} onClick={() => finish(answers)}>
-              Create my account
+              Enter Libry
             </button>
           </div>
         )}
