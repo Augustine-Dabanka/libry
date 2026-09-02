@@ -137,6 +137,36 @@ export default async function Landing() {
         </div>
       </section>
 
+      <section className={`${s.band} ${s.peach}`}>
+        <div className={s.wrap}>
+          <div className={s.secHead} style={{ textAlign: "center", marginInline: "auto" }}>
+            <span className={s.eyebrow}>Reader discussions</span>
+            <h2>A comments section better than your group chat.</h2>
+          </div>
+          <div className={s.cards}>
+            {[
+              { a: "M", c: "#B4547A", u: "@mara_reads", t: "chapter 12 WRECKED me 😭 the branching ending got me", h: 214 },
+              { a: "K", c: "#4E7A8C", u: "@keys", t: "read-aloud at 1am = perfect. what is this app 🥹", h: 176 },
+              { a: "S", c: "#4E7A52", u: "@softreads", t: "the choices actually change the plot?? obsessed", h: 240 },
+            ].map((x) => (
+              <div key={x.u} className={s.fcard} style={{ display: "flex", gap: "0.7rem", alignItems: "flex-start" }}>
+                <span style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, display: "grid", placeItems: "center", color: "#fff", fontWeight: 800, background: x.c }}>
+                  {x.a}
+                </span>
+                <span style={{ flex: 1 }}>
+                  <span style={{ fontWeight: 800, fontSize: "0.85rem", display: "block", color: "var(--ink)" }}>{x.u}</span>
+                  <span style={{ fontSize: "0.9rem", color: "var(--body)" }}>{x.t}</span>
+                </span>
+                <span style={{ color: "var(--terra-soft, #D2793B)", fontWeight: 700, fontSize: "0.78rem", textAlign: "center", flexShrink: 0 }}>
+                  ♥<br />
+                  {x.h}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="creators" className={`${s.band} ${s.cardBg}`} style={{ scrollMarginTop: 70 }}>
         <div className={`${s.wrap} ${s.earn}`}>
           <div>
