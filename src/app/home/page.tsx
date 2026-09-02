@@ -1,13 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
-import SaleBanner from "@/components/SaleBanner";
 import BookCard from "@/components/BookCard";
 import HeroArt from "@/components/HeroArt";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
-
-type PromoRow = { priority: number; books: Book | Book[] | null };
 
 function Shelf({ title, books }: { title: string; books: Book[] }) {
   if (books.length === 0) return null;
@@ -59,27 +56,6 @@ export default async function Home() {
   const freeBooks = books.filter((b) => !b.price || b.price <= 0);
   const premiumBooks = books.filter((b) => (b.price ?? 0) > 0);
 
-  const nowIso = new Date().toISOString();
-  const primaryPromo = await supabase
-    .from("promoted_books")
-    .select("priority, books(id, title, author, price, type, age_rating)")
-    .gte("ends_at", nowIso)
-    .order("priority", { ascending: false })
-    .limit(10);
-  let promoData: unknown = primaryPromo.data;
-  if (primaryPromo.error) {
-    const alt = await supabase
-      .from("promoted_books")
-      .select("priority, books(id, title, author, price, type)")
-      .gte("ends_at", nowIso)
-      .order("priority", { ascending: false })
-      .limit(10);
-    promoData = alt.data;
-  }
-  const recommended = ((promoData ?? []) as unknown as PromoRow[])
-    .map((p) => (Array.isArray(p.books) ? p.books[0] : p.books))
-    .filter((b): b is Book => b != null && allowed.includes(b.age_rating ?? "Everyday"));
-
   return (
     <>
       <AppNav />
@@ -97,8 +73,8 @@ export default async function Home() {
             <a href="/catalog" className="btn btn-gold">
               Browse Catalog
             </a>
-            <a href="/discover?filter=editors-pick" className="btn btn-outline">
-              Editor&rsquo;s Pick
+            <a href="/my-library" className="btn btn-outline">
+              My Library
             </a>
           </div>
         </div>
@@ -107,36 +83,12 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="section" style={{ paddingBottom: 0 }}>
-        <SaleBanner />
-      </section>
-
-      {recommended.length > 0 ? (
-        <section className="section" style={{ paddingTop: "1.5rem", paddingBottom: 0 }}>
-          <div className="section-header">
-            <h2>Featured Stories</h2>
-          </div>
-          <div style={{ display: "flex", gap: "1.2rem", overflowX: "auto", paddingBottom: "0.6rem" }}>
-            {recommended.map((b) => (
-              <div key={b.id} style={{ flex: "0 0 210px", position: "relative" }}>
-                <span className="badge" style={{ position: "absolute", top: 10, left: 10, zIndex: 2, background: "var(--gold)", color: "#20180a" }}>
-                  ★ Promoted
-                </span>
-                <BookCard book={b} />
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
       <Shelf title="Free to Read" books={freeBooks} />
       <Shelf title="Premium Reads" books={premiumBooks} />
 
       {books.length === 0 ? (
         <section className="section" style={{ paddingTop: "1.5rem" }}>
-          <div
-            style={{ border: "1px solid var(--border)", borderRadius: 16, padding: "3rem 2rem", textAlign: "center", background: "var(--stone)" }}
-          >
+          <div style={{ border: "1px solid var(--border)", borderRadius: 16, padding: "3rem 2rem", textAlign: "center", background: "var(--stone)" }}>
             <p style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>No stories yet.</p>
             <p style={{ color: "var(--muted)", maxWidth: 440, margin: "0 auto" }}>
               Once creators publish, their books show up here.

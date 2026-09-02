@@ -2,9 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import NewBookForm from "@/components/NewBookForm";
-import PromoteButton from "@/components/PromoteButton";
 import CollaboratorsPanel from "@/components/CollaboratorsPanel";
-import MonetizationTracker from "@/components/MonetizationTracker";
 import { formatPrice } from "@/lib/types";
 
 type MyBook = {
@@ -35,16 +33,6 @@ export default async function CreatorDashboard() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
   const books = (booksData ?? []) as MyBook[];
-
-  // Active promotions for this creator's books (book_id → tier).
-  const promoMap = new Map<string, string>();
-  const nowIso = new Date().toISOString();
-  const { data: promos } = await supabase
-    .from("promoted_books")
-    .select("book_id, tier")
-    .eq("user_id", user.id)
-    .gte("ends_at", nowIso);
-  (promos ?? []).forEach((p: { book_id: number; tier: string }) => promoMap.set(String(p.book_id), p.tier));
 
   // Collaborators on each owned book (book_id → [{userId, name}]).
   const collabMap = new Map<string, { userId: string; name: string }[]>();
@@ -87,16 +75,6 @@ export default async function CreatorDashboard() {
     sharedBooks = (sb ?? []) as MyBook[];
   }
 
-  // Monetization milestone counts (guarded — purchases/referrals from 0006).
-  const ownedBookIds = books.map((b) => Number(b.id));
-  let salesCount = 0;
-  if (ownedBookIds.length) {
-    const sc = await supabase.from("purchases").select("*", { count: "exact", head: true }).in("book_id", ownedBookIds);
-    salesCount = sc.count ?? 0;
-  }
-  const rc = await supabase.from("referrals").select("*", { count: "exact", head: true }).eq("referrer_id", user.id);
-  const referralCount = rc.count ?? 0;
-
   return (
     <>
       <AppNav />
@@ -105,10 +83,8 @@ export default async function CreatorDashboard() {
           <h2>Creator Dashboard</h2>
         </div>
         <p style={{ color: "var(--muted)", marginTop: "-1.5rem", marginBottom: "2rem" }}>
-          Welcome, {authorName}. Publish a story and it goes live in the catalog.
+          Welcome back, {authorName}. Here&apos;s how your stories are performing.
         </p>
-
-        <MonetizationTracker sales={salesCount} referrals={referralCount} />
 
         <div style={{ marginBottom: "2.5rem" }}>
           <NewBookForm userId={user.id} authorName={authorName} />
@@ -133,7 +109,6 @@ export default async function CreatorDashboard() {
                   <a className="btn btn-outline" href={`/creator/edit/${b.id}`} style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>
                     Edit
                   </a>
-                  <PromoteButton bookId={Number(b.id)} promoted={promoMap.get(String(b.id)) ?? null} />
                 </div>
                 <div style={{ marginTop: "0.6rem" }}>
                   <CollaboratorsPanel bookId={Number(b.id)} collaborators={collabMap.get(String(b.id)) ?? []} />
