@@ -100,4 +100,8 @@
 .footer h4 { font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.85rem; }
 .footer a:global(.fx) { display: block; color: var(--body); font-size: 0.9rem; font-weight: 600; margin-bottom: 0.55rem; text-decoration: none; }
 .footer a:global(.fx):hover { color: var(--goldSoft); }
+.footSocial { display: flex; gap: 0.6rem; margin-top: 1.1rem; }
+.footSocial a { width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); transition: 0.2s; }
+.footSocial a:hover { color: var(--gold); border-color: var(--gold); transform: translateY(-2px); }
+.footSocial svg { width: 17px; height: 17px; }
 .footBar { border-top: 1px solid var(--line2); padding-top: 1.4rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; color: var(--muted); font-size: 0.82rem; }
