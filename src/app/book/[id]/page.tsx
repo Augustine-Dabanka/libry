@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
+import AddToCartButton from "@/components/AddToCartButton";
 import { formatPrice } from "@/lib/types";
 import { AGE_LABEL } from "@/lib/content";
 
@@ -108,13 +109,18 @@ export default async function BookPage({
                 {book.description}
               </p>
             ) : null}
-            {book.content ? (
-              <div style={{ marginTop: "1.6rem" }}>
+            <div style={{ marginTop: "1.6rem", display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
+              {book.content ? (
                 <a href={`/reader/${book.id}`} className="btn btn-gold">
                   Start reading →
                 </a>
-              </div>
-            ) : null}
+              ) : null}
+              {(book.price ?? 0) > 0 ? (
+                <AddToCartButton
+                  item={{ id: book.id, title: book.title, author: book.author, price: book.price }}
+                />
+              ) : null}
+            </div>
           </div>
         </div>
 

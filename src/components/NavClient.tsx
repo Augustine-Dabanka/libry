@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import CartDrawer from "@/components/CartDrawer";
+import { cartCount, onCartChange, openCart } from "@/lib/cart";
 
 type Dd = null | "catalog" | "library" | "user";
 
@@ -17,7 +19,15 @@ export default function NavClient({
 }) {
   const [dd, setDd] = useState<Dd>(null);
   const [mobile, setMobile] = useState(false);
+  const [cartN, setCartN] = useState(0);
   const rootRef = useRef<HTMLElement>(null);
+
+  // Live cart count from localStorage.
+  useEffect(() => {
+    const sync = () => setCartN(cartCount());
+    sync();
+    return onCartChange(sync);
+  }, []);
 
   // Close any open dropdown on an outside click or Escape.
   useEffect(() => {
@@ -78,9 +88,9 @@ export default function NavClient({
             </a>
           </li>
           <li>
-            <a href="/cart" className="icon-link" title="Cart" aria-label="Cart">
-              &#128722; Cart <span className="badge-count">0</span>
-            </a>
+            <button type="button" className="icon-link" title="Cart" aria-label="Cart" onClick={openCart} style={{ background: "transparent", border: "none", cursor: "pointer", font: "inherit" }}>
+              &#128722; Cart <span className="badge-count">{cartN}</span>
+            </button>
           </li>
           <li>
             <a href="/home">Home</a>
@@ -121,7 +131,7 @@ export default function NavClient({
               <a href="/my-library">Continue reading</a>
               <a href="/my-library">Reading history</a>
               <a href="/wishlist">Saved &amp; wishlist</a>
-              <a href="/cart">Your cart</a>
+              <a href="/cart" onClick={(e) => { e.preventDefault(); setDd(null); openCart(); }}>Your cart</a>
               <a href="/my-library" className="dd-all">Open My Library →</a>
             </div>
           </li>
@@ -175,7 +185,7 @@ export default function NavClient({
         <a href="/catalog">Catalog</a>
         <a href="/my-library">My Library</a>
         <a href="/wishlist">Wishlist</a>
-        <a href="/cart">Cart</a>
+        <a href="/cart" onClick={(e) => { e.preventDefault(); setMobile(false); openCart(); }}>Cart</a>
         <a href="/creator">Creator Dashboard</a>
         <a href="/about">About</a>
         <a href="/settings">Settings</a>
@@ -187,6 +197,8 @@ export default function NavClient({
           <a href="/login">Log in</a>
         )}
       </div>
+
+      <CartDrawer />
     </>
   );
 }
