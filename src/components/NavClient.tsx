@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+type Dd = null | "catalog" | "library" | "user";
 
 export default function NavClient({
   signedIn,
@@ -13,14 +15,28 @@ export default function NavClient({
   avatarUrl: string | null;
   initials: string;
 }) {
-  const [menu, setMenu] = useState(false);
+  const [dd, setDd] = useState<Dd>(null);
   const [mobile, setMobile] = useState(false);
+  const rootRef = useRef<HTMLElement>(null);
 
+  // Close any open dropdown on an outside click or Escape.
   useEffect(() => {
-    const close = () => setMenu(false);
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
+    function onDown(e: MouseEvent) {
+      const t = e.target as Element | null;
+      if (t && !t.closest("[data-dd-root]")) setDd(null);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setDd(null);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
+
+  const toggle = (which: Exclude<Dd, null>) => setDd((cur) => (cur === which ? null : which));
 
   const avatar = avatarUrl ? (
     // eslint-disable-next-line @next/next/no-img-element
@@ -45,7 +61,7 @@ export default function NavClient({
 
   return (
     <>
-      <nav className="navbar">
+      <nav className="navbar" ref={rootRef}>
         <a href="/home" className="logo">
           Libry<span>.</span>
         </a>
@@ -69,12 +85,47 @@ export default function NavClient({
           <li>
             <a href="/home">Home</a>
           </li>
-          <li>
-            <a href="/catalog">Catalog</a>
+
+          {/* Catalog dropdown */}
+          <li className="nav-dd" data-dd-root>
+            <button
+              type="button"
+              className={`nav-dd-link${dd === "catalog" ? " active" : ""}`}
+              aria-haspopup="true"
+              aria-expanded={dd === "catalog"}
+              onClick={() => toggle("catalog")}
+            >
+              Catalog <span className="caret">▾</span>
+            </button>
+            <div className={`nav-dd-menu${dd === "catalog" ? " open" : ""}`}>
+              <a href="/catalog?type=Fiction">Fiction</a>
+              <a href="/catalog?type=Non-Fiction">Non-Fiction</a>
+              <a href="/catalog?type=Interactive">Interactive stories</a>
+              <a href="/catalog?free=1">Free to read</a>
+              <a href="/catalog" className="dd-all">Browse everything →</a>
+            </div>
           </li>
-          <li>
-            <a href="/my-library">My Library</a>
+
+          {/* My Library dropdown */}
+          <li className="nav-dd" data-dd-root>
+            <button
+              type="button"
+              className={`nav-dd-link${dd === "library" ? " active" : ""}`}
+              aria-haspopup="true"
+              aria-expanded={dd === "library"}
+              onClick={() => toggle("library")}
+            >
+              My Library <span className="caret">▾</span>
+            </button>
+            <div className={`nav-dd-menu${dd === "library" ? " open" : ""}`}>
+              <a href="/my-library">Continue reading</a>
+              <a href="/my-library">Reading history</a>
+              <a href="/wishlist">Saved &amp; wishlist</a>
+              <a href="/cart">Your cart</a>
+              <a href="/my-library" className="dd-all">Open My Library →</a>
+            </div>
           </li>
+
           <li>
             <a href="/about">About</a>
           </li>
@@ -82,13 +133,13 @@ export default function NavClient({
 
         <div className="nav-right">
           {signedIn ? (
-            <div className="nav-user" id="nav-user" onClick={(e) => e.stopPropagation()}>
-              <button className="user-chip" onClick={() => setMenu((v) => !v)} aria-haspopup="true">
+            <div className="nav-user" data-dd-root>
+              <button className="user-chip" onClick={() => toggle("user")} aria-haspopup="true" aria-expanded={dd === "user"}>
                 <span className="user-avatar">{avatar}</span>
                 <span className="user-name">{name}</span>
                 <span className="user-caret">▾</span>
               </button>
-              <div className={`user-menu${menu ? " open" : ""}`}>
+              <div className={`user-menu${dd === "user" ? " open" : ""}`}>
                 <div className="user-menu-head">
                   <span className="user-avatar">{avatar}</span>
                   <span className="user-menu-name">{name}</span>

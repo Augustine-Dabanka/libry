@@ -134,7 +134,11 @@ export default function LoginGate({
     const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
     if (error) {
       setBusy(false);
-      setMsg(error.message);
+      setMsg(
+        /invalid login credentials/i.test(error.message)
+          ? "Incorrect details — or you haven’t confirmed your email yet."
+          : error.message
+      );
       return;
     }
     await persistOnboardingPrefs();
@@ -296,7 +300,7 @@ export default function LoginGate({
         </div>
 
         <GoogleButton
-          next={next}
+          next={next || "/home"}
           className="btn"
           style={{
             background: "#E9E6EE",

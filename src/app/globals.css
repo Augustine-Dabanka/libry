@@ -767,6 +767,13 @@ footer a:hover {
 .nav-dd-menu a { display: block; padding: 0.6rem 0.7rem; border-radius: 8px; color: var(--ivory);
   font-family: var(--sans); font-size: 0.9rem; }
 .nav-dd-menu a:hover { background: rgba(196,163,90,0.12); color: var(--gold); }
+/* Plain-text dropdown trigger that reads like the other nav links */
+.nav-dd-link { background: transparent; border: none; cursor: pointer; color: var(--muted);
+  font-size: 0.95rem; font-family: var(--sans); font-weight: 500; display: inline-flex;
+  align-items: center; gap: 0.35rem; padding: 0; }
+.nav-dd-link:hover, .nav-dd-link.active { color: var(--ivory); }
+.nav-dd-link .caret { font-size: 0.62rem; transition: transform 0.15s ease; }
+.nav-dd-link.active .caret { transform: rotate(180deg); color: var(--gold); }
 .nav-dd-menu .dd-all { color: var(--gold); border-top: 1px solid var(--border); margin-top: 0.3rem; }
 
 /* Interactive badge */

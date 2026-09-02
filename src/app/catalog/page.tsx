@@ -8,9 +8,9 @@ import { type Book } from "@/lib/types";
 export default async function Catalog({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; type?: string; free?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, type, free } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -24,11 +24,16 @@ export default async function Catalog({
   // Strip chars that would break PostgREST's or() filter grammar.
   const safe = term.replace(/[,()*]/g, " ").trim();
 
+  const typeFilter = (type ?? "").trim();
+  const freeOnly = free === "1" || free === "true";
+
   const runQuery = (withAge: boolean) => {
     let query = supabase
       .from("books")
       .select(withAge ? "id, title, author, price, type, age_rating" : "id, title, author, price, type");
     if (withAge) query = query.eq("is_published", true).in("age_rating", allowed);
+    if (typeFilter) query = query.eq("type", typeFilter);
+    if (freeOnly) query = query.or("price.eq.0,is_free.eq.true");
     if (safe) query = query.or(`title.ilike.%${safe}%,author.ilike.%${safe}%`);
     return query.limit(48);
   };
@@ -36,12 +41,20 @@ export default async function Catalog({
   if (res.error) res = await runQuery(false); // age_rating not migrated yet
   const books = (res.data ?? []) as unknown as Book[];
 
+  const heading = term
+    ? `Results for “${term}”`
+    : freeOnly
+    ? "Free to read"
+    : typeFilter
+    ? typeFilter
+    : "Catalog";
+
   return (
     <>
       <AppNav />
       <section className="section">
         <div className="section-header">
-          <h2>{term ? `Results for “${term}”` : "Catalog"}</h2>
+          <h2>{heading}</h2>
         </div>
 
         {books.length > 0 ? (
