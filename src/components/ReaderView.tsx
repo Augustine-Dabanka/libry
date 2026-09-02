@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { tickReadingMinute } from "@/app/actions/gamification";
 
 type Theme = "dark" | "sepia";
 
@@ -63,15 +62,6 @@ export default function ReaderView({
       cancelled = true;
     };
   }, [bookId, userEmail]);
-
-  // Count each active minute of reading toward the "read 10 minutes" quest.
-  useEffect(() => {
-    if (!userEmail) return;
-    const id = setInterval(() => {
-      if (document.visibilityState === "visible") tickReadingMinute();
-    }, 60000);
-    return () => clearInterval(id);
-  }, [userEmail]);
 
   function onScroll() {
     const el = scrollRef.current;

@@ -83,22 +83,6 @@ export default async function Landing() {
         </div>
       </div>
 
-      <section className={s.band}>
-        <div className={s.wrap}>
-          <div className={s.secHead} style={{ textAlign: "center", marginInline: "auto" }}>
-            <span className={s.eyebrow}>See it in action</span>
-            <h2>A quick walkthrough.</h2>
-          </div>
-          <video
-            controls
-            preload="metadata"
-            style={{ width: "100%", maxWidth: 900, margin: "0 auto", display: "block", borderRadius: 16, border: "1px solid var(--line)", boxShadow: "var(--shadow)" }}
-          >
-            <source src="/video/walkthrough.mp4" type="video/mp4" />
-          </video>
-        </div>
-      </section>
-
       <section id="features" className={`${s.band} ${s.sky}`} style={{ scrollMarginTop: 70 }}>
         <div className={s.wrap}>
           <div className={s.secHead}>

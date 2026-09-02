@@ -1,11 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
-import StatsHUD from "@/components/StatsHUD";
 import SaleBanner from "@/components/SaleBanner";
 import BookCard from "@/components/BookCard";
 import HeroArt from "@/components/HeroArt";
-import { loadGamification } from "@/lib/gamification";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
@@ -45,8 +43,6 @@ export default async function Home() {
   const firstName = (profile?.full_name || profile?.username || "").split(" ")[0];
   const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
   const allowed = allowedRatings(sm.data?.show_mature ?? false);
-
-  const { stats, quests } = await loadGamification(user.id);
 
   const primaryBooks = await supabase
     .from("books")
@@ -113,7 +109,6 @@ export default async function Home() {
 
       <section className="section" style={{ paddingBottom: 0 }}>
         <SaleBanner />
-        <StatsHUD stats={stats} quests={quests} />
       </section>
 
       {recommended.length > 0 ? (

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import Splash from "@/components/Splash";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +18,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             __html: `try{var b=localStorage.getItem('libry-brand');if(b)document.documentElement.setAttribute('data-brand',b);}catch(e){}`,
           }}
         />
-        <Splash />
         {children}
       </body>
     </html>
