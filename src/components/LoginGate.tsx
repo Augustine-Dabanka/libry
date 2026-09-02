@@ -124,25 +124,30 @@ export default function LoginGate({
       return;
     }
     setBusy(true);
-    const lookup = await supabase.rpc("login_email", { identifier: identifier.trim() });
-    const loginEmail = (lookup.data as string | null) || (identifier.includes("@") ? identifier.trim() : null);
-    if (!loginEmail) {
+    try {
+      const lookup = await supabase.rpc("login_email", { identifier: identifier.trim() });
+      const loginEmail = (lookup.data as string | null) || (identifier.includes("@") ? identifier.trim() : null);
+      if (!loginEmail) {
+        setBusy(false);
+        setMsg("No account found for that username.");
+        return;
+      }
+      const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
+      if (error) {
+        setBusy(false);
+        setMsg(
+          /invalid login credentials/i.test(error.message)
+            ? "Incorrect details — or you haven’t confirmed your email yet."
+            : error.message
+        );
+        return;
+      }
+      await persistOnboardingPrefs();
+      window.location.assign(dest);
+    } catch (err) {
       setBusy(false);
-      setMsg("No account found for that username.");
-      return;
+      setMsg(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     }
-    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
-    if (error) {
-      setBusy(false);
-      setMsg(
-        /invalid login credentials/i.test(error.message)
-          ? "Incorrect details — or you haven’t confirmed your email yet."
-          : error.message
-      );
-      return;
-    }
-    await persistOnboardingPrefs();
-    window.location.assign(dest);
   }
 
   const pwType = showPw ? "text" : "password";

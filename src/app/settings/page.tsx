@@ -1,19 +1,17 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
-import MatureToggle from "@/components/MatureToggle";
-import ThemePicker from "@/components/ThemePicker";
+import AppearanceMode from "@/components/AppearanceMode";
 import AvatarSettings from "@/components/AvatarSettings";
+import AccountSettings from "@/components/AccountSettings";
+import BackgroundPicker from "@/components/BackgroundPicker";
+import LanguagePref from "@/components/LanguagePref";
+import MatureToggle from "@/components/MatureToggle";
+import ReferralLink from "@/components/ReferralLink";
 
 function initialsFrom(name: string): string {
   return (
-    name
-      .trim()
-      .split(/\s+/)
-      .map((w) => w[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase() || "?"
+    name.trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?"
   );
 }
 
@@ -21,8 +19,15 @@ const card: React.CSSProperties = {
   background: "var(--stone)",
   border: "1px solid var(--border)",
   borderRadius: 16,
-  padding: "1.4rem 1.5rem",
+  padding: "1.5rem 1.6rem",
   marginBottom: "1.4rem",
+};
+const cardTitle: React.CSSProperties = { fontSize: "1.1rem", marginBottom: "0.3rem" };
+const cardLead: React.CSSProperties = {
+  color: "var(--muted)",
+  fontFamily: "var(--sans)",
+  fontSize: "0.9rem",
+  marginBottom: "1.2rem",
 };
 
 export default async function Settings() {
@@ -38,9 +43,13 @@ export default async function Settings() {
     .eq("id", user.id)
     .maybeSingle();
   const displayName = profile?.full_name || profile?.username || user.email || "";
+  const refCode = profile?.username || user.id;
 
   const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
   const showMature = sm.data?.show_mature ?? false;
+
+  const rc = await supabase.rpc("my_referral_count");
+  const referralCount = typeof rc.data === "number" ? rc.data : 0;
 
   return (
     <>
@@ -50,22 +59,39 @@ export default async function Settings() {
           <h2>Settings</h2>
         </div>
 
+        {/* Appearance */}
+        <div style={card}>
+          <h3 style={cardTitle}>Appearance</h3>
+          <p style={cardLead}>Choose how Libry looks. Saved on this device.</p>
+          <AppearanceMode />
+        </div>
+
         {/* Profile photo */}
         <div style={card}>
-          <h3 style={{ marginBottom: "0.3rem", fontSize: "1.1rem" }}>Profile photo</h3>
-          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginBottom: "1.2rem" }}>
-            A square photo works best. It&apos;s stored on your profile.
-          </p>
+          <h3 style={cardTitle}>Profile photo</h3>
+          <p style={cardLead}>A square photo works best. It&apos;s stored on your profile.</p>
           <AvatarSettings initialUrl={profile?.avatar_url ?? null} initials={initialsFrom(displayName)} />
         </div>
 
-        {/* Theme */}
+        {/* Account */}
         <div style={card}>
-          <h3 style={{ marginBottom: "0.3rem", fontSize: "1.1rem" }}>Luxury theme</h3>
-          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginBottom: "1.2rem" }}>
-            Recolor the app accent. Your pick is saved on this device.
-          </p>
-          <ThemePicker />
+          <h3 style={cardTitle}>Account</h3>
+          <p style={cardLead}>Update your display name or change your password.</p>
+          <AccountSettings userId={user.id} initialName={displayName} />
+        </div>
+
+        {/* Language */}
+        <div style={card}>
+          <h3 style={cardTitle}>Language</h3>
+          <p style={cardLead}>Your preferred language for Libry.</p>
+          <LanguagePref userId={user.id} initial="en" />
+        </div>
+
+        {/* Background */}
+        <div style={card}>
+          <h3 style={cardTitle}>Background</h3>
+          <p style={cardLead}>A gentle ambient animation behind the app. Off by default.</p>
+          <BackgroundPicker />
         </div>
 
         {/* Mature toggle */}
@@ -78,6 +104,9 @@ export default async function Settings() {
           </div>
           <MatureToggle initial={showMature} />
         </div>
+
+        {/* Refer & earn (ReferralLink is self-boxed) */}
+        <ReferralLink refCode={refCode} count={referralCount} />
       </section>
     </>
   );

@@ -642,6 +642,28 @@ img {
   font-family: var(--sans);
 }
 
+/* ========== Data table (creator dashboard) ========== */
+.data-table { width: 100%; border-collapse: collapse; font-family: var(--sans); min-width: 640px; }
+.data-table thead th { text-align: left; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 700; padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--border); }
+.data-table thead th:last-child { text-align: right; }
+.data-table tbody td { padding: 0.85rem 0.9rem; border-bottom: 1px solid var(--border); font-size: 0.9rem;
+  color: var(--ivory-muted); vertical-align: middle; }
+.data-table tbody tr:hover { background: rgba(196,163,90,0.05); }
+
+/* ========== Ambient background FX (opt-in, settings) ========== */
+.bgfx { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.bgfx-item { position: absolute; top: 110%; opacity: 0; color: var(--gold);
+  filter: blur(0.4px); will-change: transform, opacity; animation-name: bgfxRise;
+  animation-timing-function: linear; animation-iteration-count: infinite; }
+@keyframes bgfxRise {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  12% { opacity: 0.10; }
+  88% { opacity: 0.10; }
+  100% { transform: translateY(-125vh) rotate(220deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .bgfx { display: none; } }
+
 /* ========== AUTH (light frosted inputs on the login card) ========== */
 .auth-input::placeholder { color: #8A8178; opacity: 1; }
 .auth-input:focus { box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.55); }

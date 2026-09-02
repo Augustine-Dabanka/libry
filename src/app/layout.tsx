@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import BackgroundFX from "@/components/BackgroundFX";
 
 export const metadata: Metadata = {
   title: "Libry — Stories worth lingering in",
@@ -19,9 +20,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body suppressHydrationWarning>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var b=localStorage.getItem('libry-brand');if(b)document.documentElement.setAttribute('data-brand',b);}catch(e){}`,
+            __html: `try{var t=localStorage.getItem('libry-theme')||'system';var d=t==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;document.documentElement.setAttribute('data-theme',d);}catch(e){}`,
           }}
         />
+        <BackgroundFX />
         {children}
       </body>
     </html>
