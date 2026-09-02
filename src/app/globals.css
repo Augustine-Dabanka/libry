@@ -885,6 +885,15 @@ footer.site-footer { display: block; background: var(--stone); border-top: 1px s
 
 html { scroll-behavior: smooth; }
 
+/* ===== Home hero illustration animations (from the original home.html) ===== */
+@keyframes lampGlow { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes heroSway { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-4deg); } }
+@keyframes heroRise { 0% { opacity: 0; transform: translateY(4px); } 50% { opacity: 0.7; } 100% { opacity: 0; transform: translateY(-8px); } }
+.hero-lamp { transform-origin: center; animation: lampGlow 4s ease-in-out infinite; }
+.hero-book-sway { transform-origin: bottom center; animation: heroSway 6s ease-in-out infinite; }
+.hero-steam { animation: heroRise 5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .hero-lamp, .hero-book-sway, .hero-steam { animation: none; } }
+
 @media (prefers-reduced-motion: reduce) {
   .lb-bob, .lb-cheer, .lb-pop, .lb-ring, .lb-chest, .lb-float-in { animation: none !important; }
 }
