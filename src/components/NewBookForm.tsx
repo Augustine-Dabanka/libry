@@ -43,14 +43,16 @@ export default function NewBookForm({
       price: priceNum,
       is_free: priceNum <= 0,
       age_rating: age,
-      status: "Ongoing",
+      status: "Draft",
+      is_published: false,
       user_id: userId,
       created_by: authorName,
     };
     let { error } = await supabase.from("books").insert(payload);
-    if (error && /age_rating/i.test(error.message)) {
-      // age_rating column not migrated yet — publish without it.
+    if (error && /age_rating|is_published/i.test(error.message)) {
+      // columns not migrated yet — save without them.
       delete payload.age_rating;
+      delete payload.is_published;
       ({ error } = await supabase.from("books").insert(payload));
     }
     setBusy(false);
@@ -104,9 +106,9 @@ export default function NewBookForm({
         maxWidth: 620,
       }}
     >
-      <h3 style={{ marginBottom: "0.4rem" }}>Publish a new story</h3>
+      <h3 style={{ marginBottom: "0.4rem" }}>Start a new story</h3>
       <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>
-        It goes live in the catalog immediately. You keep 70%.
+        Saved as a draft — publish it from “Your Books” when it&apos;s ready. You keep 70%.
       </p>
 
       <label style={label}>Title</label>
@@ -147,7 +149,7 @@ export default function NewBookForm({
 
       <div style={{ display: "flex", gap: "0.8rem", marginTop: "1.4rem" }}>
         <button className="btn btn-gold" onClick={publish} disabled={busy}>
-          {busy ? "Publishing…" : "Publish"}
+          {busy ? "Saving…" : "Save draft"}
         </button>
         <button className="btn btn-outline" onClick={() => setOpen(false)} disabled={busy}>
           Cancel

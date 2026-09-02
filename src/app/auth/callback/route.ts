@@ -15,6 +15,7 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       await persistOnboardingPrefs();
+      await persistReferral();
 
       const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";
@@ -52,4 +53,19 @@ async function persistOnboardingPrefs() {
     await supabase.from("profiles").update({ prefs }).eq("id", user.id);
   }
   cookieStore.delete("libry_prefs");
+}
+
+// If the visitor arrived via a referral link, a libry_ref cookie holds the
+// referrer's id/username — record it after sign-in, then clear it.
+async function persistReferral() {
+  const cookieStore = await cookies();
+  const ref = cookieStore.get("libry_ref")?.value;
+  if (!ref) return;
+  const supabase = await createClient();
+  try {
+    await supabase.rpc("record_referral", { referrer: decodeURIComponent(ref) });
+  } catch {
+    /* referral function not migrated yet — ignore */
+  }
+  cookieStore.delete("libry_ref");
 }

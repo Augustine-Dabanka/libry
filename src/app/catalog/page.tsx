@@ -28,7 +28,7 @@ export default async function Catalog({
     let query = supabase
       .from("books")
       .select(withAge ? "id, title, author, price, type, age_rating" : "id, title, author, price, type");
-    if (withAge) query = query.in("age_rating", allowed);
+    if (withAge) query = query.eq("is_published", true).in("age_rating", allowed);
     if (safe) query = query.or(`title.ilike.%${safe}%,author.ilike.%${safe}%`);
     return query.limit(48);
   };

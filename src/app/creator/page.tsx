@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import NewBookForm from "@/components/NewBookForm";
 import CollaboratorsPanel from "@/components/CollaboratorsPanel";
+import PublishToggle from "@/components/PublishToggle";
+import ReferralLink from "@/components/ReferralLink";
 import { formatPrice } from "@/lib/types";
 
 type MyBook = {
@@ -11,6 +13,7 @@ type MyBook = {
   price: number | null;
   type: string | null;
   status: string | null;
+  is_published?: boolean;
 };
 
 export default async function CreatorDashboard() {
@@ -26,13 +29,29 @@ export default async function CreatorDashboard() {
     .eq("id", user.id)
     .maybeSingle();
   const authorName = profile?.full_name || profile?.username || user.email || "Independent Creator";
+  const refCode = profile?.username || user.id;
 
-  const { data: booksData } = await supabase
+  // How many readers this creator has referred (guarded pre-migration).
+  const rc = await supabase.rpc("my_referral_count");
+  const referralCount = typeof rc.data === "number" ? rc.data : 0;
+
+  const primaryMine = await supabase
     .from("books")
-    .select("id, title, price, type, status")
+    .select("id, title, price, type, status, is_published")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
-  const books = (booksData ?? []) as MyBook[];
+  let books: MyBook[];
+  if (primaryMine.error) {
+    // is_published not migrated yet — infer it from status.
+    const alt = await supabase
+      .from("books")
+      .select("id, title, price, type, status")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    books = ((alt.data ?? []) as MyBook[]).map((b) => ({ ...b, is_published: b.status !== "Draft" }));
+  } else {
+    books = (primaryMine.data ?? []) as MyBook[];
+  }
 
   // Collaborators on each owned book (book_id → [{userId, name}]).
   const collabMap = new Map<string, { userId: string; name: string }[]>();
@@ -83,8 +102,10 @@ export default async function CreatorDashboard() {
           <h2>Creator Dashboard</h2>
         </div>
         <p style={{ color: "var(--muted)", marginTop: "-1.5rem", marginBottom: "2rem" }}>
-          Welcome back, {authorName}. Here&apos;s how your stories are performing.
+          Welcome back, {authorName}. Draft a story, then publish it to the catalog when it&apos;s ready.
         </p>
+
+        <ReferralLink refCode={refCode} count={referralCount} />
 
         <div style={{ marginBottom: "2.5rem" }}>
           <NewBookForm userId={user.id} authorName={authorName} />
@@ -103,9 +124,17 @@ export default async function CreatorDashboard() {
                   {b.type ? <span className="badge">{b.type}</span> : null}
                 </div>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", marginTop: "0.9rem", flexWrap: "wrap" }}>
-                  <span className="badge" style={{ background: "rgba(78,122,82,0.2)", color: "#7DBE86" }}>
-                    {b.status || "Live"}
+                  <span
+                    className="badge"
+                    style={
+                      b.is_published
+                        ? { background: "rgba(78,122,82,0.2)", color: "#7DBE86" }
+                        : { background: "rgba(168,162,158,0.2)", color: "var(--muted)" }
+                    }
+                  >
+                    {b.is_published ? "Live" : "Draft"}
                   </span>
+                  <PublishToggle bookId={Number(b.id)} published={!!b.is_published} />
                   <a className="btn btn-outline" href={`/creator/edit/${b.id}`} style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>
                     Edit
                   </a>

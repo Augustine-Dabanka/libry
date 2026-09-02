@@ -44,6 +44,7 @@ export default async function Home() {
   const primaryBooks = await supabase
     .from("books")
     .select("id, title, author, price, type, age_rating")
+    .eq("is_published", true)
     .in("age_rating", allowed)
     .limit(24);
   let books: Book[];

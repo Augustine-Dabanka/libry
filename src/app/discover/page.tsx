@@ -35,7 +35,7 @@ export default async function Discover({
     let q = supabase
       .from("books")
       .select(withAge ? "id, title, author, price, type, age_rating" : "id, title, author, price, type");
-    if (withAge) q = q.in("age_rating", allowed);
+    if (withAge) q = q.eq("is_published", true).in("age_rating", allowed);
     if (filter === "editors-pick" && withPick) q = q.eq("is_editors_pick", true);
     else if (filter === "free") q = q.or("price.eq.0,is_free.eq.true");
     else if (filter === "interactive") q = q.eq("type", "Interactive");

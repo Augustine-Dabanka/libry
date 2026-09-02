@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { persistOnboardingPrefs } from "@/app/actions/auth";
 import GoogleButton from "@/components/GoogleButton";
@@ -24,11 +24,22 @@ export default function LoginGate({
   initialTab,
   next,
   serverError,
+  referrer,
 }: {
   initialTab: Tab;
   next?: string;
   serverError?: boolean;
+  referrer?: string;
 }) {
+  // Remember the referral so it survives the Google OAuth round-trip too.
+  useEffect(() => {
+    if (referrer) {
+      try {
+        document.cookie = `libry_ref=${encodeURIComponent(referrer)}; path=/; max-age=1800; samesite=lax`;
+      } catch {}
+    }
+  }, [referrer]);
+
   const [tab, setTab] = useState<Tab>(initialTab);
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
@@ -87,6 +98,13 @@ export default function LoginGate({
       }
       // Ensure the profile carries the chosen name/username (trigger also does this).
       await supabase.from("profiles").update({ full_name: fullName.trim(), username: username.trim() }).eq("id", data.user!.id);
+      if (referrer) {
+        try {
+          await supabase.rpc("record_referral", { referrer });
+        } catch {
+          /* referral function not migrated yet — ignore */
+        }
+      }
       await persistOnboardingPrefs();
       window.location.assign(dest);
       return;
