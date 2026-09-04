@@ -26,12 +26,55 @@ function Shelf({ title, href, books }: { title: string; href: string; books: Cat
   );
 }
 
+function Controls({ q, active, sort }: { q: string; active: string; sort: string }) {
+  const base = (extra: Record<string, string>) => {
+    const p = new URLSearchParams();
+    if (q) p.set("q", q);
+    Object.entries(extra).forEach(([k, v]) => v && p.set(k, v));
+    const str = p.toString();
+    return `/catalog${str ? "?" + str : ""}`;
+  };
+  const chips = [
+    { label: "All", href: base({}), key: "all" },
+    { label: "Interactive", href: base({ type: "Interactive" }), key: "Interactive" },
+    { label: "Fiction", href: base({ type: "Fiction" }), key: "Fiction" },
+    { label: "Non-Fiction", href: base({ type: "Non-Fiction" }), key: "Non-Fiction" },
+    { label: "Free", href: base({ free: "1" }), key: "free" },
+    { label: "Premium", href: base({ paid: "1" }), key: "paid" },
+  ];
+  const inputStyle: React.CSSProperties = { background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 999, color: "var(--ivory)", fontFamily: "var(--sans)", padding: "0.6rem 1rem", outline: "none" };
+  return (
+    <section className="section" style={{ paddingTop: "1.2rem", paddingBottom: 0 }}>
+      <form action="/catalog" method="get" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center", marginBottom: "1rem", maxWidth: 660 }}>
+        <input name="q" defaultValue={q} type="text" placeholder="Search titles or authors…" aria-label="Search books" style={{ ...inputStyle, flex: 1, minWidth: 200 }} />
+        <select name="sort" defaultValue={sort} aria-label="Sort" style={{ ...inputStyle, padding: "0.6rem 0.7rem", cursor: "pointer" }}>
+          <option value="">Sort: featured</option>
+          <option value="title">Title A–Z</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+        </select>
+        <button type="submit" className="btn btn-gold" style={{ padding: "0.6rem 1.3rem" }}>Search</button>
+      </form>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        {chips.map((c) => {
+          const on = active === c.key;
+          return (
+            <a key={c.key} href={c.href} style={{ textDecoration: "none", padding: "0.4rem 0.95rem", fontSize: "0.85rem", borderRadius: 999, fontFamily: "var(--sans)", fontWeight: 600, background: on ? "var(--gold)" : "rgba(95,160,104,0.12)", color: on ? "#12100E" : "var(--ivory-muted)", border: "1px solid var(--border)" }}>
+              {c.label}
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default async function Catalog({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; type?: string; free?: string; paid?: string }>;
+  searchParams: Promise<{ q?: string; type?: string; free?: string; paid?: string; sort?: string }>;
 }) {
-  const { q, type, free, paid } = await searchParams;
+  const { q, type, free, paid, sort } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -46,17 +89,23 @@ export default async function Catalog({
   const typeFilter = (type ?? "").trim();
   const freeOnly = free === "1" || free === "true";
   const paidOnly = paid === "1" || paid === "true";
+  const sortKey = (sort ?? "").trim();
   const filtered = !!(safe || typeFilter || freeOnly || paidOnly);
+  const activeChip = typeFilter === "Interactive" ? "Interactive" : typeFilter === "Fiction" ? "Fiction" : typeFilter === "Non-Fiction" ? "Non-Fiction" : freeOnly ? "free" : paidOnly ? "paid" : "all";
 
   const runQuery = (withAge: boolean) => {
     let query = supabase
       .from("books")
-      .select(withAge ? "id, title, author, price, type, is_free, age_rating" : "id, title, author, price, type, is_free");
+      .select(withAge ? "id, title, author, price, type, is_free, age_rating, rating" : "id, title, author, price, type, is_free, rating");
     if (withAge) query = query.eq("is_published", true).in("age_rating", allowed);
     if (typeFilter) query = query.eq("type", typeFilter);
     if (freeOnly) query = query.or("price.eq.0,is_free.eq.true");
     if (paidOnly) query = query.gt("price", 0);
     if (safe) query = query.or(`title.ilike.%${safe}%,author.ilike.%${safe}%`);
+    if (sortKey === "title") query = query.order("title", { ascending: true });
+    else if (sortKey === "price-asc") query = query.order("price", { ascending: true });
+    else if (sortKey === "price-desc") query = query.order("price", { ascending: false });
+    else query = query.order("id", { ascending: false });
     return query.limit(filtered ? 48 : 80);
   };
   let res = await runQuery(true);
@@ -69,6 +118,7 @@ export default async function Catalog({
     return (
       <>
         <AppNav />
+        <Controls q={term} active={activeChip} sort={sortKey} />
         <section className="section">
           <div className="section-header">
             <h2>{heading}</h2>
@@ -100,6 +150,7 @@ export default async function Catalog({
   return (
     <>
       <AppNav />
+      <Controls q={term} active={activeChip} sort={sortKey} />
       <section className="section" style={{ paddingBottom: 0 }}>
         <div className="section-header">
           <h2>Catalog</h2>

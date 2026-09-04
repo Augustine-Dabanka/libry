@@ -5,6 +5,8 @@ export type Book = {
   price: number | null;
   type: string | null;
   age_rating?: string | null;
+  rating?: number | null;
+  category?: string | null;
 };
 
 export function formatPrice(price: number | null): string {

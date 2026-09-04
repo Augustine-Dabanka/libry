@@ -43,13 +43,13 @@ export default async function Home() {
 
   const primaryBooks = await supabase
     .from("books")
-    .select("id, title, author, price, type, age_rating")
+    .select("id, title, author, price, type, age_rating, rating")
     .eq("is_published", true)
     .in("age_rating", allowed)
     .limit(24);
   let books: Book[];
   if (primaryBooks.error) {
-    const alt = await supabase.from("books").select("id, title, author, price, type").limit(24);
+    const alt = await supabase.from("books").select("id, title, author, price, type, rating").limit(24);
     books = (alt.data ?? []) as Book[];
   } else {
     books = (primaryBooks.data ?? []) as Book[];

@@ -27,7 +27,6 @@ export default async function Landing() {
             <a href="#features">Features</a>
             <a href="#interactive">Interactive</a>
             <a href="#creators">Creators</a>
-            <a href="#pricing">Pricing</a>
           </div>
           <div className={s.navRight}>
             <a href="/login" className={s.txt}>
@@ -48,8 +47,8 @@ export default async function Landing() {
               Stories worth <em>lingering</em> in.
             </h1>
             <p className={s.sub}>
-              Curated books and interactive, choose-your-path storybooks — with a
-              comments section better than your group chat.
+              A calm, curated bookstore with interactive, choose-your-path stories —
+              where readers come first and writers keep 70%.
             </p>
             <div className={s.heroCta} style={{ marginTop: "1.7rem" }}>
               <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding">
@@ -82,6 +81,33 @@ export default async function Landing() {
           <div className={s.trustItem}>Free — no card required</div>
         </div>
       </div>
+
+      <section className={`${s.band} ${s.cardBg}`}>
+        <div className={s.wrap}>
+          <div className={s.secHead} style={{ textAlign: "center", marginInline: "auto" }}>
+            <span className={s.eyebrow}>Why Libry</span>
+            <h2>The bookstore that actually pays its writers.</h2>
+            <p>Big platforms treat readers like a feed and writers like inventory. We built the opposite.</p>
+          </div>
+          <div className={s.cards}>
+            <div className={s.fcard}>
+              <div className={s.ic}>💛</div>
+              <h3>Writers get paid, openly</h3>
+              <p>70% of every sale, shown on a live dashboard, open to everyone from day one — not an invite-only trickle.</p>
+            </div>
+            <div className={s.fcard}>
+              <div className={s.ic}>🤝</div>
+              <h3>You own your readers</h3>
+              <p>Followers and reader relationships you keep — never a marketplace that quietly owns your audience.</p>
+            </div>
+            <div className={s.fcard}>
+              <div className={s.ic}>🌙</div>
+              <h3>Calm, not a casino</h3>
+              <p>A quiet, curated place to read — no doomscroll, no ads, just the next good story.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section id="features" className={`${s.band} ${s.sky}`} style={{ scrollMarginTop: 70 }}>
         <div className={s.wrap}>
@@ -199,36 +225,6 @@ export default async function Landing() {
               <span>
                 <strong>Publish</strong> — it goes live in the catalog instantly. Keep 70%, always.
               </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="pricing" className={s.band} style={{ scrollMarginTop: 70 }}>
-        <div className={s.wrap}>
-          <div className={s.secHead} style={{ textAlign: "center", marginInline: "auto" }}>
-            <span className={s.eyebrow}>Pricing</span>
-            <h2>Simple, honest pricing.</h2>
-            <p>Reading is free to start. Pay only if you want to binge faster or publish.</p>
-          </div>
-          <div className={s.cards}>
-            <div className={s.fcard}>
-              <h3>Reader · Free</h3>
-              <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "var(--gold-soft)", margin: "0.4rem 0 0.8rem" }}>$0</div>
-              <p>A taste-quiz shelf, streaks &amp; XP, read-aloud, and a generous free shelf.</p>
-              <a className={`${s.btn} ${s.btnGold}`} href="/onboarding" style={{ marginTop: "1rem" }}>Start reading free</a>
-            </div>
-            <div className={s.fcard} style={{ borderColor: "rgba(196,163,90,0.4)" }}>
-              <h3>Token bundles</h3>
-              <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "var(--gold-soft)", margin: "0.4rem 0 0.8rem" }}>from $2</div>
-              <p>Reading tokens refill on their own — top up for instant refills when you&apos;re on a binge.</p>
-              <a className={`${s.btn} ${s.btnGhost}`} href="/onboarding" style={{ marginTop: "1rem" }}>See the shop</a>
-            </div>
-            <div className={s.fcard}>
-              <h3>Creator</h3>
-              <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "var(--gold-soft)", margin: "0.4rem 0 0.8rem" }}>Free · keep 70%</div>
-              <p>Publish unlimited stories, real analytics, and paid Featured Stories promotion.</p>
-              <a className={`${s.btn} ${s.btnGhost}`} href="/onboarding?intent=creator" style={{ marginTop: "1rem" }}>Publish your story</a>
             </div>
           </div>
         </div>

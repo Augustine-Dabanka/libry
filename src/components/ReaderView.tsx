@@ -16,12 +16,16 @@ export default function ReaderView({
   author,
   content,
   userEmail,
+  sample = false,
+  signedIn = false,
 }: {
   bookId: string;
   title: string;
   author: string | null;
   content: string;
   userEmail: string | null;
+  sample?: boolean;
+  signedIn?: boolean;
 }) {
   const [theme, setTheme] = useState<Theme>("dark");
   const [fontSize, setFontSize] = useState(1.14);
@@ -40,9 +44,9 @@ export default function ReaderView({
 
   const pal = PALETTES[theme];
 
-  // Restore saved progress once on mount.
+  // Restore saved progress once on mount (not while reading a sample).
   useEffect(() => {
-    if (!userEmail) return;
+    if (!userEmail || sample) return;
     let cancelled = false;
     (async () => {
       const supabase = createClient();
@@ -70,7 +74,7 @@ export default function ReaderView({
     const pct = max > 0 ? Math.min(100, Math.round((el.scrollTop / max) * 100)) : 0;
     setProgress(pct);
 
-    if (!userEmail) return;
+    if (!userEmail || sample) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       const supabase = createClient();
@@ -190,6 +194,23 @@ export default function ReaderView({
         ) : (
           <p style={{ color: pal.muted }}>This story has no readable content yet.</p>
         )}
+
+        {sample ? (
+          <div style={{ marginTop: "2.6rem", padding: "1.9rem 1.6rem", borderRadius: 16, border: `1px solid ${pal.bar}`, background: theme === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", textAlign: "center", fontFamily: "var(--sans)" }}>
+            <div style={{ fontFamily: "var(--serif)", fontSize: "1.35rem", marginBottom: "0.5rem", color: pal.fg }}>End of the free sample</div>
+            <p style={{ color: pal.muted, marginBottom: "1.4rem", maxWidth: 440, marginInline: "auto", lineHeight: 1.6 }}>
+              {signedIn
+                ? "That's the free first chapter. Continue to read the rest of the story."
+                : "That's the free first chapter — create a free account to keep reading. No card required."}
+            </p>
+            <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
+              <a href={signedIn ? `/reader/${bookId}` : "/onboarding"} className="btn btn-gold">
+                {signedIn ? "Continue reading →" : "Create free account →"}
+              </a>
+              <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
+            </div>
+          </div>
+        ) : null}
       </article>
     </div>
   );

@@ -1,83 +1,86 @@
--- Waitlist with referral positions.
--- The table is locked down (RLS on, no anon policies); everything goes through
--- the join_waitlist() RPC below, which runs as the definer so the browser can
--- add an entry and read its own position without seeing anyone else's email.
+-- Waitlist shared by the app's /waitlist page and the gated investor/preview
+-- portal (investors.html). The table is locked down (RLS on, no policies); the
+-- only way in or out is the two SECURITY DEFINER functions, so the public/anon
+-- key can join and read the count without ever exposing the email list.
 
 create table if not exists public.waitlist (
   id          uuid primary key default gen_random_uuid(),
   email       text unique not null,
-  ref_code    text unique not null,
-  referred_by text,
-  referrals   int  not null default 0,
-  created_at  timestamptz not null default now()
+  role        text default 'reader',           -- 'reader' | 'author' | 'investor'
+  ref_code    text unique default substr(md5(random()::text || clock_timestamp()::text), 1, 8),
+  referred_by text,                             -- ref_code of whoever invited them
+  referrals   int  default 0,
+  created_at  timestamptz default now()
 );
 
 alter table public.waitlist enable row level security;
--- (no policies for anon/authenticated: direct table access is denied; use the RPC)
+-- (intentionally no SELECT/INSERT policies — only the definer functions touch it)
 
-create or replace function public.join_waitlist(p_email text, p_ref text default null)
+-- Live count of everyone in line.
+create or replace function public.waitlist_count()
+returns int
+language sql security definer set search_path = public
+as $$
+  select count(*)::int from public.waitlist;
+$$;
+
+-- Join the line (idempotent by email). Credits the referrer, then returns a
+-- superset both front-ends can read:
+--   position  : this joiner's rank (referrals first, then who joined earliest)
+--   total     : everyone in line   (also returned as `count` for the portal)
+--   referrals : how many this joiner has brought in
+--   ref_code  : this joiner's own code to share
+--   already   : true if they were already on the list
+create or replace function public.join_waitlist(
+  p_email text,
+  p_role  text default 'reader',
+  p_ref   text default null
+)
 returns json
-language plpgsql
-security definer
-set search_path = public
+language plpgsql security definer set search_path = public
 as $$
 declare
   v_email   text := lower(trim(p_email));
-  v_ref     text := nullif(trim(p_ref), '');
-  v_code    text;
-  v_created timestamptz;
-  v_refs    int;
+  v_row     public.waitlist;
   v_total   int;
-  v_position int;
-  v_new     boolean := false;
+  v_pos     int;
+  v_already boolean := false;
 begin
   if v_email is null or v_email !~ '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$' then
-    return json_build_object('error', 'Please enter a valid email.');
+    return json_build_object('error', 'invalid_email');
   end if;
 
-  select ref_code, created_at, referrals into v_code, v_created, v_refs
-    from public.waitlist where email = v_email;
+  select * into v_row from public.waitlist where email = v_email;
+  if found then
+    v_already := true;
+  else
+    insert into public.waitlist (email, role, referred_by)
+    values (v_email, coalesce(nullif(p_role, ''), 'reader'), nullif(p_ref, ''))
+    returning * into v_row;
 
-  if not found then
-    -- generate a unique short referral code
-    loop
-      v_code := substr(md5(random()::text || clock_timestamp()::text || v_email), 1, 8);
-      exit when not exists (select 1 from public.waitlist where ref_code = v_code);
-    end loop;
-
-    insert into public.waitlist (email, ref_code, referred_by)
-      values (v_email, v_code, v_ref)
-      returning created_at, referrals into v_created, v_refs;
-    v_new := true;
-
-    -- credit the referrer (can't credit yourself)
-    if v_ref is not null then
-      update public.waitlist
-        set referrals = referrals + 1
-        where ref_code = v_ref and email <> v_email;
+    if p_ref is not null and p_ref <> '' then
+      update public.waitlist set referrals = referrals + 1 where ref_code = p_ref;
     end if;
   end if;
 
-  -- re-read referrals in case this signup just changed via a self-referral edge
-  select referrals, created_at into v_refs, v_created from public.waitlist where email = v_email;
+  select count(*)::int into v_total from public.waitlist;
 
-  select count(*) into v_total from public.waitlist;
-
-  -- position: how many rank strictly above me (more referrals, or same referrals
-  -- and joined earlier), plus one.
-  select count(*) + 1 into v_position
-    from public.waitlist w
-    where w.referrals > v_refs
-       or (w.referrals = v_refs and w.created_at < v_created);
+  -- Rank: more referrals first; ties broken by who joined earliest.
+  select count(*)::int + 1 into v_pos
+  from public.waitlist w
+  where w.referrals > v_row.referrals
+     or (w.referrals = v_row.referrals and w.created_at < v_row.created_at);
 
   return json_build_object(
-    'ref_code', v_code,
-    'position', v_position,
-    'total',    v_total,
-    'referrals', v_refs,
-    'is_new',   v_new
+    'already',   v_already,
+    'ref_code',  v_row.ref_code,
+    'referrals', v_row.referrals,
+    'position',  v_pos,
+    'total',     v_total,
+    'count',     v_total
   );
 end;
 $$;
 
-grant execute on function public.join_waitlist(text, text) to anon, authenticated;
+grant execute on function public.waitlist_count() to anon, authenticated;
+grant execute on function public.join_waitlist(text, text, text) to anon, authenticated;

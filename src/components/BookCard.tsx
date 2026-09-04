@@ -1,4 +1,5 @@
 import { type Book, formatPrice } from "@/lib/types";
+import Stars from "@/components/Stars";
 
 // Two-tone card: a gold-framed "LIBRY" inset (mark, serif title, author) above
 // a compact info row (title, author, price, type).
@@ -28,6 +29,9 @@ export default function BookCard({ book }: { book: Book }) {
       <div style={{ padding: "0.9rem 0.3rem 0.2rem" }}>
         <h3 style={{ fontFamily: "var(--serif)", fontSize: "1.05rem", color: "var(--ivory)", margin: "0 0 0.2rem", lineHeight: 1.25 }}>{book.title}</h3>
         <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem" }}>{book.author || "Unknown author"}</div>
+        {book.rating && book.rating > 0 ? (
+          <div style={{ marginTop: "0.4rem" }}><Stars value={book.rating} size={13} showValue /></div>
+        ) : null}
         <div className="book-meta" style={{ marginTop: "0.6rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span className="price">{formatPrice(book.price)}</span>
           {book.type ? <span className="badge">{book.type}</span> : null}
