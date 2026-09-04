@@ -6,6 +6,7 @@ import ThemePicker from "@/components/ThemePicker";
 import SharedAccess from "@/components/SharedAccess";
 import AvatarSettings from "@/components/AvatarSettings";
 import AccountSettings from "@/components/AccountSettings";
+import DeleteAccount from "@/components/DeleteAccount";
 import BackgroundPicker from "@/components/BackgroundPicker";
 import LanguagePref from "@/components/LanguagePref";
 import MatureToggle from "@/components/MatureToggle";
@@ -125,6 +126,13 @@ export default async function Settings() {
 
         {/* Refer & earn (ReferralLink is self-boxed) */}
         <ReferralLink refCode={refCode} count={referralCount} />
+
+        {/* Danger zone */}
+        <div style={{ ...card, borderColor: "rgba(181,83,63,0.4)" }}>
+          <h3 style={{ ...cardTitle, color: "var(--terracotta, #b5533f)" }}>Danger zone</h3>
+          <p style={cardLead}>Permanently delete your account and all of its data. This can&apos;t be undone.</p>
+          <DeleteAccount />
+        </div>
       </section>
     </>
   );

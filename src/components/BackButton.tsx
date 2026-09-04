@@ -8,8 +8,16 @@ export default function BackButton({ fallback = "/catalog", label = "Back" }: { 
   const router = useRouter();
 
   function goBack() {
-    if (typeof window !== "undefined" && window.history.length > 1) router.back();
-    else router.push(fallback);
+    // Never bounce the reader back into the auth flow. If they arrived here from
+    // the sign-in / signup pages (e.g. tapping "Terms" on the login card), go to
+    // the fallback instead of router.back().
+    const ref = typeof document !== "undefined" ? document.referrer : "";
+    const cameFromAuth = /\/(login|auth)(\/|\?|$)/.test(ref);
+    if (!cameFromAuth && typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push(fallback);
+    }
   }
 
   return (

@@ -111,17 +111,6 @@ export default function NavClient({
           <a className="nav-badge" href="/catalog?type=Interactive">✦ Interactive</a>
         </div>
 
-        {/* CENTER: search */}
-        <div className="nav-center">
-          <form className="nav-search" action="/catalog" method="get">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-4.3-4.3" strokeLinecap="round" />
-            </svg>
-            <input name="q" type="text" placeholder="Search titles, authors, worlds…" aria-label="Search books" />
-          </form>
-        </div>
-
         {/* RIGHT: Write · theme · wishlist · cart · avatar */}
         <div className="nav-right">
           <a className="btn-write" href="/creator">✎ Write</a>

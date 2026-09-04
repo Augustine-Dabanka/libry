@@ -30,5 +30,10 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANT: getUser() refreshes the token if needed. Do not remove.
   await supabase.auth.getUser()
 
+  // Clickjacking protection: only allow the app to be framed by its own origin.
+  supabaseResponse.headers.set('X-Frame-Options', 'SAMEORIGIN')
+  // Stop browsers from MIME-sniffing responses away from their declared type.
+  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff')
+
   return supabaseResponse
 }

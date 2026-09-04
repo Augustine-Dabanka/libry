@@ -4,6 +4,7 @@ import AppNav from "@/components/AppNav";
 import QuickUpload from "@/components/QuickUpload";
 import NewStoryButton from "@/components/NewStoryButton";
 import PublishToggle from "@/components/PublishToggle";
+import DeleteBookButton from "@/components/DeleteBookButton";
 import ReferralLink from "@/components/ReferralLink";
 import RevenueChart from "@/components/RevenueChart";
 import MonetizationTracker from "@/components/MonetizationTracker";
@@ -125,7 +126,7 @@ export default async function CreatorDashboard() {
 
         {/* Revenue overview */}
         <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "2.5rem" }}>
-          <h3 style={{ marginBottom: "1.2rem" }}>Revenue Overview (Last 7 Days)</h3>
+          <h3 style={{ marginBottom: "1.2rem" }}>Revenue Overview</h3>
           <RevenueChart daily={revenue7} />
         </div>
 
@@ -133,14 +134,29 @@ export default async function CreatorDashboard() {
         <MonetizationTracker sales={booksSold} referrals={referralCount} />
 
         {/* Create — write chapter by chapter, or import a manuscript */}
-        <div style={{ marginBottom: "2.5rem" }}>
-          <div style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap", alignItems: "center", marginBottom: "1.4rem" }}>
-            <NewStoryButton userId={user.id} authorName={authorName} />
-            <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem" }}>
-              — or import a finished manuscript below
-            </span>
+        <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "2.5rem" }}>
+          <h3 style={{ marginBottom: "0.3rem" }}>Create a new story</h3>
+          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginBottom: "1.3rem" }}>
+            Write it chapter by chapter in the editor, or import a finished manuscript and we&apos;ll lay it out for you.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem", alignItems: "start" }}>
+            {/* Option A — Chapter editor */}
+            <div style={{ background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.2rem 1.2rem 1.3rem" }}>
+              <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.3rem" }}>✍️ Write in the Chapter Editor</div>
+              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", marginBottom: "1rem" }}>
+                Start a blank draft and build it chapter by chapter, with images and branching choices.
+              </p>
+              <NewStoryButton userId={user.id} authorName={authorName} />
+            </div>
+            {/* Option B — Manuscript upload */}
+            <div style={{ background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.2rem" }}>
+              <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.3rem" }}>📄 Upload a manuscript</div>
+              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", marginBottom: "1rem" }}>
+                Drop in a PDF, Word doc, or text file — we&apos;ll import it as a draft you can edit.
+              </p>
+              <QuickUpload userId={user.id} authorName={authorName} />
+            </div>
           </div>
-          <QuickUpload userId={user.id} authorName={authorName} />
         </div>
 
         {/* Your Books table */}
@@ -172,6 +188,7 @@ export default async function CreatorDashboard() {
                       <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", flexWrap: "wrap" }}>
                         <PublishToggle bookId={Number(b.id)} published={!!b.is_published} />
                         <a className="btn btn-outline" href={`/creator/edit/${b.id}`} style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>Edit</a>
+                        <DeleteBookButton bookId={Number(b.id)} title={b.title} />
                       </div>
                     </td>
                   </tr>

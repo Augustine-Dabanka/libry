@@ -22,7 +22,7 @@ export default function DocsLayout({
       <AppNav />
       <section className="section" style={{ maxWidth: 980, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.6rem" }}>
-          <BackButton />
+          <BackButton fallback="/" />
           <h2 style={{ margin: 0 }}>{title}</h2>
         </div>
         <div className="docs-grid">

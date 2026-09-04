@@ -8,6 +8,14 @@ import { formatPrice } from "@/lib/types";
 const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
 const PAYSTACK_CURRENCY = process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY || "USD";
 
+// Paystack is off until the merchant account is verified. The current test
+// integration is a Ghana account that only accepts GHS, so live USD checkout
+// fails with "currency not supported". Until verification (and multi-currency
+// enablement), checkout is simulated — no real charge, books still added to the
+// library. Flip this to true once the account is verified to re-enable Paystack.
+const PAYSTACK_ENABLED = false;
+const PAYSTACK_LIVE = PAYSTACK_ENABLED && !!PAYSTACK_KEY;
+
 // Load Paystack's inline script once, on demand.
 function loadPaystack(): Promise<unknown> {
   return new Promise((resolve, reject) => {
@@ -60,15 +68,15 @@ export default function CartDrawer({ email }: { email?: string }) {
       return;
     }
     clearCart();
-    setDone(PAYSTACK_KEY ? "Payment complete — enjoy your books." : "Test checkout complete — books added to your library.");
+    setDone(PAYSTACK_LIVE ? "Payment complete — enjoy your books." : "Checkout complete — books added to your library.");
   }
 
   async function checkout() {
     setErr(null);
     setBusy(true);
 
-    // Live/test Paystack when a public key is configured; otherwise simulate.
-    if (PAYSTACK_KEY && email) {
+    // Live/test Paystack only when enabled + configured; otherwise simulate.
+    if (PAYSTACK_LIVE && email) {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const Paystack: any = await loadPaystack();
@@ -193,19 +201,30 @@ export default function CartDrawer({ email }: { email?: string }) {
         </div>
 
         {items.length > 0 && !done ? (
-          <footer style={{ padding: "1.2rem 1.4rem", borderTop: "1px solid var(--border)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.9rem", fontFamily: "var(--sans)" }}>
-              <span style={{ color: "var(--muted)" }}>Subtotal</span>
-              <span className="price" style={{ fontSize: "1.1rem" }}>{formatPrice(total)}</span>
+          <footer style={{ padding: "1.2rem 1.4rem 1.4rem", borderTop: "1px solid var(--border)", background: "var(--charcoal)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem", fontFamily: "var(--sans)", fontSize: "0.86rem", color: "var(--muted)" }}>
+              <span>{items.length} item{items.length === 1 ? "" : "s"}</span>
+              <span>{formatPrice(total)}</span>
             </div>
-            <button className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }} onClick={checkout} disabled={busy}>
-              {busy ? "Processing…" : PAYSTACK_KEY ? `Pay ${formatPrice(total)}` : `Checkout ${formatPrice(total)}`}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1rem", fontFamily: "var(--sans)" }}>
+              <span style={{ color: "var(--ivory)", fontWeight: 700 }}>Total</span>
+              <span className="price" style={{ fontSize: "1.25rem" }}>{formatPrice(total)}</span>
+            </div>
+            <button
+              className="btn btn-gold"
+              style={{ width: "100%", justifyContent: "center", padding: "0.85rem 1rem", fontSize: "1rem" }}
+              onClick={checkout}
+              disabled={busy}
+            >
+              {busy ? "Processing…" : PAYSTACK_LIVE ? `Pay ${formatPrice(total)}` : `Checkout · ${formatPrice(total)}`}
             </button>
             {err ? (
               <p style={{ color: "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.8rem", textAlign: "center", marginTop: "0.7rem" }}>{err}</p>
             ) : (
-              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.78rem", textAlign: "center", marginTop: "0.7rem" }}>
-                {PAYSTACK_KEY ? "Secured by Paystack." : "Demo checkout — no real charge. Books are added to your library."}
+              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.78rem", textAlign: "center", marginTop: "0.7rem", lineHeight: 1.5 }}>
+                {PAYSTACK_LIVE
+                  ? "🔒 Secured by Paystack."
+                  : "Secure payments are coming soon — for now checkout is free and your books are added to your library instantly."}
               </p>
             )}
           </footer>
