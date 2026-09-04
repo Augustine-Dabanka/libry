@@ -1,13 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap');
 
 :root {
-  --charcoal: #1C1917;
-  --stone: #292524;
-  --stone-light: #44403C;
+  /* Obsidian dark base; green is the PRIMARY accent (--gold var name kept for
+     compatibility across the codebase), gold (--gold-hi) is for highlights. */
+  --charcoal: #1B1917;
+  --stone: #262322;
+  --stone-light: #37332F;
   --ivory: #FAF7F2;
-  --ivory-muted: #E7E5E4;
-  --gold: #C4A35A;
-  --gold-hover: #B8944A;
+  --ivory-muted: #E2E0DD;
+  --gold: #5FA068;         /* primary accent — muted green */
+  --gold-hover: #6BB377;
+  --gold-hi: #C5A059;      /* gold typography / card highlight */
   --terracotta: #B45309;
   --muted: #A8A29E;
   --border: rgba(250, 247, 242, 0.08);
@@ -26,8 +29,9 @@
   --stone-light: #EFEAE3;
   --ivory: #1C1917;         /* primary text */
   --ivory-muted: #44403C;
-  --gold: #A97F2E;
-  --gold-hover: #8F6B25;
+  --gold: #3F7A48;          /* green primary (darker for light mode) */
+  --gold-hover: #4E8656;
+  --gold-hi: #9A7A2E;       /* gold highlight (darker for light mode) */
   --terracotta: #B45309;
   --muted: #6B645E;
   --border: rgba(28, 25, 23, 0.12);
@@ -492,7 +496,7 @@ img {
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
-  background: rgba(196, 163, 90, 0.15);
+  background: rgba(95, 160, 104, 0.16);
   color: var(--gold);
   font-family: var(--sans);
 }
@@ -663,6 +667,16 @@ img {
   100% { transform: translateY(-125vh) rotate(220deg); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .bgfx { display: none; } }
+
+/* ========== Hero search (home) ========== */
+.hero-search { display: flex; align-items: center; gap: 0.5rem; max-width: 460px; margin-top: 1.6rem;
+  background: var(--stone); border: 1px solid var(--border); border-radius: 999px; padding: 0.4rem 0.5rem 0.4rem 1.1rem; }
+.hero-search:focus-within { border-color: var(--gold); }
+.hero-search input { flex: 1; background: transparent; border: none; color: var(--ivory);
+  font-family: var(--sans); font-size: 0.95rem; outline: none; min-width: 0; }
+.hero-search button { background: var(--gold); color: #10231a; border: none; border-radius: 999px;
+  padding: 0.55rem 1.3rem; font-family: var(--sans); font-weight: 700; font-size: 0.9rem; cursor: pointer; white-space: nowrap; }
+.hero-search button:hover { background: var(--gold-hover); }
 
 /* ========== AUTH (light frosted inputs on the login card) ========== */
 .auth-input::placeholder { color: #8A8178; opacity: 1; }

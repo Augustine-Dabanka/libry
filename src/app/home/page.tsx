@@ -64,13 +64,14 @@ export default async function Home() {
       <section className="hero">
         <div className="hero-content">
           <h1>
-            Stories worth <span>lingering</span> in
+            Welcome back, <span style={{ fontStyle: "italic" }}>{firstName || "reader"}</span>
           </h1>
-          <p>
-            {firstName ? `Welcome back, ${firstName}. ` : ""}Discover interactive storybooks and carefully chosen
-            ebooks. Read deeply. Support creators.
-          </p>
-          <div className="hero-actions">
+          <p>We&apos;ve lined up beautiful, character-driven fiction — picked for you below.</p>
+          <form className="hero-search" action="/catalog" method="get">
+            <input name="q" type="text" placeholder="Search titles, authors, worlds…" aria-label="Search books" />
+            <button type="submit">Search</button>
+          </form>
+          <div className="hero-actions" style={{ marginTop: "1.2rem" }}>
             <a href="/catalog" className="btn btn-gold">
               Browse Catalog
             </a>
@@ -84,6 +85,7 @@ export default async function Home() {
         </div>
       </section>
 
+      <Shelf title="Chosen for you" books={books.slice(0, 8)} />
       <Shelf title="Free to Read" books={freeBooks} />
       <Shelf title="Premium Reads" books={premiumBooks} />
 
