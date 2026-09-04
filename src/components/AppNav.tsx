@@ -29,5 +29,5 @@ export default async function AppNav() {
       .join("")
       .toUpperCase() || "?";
 
-  return <NavClient signedIn={!!user} name={name} avatarUrl={avatarUrl} initials={initials} />;
+  return <NavClient signedIn={!!user} name={name} avatarUrl={avatarUrl} initials={initials} email={user?.email ?? ""} />;
 }

@@ -1,15 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { type CartItem, getCart, removeFromCart, onCartChange } from "@/lib/cart";
+import { type CartItem, getCart, removeFromCart, clearCart, onCartChange } from "@/lib/cart";
+import { checkoutCart } from "@/app/actions/purchases";
 import { formatPrice } from "@/lib/types";
+
+const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
+
+// Load Paystack's inline script once, on demand.
+function loadPaystack(): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).PaystackPop) return resolve((window as any).PaystackPop);
+    const s = document.createElement("script");
+    s.src = "https://js.paystack.co/v1/inline.js";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    s.onload = () => resolve((window as any).PaystackPop);
+    s.onerror = () => reject(new Error("Could not load Paystack."));
+    document.body.appendChild(s);
+  });
+}
 
 // Slide-over cart. Mounted once in the navbar; opens on the "libry:cart-open"
 // event (fired by the Cart button and by Add-to-cart).
-export default function CartDrawer() {
+export default function CartDrawer({ email }: { email?: string }) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<CartItem[]>([]);
-  const [checkoutNote, setCheckoutNote] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     setItems(getCart());
@@ -28,6 +47,53 @@ export default function CartDrawer() {
   }, []);
 
   const total = items.reduce((s, i) => s + (Number(i.price) || 0), 0);
+
+  async function record(reference: string) {
+    const res = await checkoutCart(
+      items.map((i) => ({ id: Number(i.id), price: Number(i.price) || 0 })),
+      reference
+    );
+    setBusy(false);
+    if (res?.error) {
+      setErr(res.error);
+      return;
+    }
+    clearCart();
+    setDone(PAYSTACK_KEY ? "Payment complete — enjoy your books." : "Test checkout complete — books added to your library.");
+  }
+
+  async function checkout() {
+    setErr(null);
+    setBusy(true);
+
+    // Live/test Paystack when a public key is configured; otherwise simulate.
+    if (PAYSTACK_KEY && email) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const Paystack: any = await loadPaystack();
+        const handler = Paystack.setup({
+          key: PAYSTACK_KEY,
+          email,
+          amount: Math.round(total * 100), // kobo/pesewas
+          currency: "USD",
+          ref: `libry-${Date.now()}`,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          callback: (resp: any) => {
+            record(resp.reference || `paystack-${Date.now()}`);
+          },
+          onClose: () => setBusy(false),
+        });
+        handler.openIframe();
+      } catch (e) {
+        setBusy(false);
+        setErr(e instanceof Error ? e.message : "Checkout failed.");
+      }
+      return;
+    }
+
+    // Simulated checkout — no real charge.
+    await record(`demo-${Date.now()}`);
+  }
 
   return (
     <>
@@ -80,7 +146,15 @@ export default function CartDrawer() {
         </header>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.4rem" }}>
-          {items.length === 0 ? (
+          {done ? (
+            <div style={{ textAlign: "center", fontFamily: "var(--sans)", padding: "3rem 1rem" }}>
+              <div style={{ fontSize: "2.4rem", marginBottom: "0.6rem", color: "#7DBE86" }}>✓</div>
+              <p style={{ color: "var(--ivory)", fontSize: "1.05rem", marginBottom: "1rem" }}>{done}</p>
+              <a href="/my-library?tab=purchased" className="btn btn-gold" onClick={() => { setDone(null); setOpen(false); }}>
+                View My Library
+              </a>
+            </div>
+          ) : items.length === 0 ? (
             <div style={{ textAlign: "center", color: "var(--muted)", fontFamily: "var(--sans)", padding: "3rem 1rem" }}>
               <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}>🛒</div>
               <p style={{ marginBottom: "0.3rem", color: "var(--ivory)" }}>Your cart is empty.</p>
@@ -117,20 +191,22 @@ export default function CartDrawer() {
           )}
         </div>
 
-        {items.length > 0 ? (
+        {items.length > 0 && !done ? (
           <footer style={{ padding: "1.2rem 1.4rem", borderTop: "1px solid var(--border)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.9rem", fontFamily: "var(--sans)" }}>
               <span style={{ color: "var(--muted)" }}>Subtotal</span>
               <span className="price" style={{ fontSize: "1.1rem" }}>{formatPrice(total)}</span>
             </div>
-            <button className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }} onClick={() => setCheckoutNote(true)}>
-              Checkout
+            <button className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }} onClick={checkout} disabled={busy}>
+              {busy ? "Processing…" : PAYSTACK_KEY ? `Pay ${formatPrice(total)}` : `Checkout ${formatPrice(total)}`}
             </button>
-            {checkoutNote ? (
-              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", textAlign: "center", marginTop: "0.7rem" }}>
-                Payments are coming soon — your cart is saved on this device until then.
+            {err ? (
+              <p style={{ color: "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.8rem", textAlign: "center", marginTop: "0.7rem" }}>{err}</p>
+            ) : (
+              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.78rem", textAlign: "center", marginTop: "0.7rem" }}>
+                {PAYSTACK_KEY ? "Secured by Paystack." : "Demo checkout — no real charge. Books are added to your library."}
               </p>
-            ) : null}
+            )}
           </footer>
         ) : null}
       </aside>

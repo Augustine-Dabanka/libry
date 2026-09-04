@@ -11,11 +11,13 @@ export default function NavClient({
   name,
   avatarUrl,
   initials,
+  email,
 }: {
   signedIn: boolean;
   name: string;
   avatarUrl: string | null;
   initials: string;
+  email?: string;
 }) {
   const [dd, setDd] = useState<Dd>(null);
   const [mobile, setMobile] = useState(false);
@@ -195,7 +197,7 @@ export default function NavClient({
         )}
       </div>
 
-      <CartDrawer />
+      <CartDrawer email={email} />
     </>
   );
 }

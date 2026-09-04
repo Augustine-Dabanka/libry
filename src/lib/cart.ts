@@ -42,6 +42,10 @@ export function removeFromCart(id: number | string) {
   save(getCart().filter((i) => String(i.id) !== String(id)));
 }
 
+export function clearCart() {
+  save([]);
+}
+
 export function cartCount(): number {
   return getCart().length;
 }
