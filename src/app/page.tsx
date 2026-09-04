@@ -240,6 +240,11 @@ export default async function Landing() {
           <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding">
             Start reading free
           </a>
+          <div style={{ marginTop: "1rem" }}>
+            <a href="/waitlist" className="fx" style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontSize: "0.95rem" }}>
+              Not ready yet? Join the early-access waitlist →
+            </a>
+          </div>
         </div>
       </section>
 
