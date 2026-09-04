@@ -76,12 +76,72 @@ function clean(raw) {
   if (start !== -1) t = t.slice(t.indexOf("\n", start) + 1);
   const end = t.search(/\*\*\*\s*END OF TH(E|IS) PROJECT GUTENBERG[^\n]*\*\*\*/i);
   if (end !== -1) t = t.slice(0, end);
-  // drop a leading "Produced by ..." credit line if present
-  t = t.replace(/^\s*Produced by[^\n]*\n/i, "");
-  const blocks = t
+
+  // Drop editorial artifacts and production credits.
+  t = t.replace(/\[\s*Illustration[^\]]*\]/gis, " ");
+  t = t.replace(/^\s*(Produced by|Transcribed from|Updated editions|This eBook is)[^\n]*\n/gim, "");
+
+  // Split into paragraphs, rewrapping hard-wrapped lines into one line each.
+  let blocks = t
     .split(/\n[ \t]*\n/)
     .map((b) => b.replace(/\n+/g, " ").replace(/[ \t]{2,}/g, " ").trim())
     .filter(Boolean);
+
+  // Remove collapsed table-of-contents blocks up front — a single block dense
+  // with chapter headings or roman-numeral entries is never body prose.
+  blocks = blocks.filter(
+    (b, i) => i > 20 || !((b.match(/\bCHAPTER\b/g) || []).length >= 3 || (b.match(/\b[IVXLC]{1,6}\.\s/g) || []).length >= 5)
+  );
+
+  // First, peel off a leading collapsed contents block (a wall of chapter
+  // titles) or a dedication / illustration credit, which otherwise sits above
+  // the story. Safe, narrow rules; stops at the first normal block.
+  const tocWall = (b) => (b.match(/\bCHAPTER\b/g) || []).length >= 3 || (b.match(/\bchapter\b/gi) || []).length >= 4;
+  const credit = (b) => /^(_?the illustrations|to [A-Z]|etymology\b|extracts\b|dedication\b)/i.test(b) || /is (respectfully )?inscribed|copyright of/i.test(b);
+  let g = 0;
+  while (blocks.length > 6 && g++ < 8 && (tocWall(blocks[0]) || credit(blocks[0]))) blocks.shift();
+
+  // Find where the body begins. The reliable signal: the first heading block
+  // (Chapter / Letter / roman-numeral / short all-caps section title) that is
+  // immediately followed by a long paragraph. A table-of-contents entry is
+  // followed by another short entry, never by prose — so this skips the whole
+  // contents list without ever cutting into the story.
+  const isHead = (b) =>
+    !!b && b.length < 120 &&
+    (/^(chapter\b|letter\s+\w|book\s+\w|[IVXLC]{1,6}[.\s])/i.test(b) ||
+      (b.length < 70 && /[A-Z]/.test(b) && b === b.toUpperCase()));
+  const firstLabelIsOne = (b) =>
+    /^(chapter\s+(the\s+first|one|i|1)\b|letter\s+(one|i|1)\b|i[.\s])/i.test(b);
+
+  const headingBody = blocks.findIndex(
+    (b, i) => isHead(b) && blocks[i + 1] && blocks[i + 1].length > 300
+  );
+
+  // Fallback for editions whose Chapter I heading is decorative (an image we
+  // stripped): trim past the last title-page / contents / illustration-list
+  // block (each such entry ends in a page number) near the top.
+  const isNoise = (b) =>
+    !!b &&
+    (/^(heading to|tailpiece|frontispiece|title[- ]?page|dedication|contents|list of illustrations|illustrations?|page|produced by)\b/i.test(b) ||
+      (b.length < 90 && /\s\d{1,4}$/.test(b)));
+  let noiseBody = 0;
+  const win = Math.floor(blocks.length * 0.4);
+  for (let i = 0; i < win; i++) if (isNoise(blocks[i])) noiseBody = i + 1;
+
+  let bodyStart;
+  if (headingBody >= 0 && firstLabelIsOne(blocks[headingBody])) {
+    bodyStart = headingBody; // real first-chapter heading present
+  } else {
+    bodyStart = noiseBody;   // decorative/absent ch.1 heading — trust the noise trim
+  }
+  // Last resort: if nothing matched, jump to the first real paragraph. Front
+  // matter (titles, contents, dedications) is short; a >400-char block is prose.
+  if (bodyStart === 0) {
+    const firstProse = blocks.slice(0, 40).findIndex((b) => b.length > 400);
+    if (firstProse > 0) bodyStart = firstProse;
+  }
+  if (bodyStart > 0 && bodyStart < blocks.length * 0.5) blocks = blocks.slice(bodyStart);
+
   return blocks.join("\n\n").trim();
 }
 
@@ -99,6 +159,7 @@ for (const c of CLASSICS) {
   const content = clean(raw);
   const firstPara = (content.split("\n\n").find((p) => p.length > 80) || content).slice(0, 200).trim();
   console.log(`ok (${(content.length / 1000).toFixed(0)}k chars, ~${estimatePages(content)} pages)`);
+  console.log(`      opens: ${content.slice(0, 90).replace(/\n/g, " ")}…`);
   rows.push({
     id: c.id, title: c.title, author: c.author, price: 0, type: "Fiction",
     category: c.category, is_free: true, description: c.description,
