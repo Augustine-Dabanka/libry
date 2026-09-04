@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BackButton from "@/components/BackButton";
 import AddToCartButton from "@/components/AddToCartButton";
+import WishlistButton from "@/components/WishlistButton";
 import { formatPrice } from "@/lib/types";
 import { AGE_LABEL } from "@/lib/content";
 
@@ -30,6 +31,9 @@ export default async function BookPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const primary = await supabase
     .from("books")
     .select("id, title, author, description, content, price, type, status, age_rating")
@@ -46,6 +50,13 @@ export default async function BookPage({
     data = alt.data ? { ...alt.data, age_rating: null } : null;
   }
   const book = data as BookDetail | null;
+
+  // Is this book on the reader's wishlist? (guarded — table may be pre-migration)
+  let wishlisted = false;
+  if (user && book) {
+    const wl = await supabase.from("wishlist").select("book_id").eq("user_id", user.id).eq("book_id", book.id).maybeSingle();
+    wishlisted = !!wl.data;
+  }
 
   if (!book) {
     return (
@@ -126,6 +137,9 @@ export default async function BookPage({
                 <AddToCartButton
                   item={{ id: book.id, title: book.title, author: book.author, price: book.price }}
                 />
+              ) : null}
+              {user ? (
+                <WishlistButton bookId={Number(book.id)} userId={user.id} initial={wishlisted} />
               ) : null}
             </div>
           </div>

@@ -36,6 +36,8 @@ export default async function CreatorDashboard() {
 
   const rc = await supabase.rpc("my_referral_count");
   const referralCount = typeof rc.data === "number" ? rc.data : 0;
+  const bs = await supabase.rpc("my_books_sold");
+  const booksSold = typeof bs.data === "number" ? bs.data : 0;
 
   // Owned books (with rating + publish state, guarded pre-migration).
   const primaryMine = await supabase
@@ -128,7 +130,7 @@ export default async function CreatorDashboard() {
         </div>
 
         {/* Monetization — progress toward unlocking creator earnings */}
-        <MonetizationTracker sales={0} referrals={referralCount} />
+        <MonetizationTracker sales={booksSold} referrals={referralCount} />
 
         {/* Create — write chapter by chapter, or import a manuscript */}
         <div style={{ marginBottom: "2.5rem" }}>

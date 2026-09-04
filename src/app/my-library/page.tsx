@@ -3,46 +3,65 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import LibraryTabs, { type LibBook } from "@/components/LibraryTabs";
 
-type ProgRow = { book_id: number; progress_percentage: number | null };
 type BookRow = { id: number; title: string; author: string | null; price: number | null; type: string | null };
 
-export default async function MyLibrary() {
+async function booksByIds(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  ids: number[]
+): Promise<Map<number, BookRow>> {
+  const map = new Map<number, BookRow>();
+  if (!ids.length) return map;
+  const { data } = await supabase.from("books").select("id, title, author, price, type").in("id", ids);
+  (data as BookRow[] | null)?.forEach((b) => map.set(Number(b.id), b));
+  return map;
+}
+
+export default async function MyLibrary({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Reading history with progress.
+  // Currently reading — highest progress per book.
   const { data: prog } = await supabase
     .from("reading_progress")
     .select("book_id, progress_percentage")
     .eq("user_email", user.email ?? "");
-  const rows = (prog ?? []) as ProgRow[];
-
-  // Highest progress per book.
   const pctById = new Map<number, number>();
-  for (const r of rows) {
+  for (const r of (prog ?? []) as { book_id: number; progress_percentage: number | null }[]) {
     const pct = Math.max(0, Math.min(100, Number(r.progress_percentage ?? 0)));
     pctById.set(r.book_id, Math.max(pctById.get(r.book_id) ?? 0, pct));
   }
-  const ids = [...pctById.keys()];
+  const readingBooks = await booksByIds(supabase, [...pctById.keys()]);
+  const reading: LibBook[] = [...readingBooks.values()]
+    .map((b) => ({ ...b, pct: pctById.get(Number(b.id)) ?? 0 }))
+    .sort((a, b) => (a.pct === 100 ? 1 : 0) - (b.pct === 100 ? 1 : 0) || (b.pct ?? 0) - (a.pct ?? 0));
 
-  let books: LibBook[] = [];
-  if (ids.length) {
-    const { data } = await supabase.from("books").select("id, title, author, price, type").in("id", ids);
-    books = ((data ?? []) as BookRow[]).map((b) => ({
-      id: b.id,
-      title: b.title,
-      author: b.author,
-      price: b.price,
-      type: b.type,
-      pct: pctById.get(Number(b.id)) ?? 0,
-    }));
+  // Wishlist (guarded — table may not be migrated yet).
+  let wishlist: LibBook[] = [];
+  const wl = await supabase.from("wishlist").select("book_id").eq("user_id", user.id);
+  if (!wl.error) {
+    const ids = (wl.data ?? []).map((r: { book_id: number }) => r.book_id);
+    const m = await booksByIds(supabase, ids);
+    wishlist = [...m.values()];
   }
 
-  const reading = books.filter((b) => b.pct < 100).sort((a, b) => b.pct - a.pct);
-  const finished = books.filter((b) => b.pct >= 100);
+  // Purchased (guarded).
+  let purchased: LibBook[] = [];
+  const pu = await supabase.from("purchases").select("book_id").eq("user_id", user.id);
+  if (!pu.error) {
+    const ids = (pu.data ?? []).map((r: { book_id: number }) => r.book_id);
+    const m = await booksByIds(supabase, ids);
+    purchased = [...m.values()];
+  }
+
+  const initialTab = tab === "wishlist" || tab === "purchased" ? (tab as "wishlist" | "purchased") : "reading";
 
   return (
     <>
@@ -52,19 +71,10 @@ export default async function MyLibrary() {
           <h2>My Library</h2>
         </div>
         <p style={{ color: "var(--muted)", marginTop: "-1.5rem", marginBottom: "2rem" }}>
-          Your purchased books and reading history.
+          Everything you&apos;re reading, saving, and own — in one place.
         </p>
 
-        {books.length > 0 ? (
-          <LibraryTabs reading={reading} finished={finished} />
-        ) : (
-          <div style={{ border: "1px solid var(--border)", borderRadius: 16, padding: "3rem 2rem", textAlign: "center", background: "var(--stone)" }}>
-            <p style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>Your library is empty.</p>
-            <p style={{ color: "var(--muted)", maxWidth: 440, margin: "0 auto" }}>
-              Open a story from the <a href="/catalog" style={{ color: "var(--gold)" }}>catalog</a> and it joins your library.
-            </p>
-          </div>
-        )}
+        <LibraryTabs reading={reading} wishlist={wishlist} purchased={purchased} initialTab={initialTab} />
       </section>
     </>
   );

@@ -128,8 +128,8 @@ export default function NavClient({
             ◑
           </button>
 
-          <a href="/wishlist" className="icon-link" title="Wishlist" aria-label="Wishlist">
-            &#9829; <span className="badge-count">0</span>
+          <a href="/my-library?tab=wishlist" className="icon-link" title="Wishlist" aria-label="Wishlist">
+            &#9829;
           </a>
           <button type="button" className="icon-link" title="Cart" aria-label="Cart" onClick={openCart} style={{ background: "transparent", border: "none", cursor: "pointer", font: "inherit" }}>
             &#128722; <span className="badge-count">{cartN}</span>
