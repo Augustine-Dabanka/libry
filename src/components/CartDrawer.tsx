@@ -212,7 +212,7 @@ export default function CartDrawer({ email }: { email?: string }) {
             </div>
             <button
               className="btn btn-gold"
-              style={{ width: "100%", justifyContent: "center", padding: "0.85rem 1rem", fontSize: "1rem" }}
+              style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", padding: "0.9rem 1rem", fontSize: "1rem", borderRadius: 12 }}
               onClick={checkout}
               disabled={busy}
             >
