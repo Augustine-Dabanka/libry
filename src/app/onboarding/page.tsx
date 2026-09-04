@@ -146,13 +146,41 @@ function Koala() {
   );
 }
 
+// Endowment step: presets the reader customises (and keeps) before signing up.
+const THEMES = [
+  { key: "obsidian", name: "Obsidian Neon", accent: "#7C83FF" },
+  { key: "emerald", name: "Emerald Royale", accent: "#34D399" },
+  { key: "gold", name: "Cyber Gold", accent: "#D4AF37" },
+  { key: "amethyst", name: "Amethyst Glow", accent: "#C084FC" },
+];
+// Sensible recommended answers for the "recommended picks" fast path.
+const DEFAULT_ANSWERS: Record<string, string> = {
+  draw: "interactive",
+  audience: "self",
+  mood: "adventurous",
+  genre: "scifi,fantasy",
+  pace: "epic",
+  budget: "any",
+  age: "18-24",
+  country: "United States",
+};
+
 export default function OnboardingPage() {
-  const [idx, setIdx] = useState(-1); // -1 intro · 0..n-1 questions · n done
+  const [idx, setIdx] = useState(-1); // -1 intro · 0..n-1 questions · n customise
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [cheer, setCheer] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [genreSel, setGenreSel] = useState<string[]>([]);
+  const [theme, setTheme] = useState("obsidian"); // default effect: Obsidian Neon
+  const [frame, setFrame] = useState("gold");
+
+  function applyTheme(k: string) {
+    setTheme(k);
+    try {
+      document.documentElement.setAttribute("data-brand", k);
+    } catch {}
+  }
 
   const total = QUESTIONS.length;
   const answered = Object.keys(answers).length;
@@ -164,14 +192,25 @@ export default function OnboardingPage() {
   }, [search]);
 
   function finish(next: Record<string, string>) {
+    // Endowment: the reader keeps the theme + frame they customised. Apply the
+    // theme now (so it's theirs immediately) and carry both into the profile.
+    const prefs = { ...next, theme, avatar_frame: frame };
     try {
-      document.cookie = `libry_prefs=${encodeURIComponent(JSON.stringify(next))}; path=/; max-age=1800; samesite=lax`;
+      localStorage.setItem("libry-brand", theme);
+      document.documentElement.setAttribute("data-brand", theme);
+      document.cookie = `libry_prefs=${encodeURIComponent(JSON.stringify(prefs))}; path=/; max-age=1800; samesite=lax`;
       document.cookie = `libry_seen_onboarding=1; path=/; max-age=31536000; samesite=lax`;
     } catch {
       /* cookies disabled — proceed anyway */
     }
     // Onboarding runs BEFORE signup: hand off to the gate's Sign up tab, then home.
     window.location.assign("/login?auth=signup&next=%2F");
+  }
+
+  // Default effect: fill sensible recommended answers and jump to the last step.
+  function useRecommended() {
+    setAnswers(DEFAULT_ANSWERS);
+    setIdx(total);
   }
 
   function pick(key: string, value: string) {
@@ -241,6 +280,10 @@ export default function OnboardingPage() {
             </p>
             <button className={styles.btn} onClick={() => setIdx(0)}>
               Let’s go
+            </button>
+            <br />
+            <button className={styles.skip} onClick={useRecommended} style={{ color: "var(--gold-dark)" }}>
+              ★ Use recommended picks
             </button>
             <br />
             <button className={styles.skip} onClick={skip}>
@@ -329,7 +372,7 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Done */}
+        {/* Customise & sign up (endowment) */}
         {idx >= total && (
           <div className={styles.screen} key="done">
             <div className={styles.confetti} aria-hidden="true">
@@ -337,24 +380,56 @@ export default function OnboardingPage() {
                 <span
                   key={i}
                   className={styles.confettiPiece}
-                  style={{
-                    left: `${c.left}%`,
-                    background: c.color,
-                    animationDuration: `${c.dur}s`,
-                    animationDelay: `${c.delay}s`,
-                  }}
+                  style={{ left: `${c.left}%`, background: c.color, animationDuration: `${c.dur}s`, animationDelay: `${c.delay}s` }}
                 />
               ))}
             </div>
-            <Koala />
             <h1 className={styles.doneTitle}>
               Your shelf is <span>ready</span>.
             </h1>
-            <p className={styles.tag}>
-              We’ve lined up stories we think you’ll love. One quick step and you’re in.
-            </p>
+            <p className={styles.tag}>Make it yours — pick a look you love. It&apos;s already set up for you.</p>
+
+            {/* Avatar frame preview */}
+            <div style={{ display: "grid", placeItems: "center", marginBottom: "1.4rem" }}>
+              <div style={{ width: 108, height: 108, borderRadius: "50%", display: "grid", placeItems: "center", padding: 5, background: `conic-gradient(var(--gold), ${THEMES.find((t) => t.key === frame)?.accent ?? "#C4A35A"}, var(--gold))` }}>
+                <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "var(--bg-2, #EFE7D6)", display: "grid", placeItems: "center", overflow: "hidden" }}>
+                  <div style={{ transform: "scale(0.82)" }}><Koala /></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Frame swatches */}
+            <div style={{ fontSize: "0.78rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.5rem" }}>Avatar frame</div>
+            <div style={{ display: "flex", gap: "0.6rem", justifyContent: "center", marginBottom: "1.4rem", flexWrap: "wrap" }}>
+              {THEMES.map((t) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  aria-label={`${t.name} frame`}
+                  onClick={() => setFrame(t.key)}
+                  style={{ width: 34, height: 34, borderRadius: "50%", cursor: "pointer", background: t.accent, border: frame === t.key ? "3px solid var(--text)" : "3px solid transparent", outline: frame === t.key ? "1px solid var(--text)" : "none" }}
+                />
+              ))}
+            </div>
+
+            {/* Theme presets (default: Obsidian Neon) — applied live */}
+            <div style={{ fontSize: "0.78rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.5rem" }}>Theme</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem", maxWidth: 380, margin: "0 auto 1.6rem" }}>
+              {THEMES.map((t) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => applyTheme(t.key)}
+                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.7rem 0.9rem", borderRadius: 12, cursor: "pointer", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem", background: "var(--surface, #fff)", color: "var(--text)", border: theme === t.key ? `2px solid ${t.accent}` : "1.5px solid rgba(43,38,34,0.12)" }}
+                >
+                  <span style={{ width: 20, height: 20, borderRadius: 6, background: t.accent, flexShrink: 0 }} />
+                  {t.name}
+                </button>
+              ))}
+            </div>
+
             <button className={styles.btn} onClick={() => finish(answers)}>
-              Enter Libry
+              Save My Customized Profile &amp; Sign Up
             </button>
           </div>
         )}
