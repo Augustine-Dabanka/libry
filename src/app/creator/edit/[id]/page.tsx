@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import EditBookForm from "@/components/EditBookForm";
+import ChapterEditor, { type Chapter } from "@/components/ChapterEditor";
 import CollaboratorsPanel from "@/components/CollaboratorsPanel";
 
 export default async function EditBook({
@@ -48,6 +49,25 @@ export default async function EditBook({
     }
   }
 
+  // Chapters for the chapter editor: existing chapter rows, else the book body
+  // as a single chapter, else one empty chapter to start.
+  let initialChapters: Chapter[] = [];
+  if (book && allowed) {
+    const { data: chs } = await supabase
+      .from("chapters")
+      .select("title, content, chapter_number")
+      .eq("book_id", book.id)
+      .order("chapter_number", { ascending: true });
+    if (chs && chs.length) {
+      initialChapters = chs.map((c: { title: string | null; content: string | null }) => ({
+        title: c.title || "Untitled chapter",
+        content: c.content || "",
+      }));
+    } else if (book.content) {
+      initialChapters = [{ title: "Chapter One", content: book.content }];
+    }
+  }
+
   // Current co-authors (owner manages them in project settings).
   const collaborators: { userId: string; name: string }[] = [];
   if (isOwner) {
@@ -78,6 +98,7 @@ export default async function EditBook({
           </p>
         ) : (
           <>
+            <ChapterEditor bookId={Number(book.id)} initial={initialChapters} />
             <EditBookForm book={book} />
             {isOwner ? (
               <div style={{ marginTop: "2.5rem", maxWidth: 640 }}>

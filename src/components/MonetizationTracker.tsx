@@ -1,5 +1,5 @@
-export const SALES_TARGET = 6;
-export const REFERRAL_TARGET = 15;
+export const SALES_TARGET = 7;
+export const REFERRAL_TARGET = 10;
 
 function Bar({ label, value, target }: { label: string; value: number; target: number }) {
   const pct = Math.min(100, Math.round((value / target) * 100));
@@ -48,14 +48,14 @@ export default function MonetizationTracker({ sales, referrals }: { sales: numbe
               : { background: "rgba(180,83,9,0.18)", color: "#D2793B" }
           }
         >
-          {eligible ? "Eligible to earn" : "Locked"}
+          {eligible ? "Unlocked" : "Locked"}
         </span>
       </div>
       <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", margin: "0 0 1.3rem" }}>
-        Hit both milestones to unlock creator earnings. Everyone can publish; earning is what you work up to.
+        Hit both targets to unlock creator earnings. Everyone can publish; earning is what you work up to — tracked live, no cash-outs yet.
       </p>
+      <Bar label="People referred" value={referrals} target={REFERRAL_TARGET} />
       <Bar label="Books sold" value={sales} target={SALES_TARGET} />
-      <Bar label="Successful referrals" value={referrals} target={REFERRAL_TARGET} />
     </div>
   );
 }

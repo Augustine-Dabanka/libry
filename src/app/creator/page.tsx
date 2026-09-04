@@ -2,9 +2,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import QuickUpload from "@/components/QuickUpload";
+import NewStoryButton from "@/components/NewStoryButton";
 import PublishToggle from "@/components/PublishToggle";
 import ReferralLink from "@/components/ReferralLink";
 import RevenueChart from "@/components/RevenueChart";
+import MonetizationTracker from "@/components/MonetizationTracker";
 import { formatPrice } from "@/lib/types";
 
 type MyBook = {
@@ -125,8 +127,17 @@ export default async function CreatorDashboard() {
           <RevenueChart daily={revenue7} />
         </div>
 
-        {/* Create — upload a manuscript or start a blank draft */}
+        {/* Monetization — progress toward unlocking creator earnings */}
+        <MonetizationTracker sales={0} referrals={referralCount} />
+
+        {/* Create — write chapter by chapter, or import a manuscript */}
         <div style={{ marginBottom: "2.5rem" }}>
+          <div style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap", alignItems: "center", marginBottom: "1.4rem" }}>
+            <NewStoryButton userId={user.id} authorName={authorName} />
+            <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem" }}>
+              — or import a finished manuscript below
+            </span>
+          </div>
           <QuickUpload userId={user.id} authorName={authorName} />
         </div>
 
