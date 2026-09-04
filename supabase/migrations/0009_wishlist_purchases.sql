@@ -15,7 +15,10 @@ create policy wishlist_all on public.wishlist
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ---------- Purchases ----------
-create table if not exists public.purchases (
+-- An older purchases table used `buyer_id`; replace it with the app's schema.
+-- Safe: no real purchases exist yet (payments not wired).
+drop table if exists public.purchases cascade;
+create table public.purchases (
   id         bigint generated always as identity primary key,
   user_id    uuid   not null references auth.users(id) on delete cascade,
   book_id    bigint not null,
