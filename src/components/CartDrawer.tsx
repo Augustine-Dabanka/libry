@@ -6,6 +6,7 @@ import { checkoutCart } from "@/app/actions/purchases";
 import { formatPrice } from "@/lib/types";
 
 const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
+const PAYSTACK_CURRENCY = process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY || "USD";
 
 // Load Paystack's inline script once, on demand.
 function loadPaystack(): Promise<unknown> {
@@ -74,8 +75,8 @@ export default function CartDrawer({ email }: { email?: string }) {
         const handler = Paystack.setup({
           key: PAYSTACK_KEY,
           email,
-          amount: Math.round(total * 100), // kobo/pesewas
-          currency: "USD",
+          amount: Math.round(total * 100), // minor units (kobo/cents/pesewas)
+          currency: PAYSTACK_CURRENCY,
           ref: `libry-${Date.now()}`,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           callback: (resp: any) => {
