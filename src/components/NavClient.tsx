@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import CartDrawer from "@/components/CartDrawer";
 import { cartCount, onCartChange, openCart } from "@/lib/cart";
 
-type Dd = null | "catalog" | "library" | "user";
+type Dd = null | "browse" | "user";
 
 export default function NavClient({
   signedIn,
@@ -22,14 +22,12 @@ export default function NavClient({
   const [cartN, setCartN] = useState(0);
   const rootRef = useRef<HTMLElement>(null);
 
-  // Live cart count from localStorage.
   useEffect(() => {
     const sync = () => setCartN(cartCount());
     sync();
     return onCartChange(sync);
   }, []);
 
-  // Close any open dropdown on an outside click or Escape.
   useEffect(() => {
     function onDown(e: MouseEvent) {
       const t = e.target as Element | null;
@@ -47,6 +45,15 @@ export default function NavClient({
   }, []);
 
   const toggle = (which: Exclude<Dd, null>) => setDd((cur) => (cur === which ? null : which));
+
+  function toggleTheme() {
+    const root = document.documentElement;
+    const next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
+    root.setAttribute("data-theme", next);
+    try {
+      localStorage.setItem("libry-theme", next);
+    } catch {}
+  }
 
   const avatar = avatarUrl ? (
     // eslint-disable-next-line @next/next/no-img-element
@@ -72,76 +79,62 @@ export default function NavClient({
   return (
     <>
       <nav className="navbar" ref={rootRef}>
-        <a href="/home" className="logo">
-          Libry<span>.</span>
-        </a>
+        {/* LEFT: logo · Browse ▾ · Interactive */}
+        <div className="nav-left">
+          <a href="/home" className="logo">
+            Libry<span>.</span>
+          </a>
 
-        <form className="search-box" action="/catalog" method="get">
-          <input name="q" type="text" placeholder="Search books..." aria-label="Search books" />
-          <button type="submit">Search</button>
-        </form>
-
-        <ul className="nav-links">
-          <li>
-            <a href="/wishlist" className="icon-link" title="Wishlist" aria-label="Wishlist">
-              &#9829; Wishlist <span className="badge-count">0</span>
-            </a>
-          </li>
-          <li>
-            <button type="button" className="icon-link" title="Cart" aria-label="Cart" onClick={openCart} style={{ background: "transparent", border: "none", cursor: "pointer", font: "inherit" }}>
-              &#128722; Cart <span className="badge-count">{cartN}</span>
-            </button>
-          </li>
-          <li>
-            <a href="/home">Home</a>
-          </li>
-
-          {/* Catalog dropdown */}
-          <li className="nav-dd" data-dd-root>
+          <div className="nav-dd" data-dd-root>
             <button
               type="button"
-              className={`nav-dd-link${dd === "catalog" ? " active" : ""}`}
+              className="nav-dd-btn"
               aria-haspopup="true"
-              aria-expanded={dd === "catalog"}
-              onClick={() => toggle("catalog")}
+              aria-expanded={dd === "browse"}
+              onClick={() => toggle("browse")}
             >
-              Catalog <span className="caret">▾</span>
+              &#9776; Browse <span className="caret">▾</span>
             </button>
-            <div className={`nav-dd-menu${dd === "catalog" ? " open" : ""}`}>
+            <div className={`nav-dd-menu${dd === "browse" ? " open" : ""}`}>
+              <a href="/catalog">Browse all</a>
+              <a href="/catalog?type=Interactive">Interactive stories</a>
               <a href="/catalog?type=Fiction">Fiction</a>
               <a href="/catalog?type=Non-Fiction">Non-Fiction</a>
-              <a href="/catalog?type=Interactive">Interactive stories</a>
               <a href="/catalog?free=1">Free to read</a>
-              <a href="/catalog" className="dd-all">Browse everything →</a>
+              <a href="/discover?filter=editors-pick">Editor&apos;s Pick</a>
+              <a href="/discover" className="dd-all">Trending →</a>
             </div>
-          </li>
+          </div>
 
-          {/* My Library dropdown */}
-          <li className="nav-dd" data-dd-root>
-            <button
-              type="button"
-              className={`nav-dd-link${dd === "library" ? " active" : ""}`}
-              aria-haspopup="true"
-              aria-expanded={dd === "library"}
-              onClick={() => toggle("library")}
-            >
-              My Library <span className="caret">▾</span>
-            </button>
-            <div className={`nav-dd-menu${dd === "library" ? " open" : ""}`}>
-              <a href="/my-library">Continue reading</a>
-              <a href="/my-library">Reading history</a>
-              <a href="/wishlist">Saved &amp; wishlist</a>
-              <a href="/cart" onClick={(e) => { e.preventDefault(); setDd(null); openCart(); }}>Your cart</a>
-              <a href="/my-library" className="dd-all">Open My Library →</a>
-            </div>
-          </li>
+          <a className="nav-badge" href="/catalog?type=Interactive">✦ Interactive</a>
+        </div>
 
-          <li>
-            <a href="/about">About</a>
-          </li>
-        </ul>
+        {/* CENTER: search */}
+        <div className="nav-center">
+          <form className="nav-search" action="/catalog" method="get">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4.3-4.3" strokeLinecap="round" />
+            </svg>
+            <input name="q" type="text" placeholder="Search titles, authors, worlds…" aria-label="Search books" />
+          </form>
+        </div>
 
+        {/* RIGHT: Write · theme · wishlist · cart · avatar */}
         <div className="nav-right">
+          <a className="btn-write" href="/creator">✎ Write</a>
+
+          <button type="button" className="nav-icon-btn" title="Toggle theme" aria-label="Toggle light or dark" onClick={toggleTheme}>
+            ◑
+          </button>
+
+          <a href="/wishlist" className="icon-link" title="Wishlist" aria-label="Wishlist">
+            &#9829; <span className="badge-count">0</span>
+          </a>
+          <button type="button" className="icon-link" title="Cart" aria-label="Cart" onClick={openCart} style={{ background: "transparent", border: "none", cursor: "pointer", font: "inherit" }}>
+            &#128722; <span className="badge-count">{cartN}</span>
+          </button>
+
           {signedIn ? (
             <div className="nav-user" data-dd-root>
               <button className="user-chip" onClick={() => toggle("user")} aria-haspopup="true" aria-expanded={dd === "user"}>
@@ -156,8 +149,10 @@ export default function NavClient({
                 </div>
                 <a href="/home">Home</a>
                 <a href="/my-library">My Library</a>
+                <a href="/achievements">Achievements</a>
                 <a href="/creator">Creator Dashboard</a>
                 <a href="/settings">Settings</a>
+                <a href="/about">About</a>
                 <form action="/auth/signout" method="post">
                   <button type="submit" style={menuBtn}>Log out</button>
                 </form>
@@ -166,6 +161,7 @@ export default function NavClient({
           ) : (
             <a href="/login" className="btn-login">Log in</a>
           )}
+
           <div className="hamburger" onClick={() => setMobile((v) => !v)}>
             <span></span>
             <span></span>
@@ -181,12 +177,13 @@ export default function NavClient({
             <span className="mm-user-name">{name}</span>
           </div>
         ) : null}
-        <a href="/home">Home</a>
-        <a href="/catalog">Catalog</a>
+        <a href="/catalog">Browse all</a>
+        <a href="/catalog?type=Interactive">Interactive stories</a>
         <a href="/my-library">My Library</a>
+        <a href="/achievements">Achievements</a>
         <a href="/wishlist">Wishlist</a>
         <a href="/cart" onClick={(e) => { e.preventDefault(); setMobile(false); openCart(); }}>Cart</a>
-        <a href="/creator">Creator Dashboard</a>
+        <a href="/creator">Write / Creator Dashboard</a>
         <a href="/about">About</a>
         <a href="/settings">Settings</a>
         {signedIn ? (
