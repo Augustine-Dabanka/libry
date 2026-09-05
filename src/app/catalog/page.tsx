@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BookCard from "@/components/BookCard";
+import CatalogSort from "@/components/CatalogSort";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
@@ -47,13 +48,8 @@ function Controls({ q, active, sort }: { q: string; active: string; sort: string
     <section className="section" style={{ paddingTop: "1.2rem", paddingBottom: 0 }}>
       <form action="/catalog" method="get" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center", marginBottom: "1rem", maxWidth: 660 }}>
         <input name="q" defaultValue={q} type="text" placeholder="Search titles or authors…" aria-label="Search books" style={{ ...inputStyle, flex: 1, minWidth: 200 }} />
-        <select name="sort" defaultValue={sort} aria-label="Sort" style={{ ...inputStyle, padding: "0.6rem 0.7rem", cursor: "pointer" }}>
-          <option value="">Sort: featured</option>
-          <option value="rating">Top rated</option>
-          <option value="title">Title A–Z</option>
-          <option value="price-asc">Price: low to high</option>
-          <option value="price-desc">Price: high to low</option>
-        </select>
+        <input type="hidden" name="sort" value={sort} />
+        <CatalogSort value={sort} />
         <button type="submit" className="btn btn-gold" style={{ padding: "0.6rem 1.3rem" }}>Search</button>
       </form>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>

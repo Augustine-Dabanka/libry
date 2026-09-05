@@ -16,7 +16,7 @@ export default async function ReaderPage({
 
   const { data: book } = await supabase
     .from("books")
-    .select("id, title, author, content, price")
+    .select("id, title, author, content, price, user_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -37,18 +37,34 @@ export default async function ReaderPage({
     );
   }
 
+  // Purchase gate: paid books can only be read in full once bought (or by the
+  // author). Free books are always fully readable. Otherwise readers only ever
+  // get the free sample, with a "buy to keep reading" prompt at the end.
+  const isFree = (book.price ?? 0) <= 0;
+  const isOwner = !!user && (book as { user_id?: string }).user_id === user.id;
+  let purchased = false;
+  if (user && !isFree && !isOwner) {
+    const p = await supabase.from("purchases").select("book_id").eq("user_id", user.id).eq("book_id", book.id).maybeSingle();
+    purchased = !!p.data;
+  }
+  const canFull = isFree || isOwner || purchased;
+  const showSample = isSample || !canFull;
+  const locked = !canFull && (book.price ?? 0) > 0;
+
   const full = book.content ?? "";
-  const { excerpt, truncated } = isSample ? firstChapterExcerpt(full) : { excerpt: full, truncated: false };
+  const { excerpt, truncated } = showSample ? firstChapterExcerpt(full) : { excerpt: full, truncated: false };
 
   return (
     <ReaderView
       bookId={String(book.id)}
       title={book.title}
       author={book.author}
-      content={isSample ? excerpt : full}
+      content={showSample ? excerpt : full}
       userEmail={user?.email ?? null}
-      sample={isSample && truncated}
+      sample={showSample && (truncated || locked)}
       signedIn={!!user}
+      locked={locked}
+      price={book.price}
     />
   );
 }

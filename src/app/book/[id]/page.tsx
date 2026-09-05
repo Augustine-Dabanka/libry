@@ -152,10 +152,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
             ) : null}
             <div style={{ marginTop: "1.6rem", display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
               {book.content ? (
-                <a href={`/reader/${book.id}`} className="btn btn-gold">Start reading →</a>
-              ) : null}
-              {book.content ? (
-                <a href={`/reader/${book.id}?sample=1`} className="btn btn-outline">Read a free sample</a>
+                <a href={`/reader/${book.id}?sample=1`} className="btn btn-gold">Read a free sample →</a>
               ) : null}
               {(book.price ?? 0) > 0 ? (
                 <AddToCartButton item={{ id: book.id, title: book.title, author: book.author, price: book.price }} />

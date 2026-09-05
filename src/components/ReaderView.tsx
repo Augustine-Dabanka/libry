@@ -18,6 +18,8 @@ export default function ReaderView({
   userEmail,
   sample = false,
   signedIn = false,
+  locked = false,
+  price = null,
 }: {
   bookId: string;
   title: string;
@@ -26,6 +28,8 @@ export default function ReaderView({
   userEmail: string | null;
   sample?: boolean;
   signedIn?: boolean;
+  locked?: boolean;
+  price?: number | null;
 }) {
   const [theme, setTheme] = useState<Theme>("dark");
   const [fontSize, setFontSize] = useState(1.14);
@@ -198,17 +202,33 @@ export default function ReaderView({
         {sample ? (
           <div style={{ marginTop: "2.6rem", padding: "1.9rem 1.6rem", borderRadius: 16, border: `1px solid ${pal.bar}`, background: theme === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", textAlign: "center", fontFamily: "var(--sans)" }}>
             <div style={{ fontFamily: "var(--serif)", fontSize: "1.35rem", marginBottom: "0.5rem", color: pal.fg }}>End of the free sample</div>
-            <p style={{ color: pal.muted, marginBottom: "1.4rem", maxWidth: 440, marginInline: "auto", lineHeight: 1.6 }}>
-              {signedIn
-                ? "That's the free first chapter. Continue to read the rest of the story."
-                : "That's the free first chapter — create a free account to keep reading. No card required."}
-            </p>
-            <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
-              <a href={signedIn ? `/reader/${bookId}` : "/onboarding"} className="btn btn-gold">
-                {signedIn ? "Continue reading →" : "Create free account →"}
-              </a>
-              <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
-            </div>
+            {locked ? (
+              <>
+                <p style={{ color: pal.muted, marginBottom: "1.4rem", maxWidth: 460, marginInline: "auto", lineHeight: 1.6 }}>
+                  That&apos;s the free first chapter. Buy the book to keep reading — it&apos;s yours forever.
+                </p>
+                <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
+                  <a href={`/book/${bookId}`} className="btn btn-gold">
+                    Buy to keep reading{price && price > 0 ? ` — $${Number(price).toFixed(2)}` : ""}
+                  </a>
+                  <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
+                </div>
+              </>
+            ) : (
+              <>
+                <p style={{ color: pal.muted, marginBottom: "1.4rem", maxWidth: 460, marginInline: "auto", lineHeight: 1.6 }}>
+                  {signedIn
+                    ? "That's the free first chapter. Keep going to read the rest."
+                    : "That's the free first chapter — create a free account to keep reading. No card required."}
+                </p>
+                <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
+                  <a href={signedIn ? `/reader/${bookId}` : "/onboarding"} className="btn btn-gold">
+                    {signedIn ? "Continue reading →" : "Create free account →"}
+                  </a>
+                  <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
+                </div>
+              </>
+            )}
           </div>
         ) : null}
       </article>

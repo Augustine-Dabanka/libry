@@ -57,6 +57,15 @@ export default async function Home() {
   const freeBooks = books.filter((b) => !b.price || b.price <= 0);
   const premiumBooks = books.filter((b) => (b.price ?? 0) > 0);
 
+  // Featured this week — a deterministic weekly rotation (changes every 7 days,
+  // no backend job). Rotates a window of 5 through the age-filtered catalog.
+  const weekNo = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
+  let featured: Book[] = [];
+  if (books.length) {
+    const start = (weekNo * 5) % books.length;
+    for (let i = 0; i < Math.min(5, books.length); i++) featured.push(books[(start + i) % books.length]);
+  }
+
   // Top rated across the whole catalog.
   let topRated: Book[] = [];
   {
@@ -140,6 +149,7 @@ export default async function Home() {
         </div>
       </section>
 
+      <Shelf title="✦ Featured this week" books={featured} />
       <Shelf title="Chosen for you" books={books.slice(0, 8)} />
       {followedNew.length > 0 ? (
         <Shelf title="New from authors you follow" books={followedNew} />

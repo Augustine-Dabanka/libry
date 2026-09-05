@@ -68,7 +68,7 @@ export default function CartDrawer({ email }: { email?: string }) {
       return;
     }
     clearCart();
-    setDone(PAYSTACK_LIVE ? "Payment complete — enjoy your books." : "Checkout complete — books added to your library.");
+    setDone(PAYSTACK_LIVE ? "Payment complete — enjoy your books." : "Added to your library — enjoy.");
   }
 
   async function checkout() {
@@ -209,15 +209,13 @@ export default function CartDrawer({ email }: { email?: string }) {
               <span className="price" style={{ fontSize: "1.2rem" }}>{formatPrice(total)}</span>
             </div>
             <button className="btn btn-gold" style={{ width: "100%" }} onClick={checkout} disabled={busy}>
-              {busy ? "Processing…" : PAYSTACK_LIVE ? `Pay ${formatPrice(total)}` : `Checkout · ${formatPrice(total)}`}
+              {busy ? "Adding…" : PAYSTACK_LIVE ? `Pay ${formatPrice(total)}` : "Checkout · Free"}
             </button>
             {err ? (
               <p style={{ color: "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.8rem", textAlign: "center", marginTop: "0.7rem" }}>{err}</p>
             ) : (
               <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.78rem", textAlign: "center", marginTop: "0.7rem", lineHeight: 1.5 }}>
-                {PAYSTACK_LIVE
-                  ? "🔒 Secured by Paystack."
-                  : "Secure payments are coming soon — for now checkout is free and your books are added to your library instantly."}
+                {PAYSTACK_LIVE ? "🔒 Secured by Paystack." : "Free for now — secure payments coming soon."}
               </p>
             )}
           </footer>
