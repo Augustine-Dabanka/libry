@@ -70,6 +70,33 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
     );
   }
 
+  // 18+ age gate — block Mature titles unless the reader enabled mature content.
+  if (book.age_rating === "Mature") {
+    let showMature = false;
+    if (user) {
+      const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+      showMature = !!sm.data?.show_mature;
+    }
+    if (!showMature) {
+      return (
+        <>
+          <AppNav />
+          <section className="section" style={{ textAlign: "center", maxWidth: 460, margin: "0 auto" }}>
+            <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}>🔞</div>
+            <h2>This is an 18+ title</h2>
+            <p style={{ color: "var(--muted)", margin: "0.6rem 0 1.4rem" }}>
+              Mature content is off by default. Turn on <strong>Show mature content</strong> in Settings to view it.
+            </p>
+            <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
+              <a href="/settings" className="btn btn-gold">Open Settings</a>
+              <a href="/catalog" className="btn btn-outline">Back to catalog</a>
+            </div>
+          </section>
+        </>
+      );
+    }
+  }
+
   // Wishlist state (guarded — table may be pre-migration).
   let wishlisted = false;
   if (user) {
@@ -152,7 +179,11 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
             ) : null}
             <div style={{ marginTop: "1.6rem", display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
               {book.content ? (
-                <a href={`/reader/${book.id}?sample=1`} className="btn btn-gold">Read a free sample →</a>
+                (book.type || "").toLowerCase() === "interactive" ? (
+                  <a href={`/reader/${book.id}`} className="btn btn-gold">▸ Play the story →</a>
+                ) : (
+                  <a href={`/reader/${book.id}?sample=1`} className="btn btn-gold">Read a free sample →</a>
+                )
               ) : null}
               {(book.price ?? 0) > 0 ? (
                 <AddToCartButton item={{ id: book.id, title: book.title, author: book.author, price: book.price }} />
