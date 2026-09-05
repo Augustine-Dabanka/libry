@@ -5,6 +5,7 @@ import BookCard from "@/components/BookCard";
 import HeroArt from "@/components/HeroArt";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
+import { rankBooks, type BookSignals } from "@/lib/ranking";
 
 function Shelf({ title, books, href = "/catalog" }: { title: string; books: Book[]; href?: string }) {
   if (books.length === 0) return null;
@@ -64,6 +65,53 @@ export default async function Home() {
   if (books.length) {
     const start = (weekNo * 5) % books.length;
     for (let i = 0; i < Math.min(5, books.length); i++) featured.push(books[(start + i) % books.length]);
+  }
+
+  // --- Trending on Libry: our own ranking algorithm over real signals ---
+  let trending: Book[] = [];
+  {
+    // Global reading signals (all readers) → reach + completion per book.
+    const prog = await supabase.from("reading_progress").select("book_id, user_email, progress_percentage").limit(5000);
+    const rows = prog.data ?? [];
+    const readersBy = new Map<number, Set<string>>();
+    const finishersBy = new Map<number, number>();
+    for (const r of rows as { book_id: number; user_email: string; progress_percentage: number | null }[]) {
+      const bid = Number(r.book_id);
+      if (!readersBy.has(bid)) readersBy.set(bid, new Set());
+      readersBy.get(bid)!.add(r.user_email);
+      if (Number(r.progress_percentage ?? 0) >= 100) finishersBy.set(bid, (finishersBy.get(bid) ?? 0) + 1);
+    }
+    // Review counts (guarded).
+    const reviewsBy = new Map<number, number>();
+    const revq = await supabase.from("reviews").select("book_id");
+    if (!revq.error) for (const r of (revq.data ?? []) as { book_id: number }[]) reviewsBy.set(Number(r.book_id), (reviewsBy.get(Number(r.book_id)) ?? 0) + 1);
+
+    // Candidate pool (published, age-filtered) with category for affinity.
+    type PoolBook = Book & { category?: string | null };
+    let pool: PoolBook[] = [];
+    const rp = await supabase.from("books").select("id, title, author, price, type, rating, category").eq("is_published", true).in("age_rating", allowed).limit(80);
+    if (rp.error) {
+      const rp2 = await supabase.from("books").select("id, title, author, price, type, rating, category").eq("is_published", true).limit(80);
+      pool = (rp2.data ?? []) as PoolBook[];
+    } else {
+      pool = (rp.data ?? []) as PoolBook[];
+    }
+
+    const signals = new Map<number, BookSignals>();
+    const catByBook = new Map<number, string>();
+    for (const b of pool) {
+      const bid = Number(b.id);
+      signals.set(bid, { readers: readersBy.get(bid)?.size ?? 0, finishers: finishersBy.get(bid) ?? 0, reviews: reviewsBy.get(bid) ?? 0 });
+      if (b.category) catByBook.set(bid, b.category);
+    }
+
+    // This reader's taste → top categories they actually read.
+    const myBooks = new Set((rows as { book_id: number; user_email: string }[]).filter((r) => r.user_email === user.email).map((r) => Number(r.book_id)));
+    const affCount = new Map<string, number>();
+    for (const bid of myBooks) { const c = catByBook.get(bid); if (c) affCount.set(c, (affCount.get(c) ?? 0) + 1); }
+    const affinity = new Set([...affCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map((e) => e[0]));
+
+    trending = rankBooks(pool, signals, { affinity }).slice(0, 8) as Book[];
   }
 
   // Top rated across the whole catalog.
@@ -150,7 +198,7 @@ export default async function Home() {
       </section>
 
       <Shelf title="✦ Featured this week" books={featured} />
-      <Shelf title="Chosen for you" books={books.slice(0, 8)} />
+      <Shelf title="Trending on Libry" books={trending.length ? trending : books.slice(0, 8)} />
       {followedNew.length > 0 ? (
         <Shelf title="New from authors you follow" books={followedNew} />
       ) : null}
