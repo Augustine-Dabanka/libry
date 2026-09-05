@@ -1,195 +1,114 @@
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
-// Seed the catalog with real, full-length public-domain classics from Project
-// Gutenberg. Legal, free, complete books with real chapters — so the store
-// reads as a real store, not a demo.
-//
-//   node scripts/import-classics.mjs         # fetch + import into Supabase
-//   node scripts/import-classics.mjs --dry   # fetch + parse only, no DB writes
-const DRY = process.argv.includes("--dry");
-
+// Seeds the catalog with real, full-length, public-domain classics from Project
+// Gutenberg. Fetches each book, parses it into clean chapters, and upserts it as
+// a free, published title. Run:  node scripts/import-classics.mjs
 const ROOT = "C:/xampp/htdocs/Libry/web";
 const env = readFileSync(ROOT + "/.env.local", "utf8");
 const key = (env.match(/SUPABASE_SERVICE_ROLE_KEY\s*=\s*(\S+)/) || [])[1];
 const url = (env.match(/NEXT_PUBLIC_SUPABASE_URL\s*=\s*(\S+)/) || [])[1];
-
-// Curated set — id is the Libry book id (301+), gid is the Gutenberg ebook id.
-const CLASSICS = [
-  { id: 301, gid: 1342, title: "Pride and Prejudice", author: "Jane Austen", category: "Romance",
-    description: "Elizabeth Bennet and the proud Mr. Darcy spar their way toward one of literature's most beloved romances. Wit, class, and the slow undoing of first impressions." },
-  { id: 302, gid: 1661, title: "The Adventures of Sherlock Holmes", author: "Arthur Conan Doyle", category: "Mystery",
-    description: "Twelve cases for the world's greatest detective. Deduction, disguise, and the fog of Victorian London, narrated by the faithful Dr. Watson." },
-  { id: 303, gid: 84, title: "Frankenstein", author: "Mary Shelley", category: "Horror",
-    description: "A young scientist gives life to a creature he cannot love — and cannot escape. The original story of ambition, abandonment, and the price of playing god." },
-  { id: 304, gid: 345, title: "Dracula", author: "Bram Stoker", category: "Horror",
-    description: "Told in letters and diaries, the tale of a count who leaves his Carpathian castle for England — and the handful of souls who realise what he is." },
-  { id: 305, gid: 11, title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", category: "Fantasy",
-    description: "Down the rabbit hole and into a world with its own impossible logic. Nonsense, riddles, and a very late white rabbit." },
-  { id: 306, gid: 174, title: "The Picture of Dorian Gray", author: "Oscar Wilde", category: "Literary",
-    description: "A portrait ages while its beautiful subject does not. Wilde's only novel — a glittering, poisonous study of vanity and its cost." },
-  { id: 307, gid: 98, title: "A Tale of Two Cities", author: "Charles Dickens", category: "Historical",
-    description: "London and Paris on the eve of revolution. Sacrifice, resurrection, and the best and worst of times." },
-  { id: 308, gid: 1260, title: "Jane Eyre", author: "Charlotte Brontë", category: "Romance",
-    description: "An orphan grows into a governess, and into her own fierce conscience, at the shadowed house of Thornfield. A love story with a will of iron." },
-  { id: 309, gid: 76, title: "Adventures of Huckleberry Finn", author: "Mark Twain", category: "Adventure",
-    description: "A boy and a runaway man raft down the Mississippi, and America looks at itself. Funny, wrenching, and endlessly quoted." },
-  { id: 310, gid: 35, title: "The Time Machine", author: "H. G. Wells", category: "Science Fiction",
-    description: "A Victorian inventor travels to the year 802,701 and finds humanity split in two. The book that launched the time-travel story." },
-  { id: 311, gid: 36, title: "The War of the Worlds", author: "H. G. Wells", category: "Science Fiction",
-    description: "Cylinders fall from Mars, and the might of Empire proves useless. The template for every alien-invasion story since." },
-  { id: 312, gid: 1952, title: "The Yellow Wallpaper", author: "Charlotte Perkins Gilman", category: "Literary",
-    description: "A woman confined for her own good writes in secret, and watches the wallpaper. A short, chilling landmark of feminist fiction." },
-  { id: 313, gid: 43, title: "The Strange Case of Dr Jekyll and Mr Hyde", author: "Robert Louis Stevenson", category: "Horror",
-    description: "A respectable doctor, a monstrous double, and the potion between them. The story that gave us a phrase for the divided self." },
-  { id: 314, gid: 55, title: "The Wonderful Wizard of Oz", author: "L. Frank Baum", category: "Fantasy",
-    description: "A Kansas cyclone, a yellow brick road, and a wizard who isn't what he seems. The first great American fairy tale." },
-  { id: 315, gid: 2701, title: "Moby-Dick", author: "Herman Melville", category: "Adventure",
-    description: "Call me Ishmael. One captain's ruinous hunt for the white whale — an obsession that swallows a whole ship. Vast, strange, and unforgettable." },
-];
-
-const UA = { headers: { "User-Agent": "Mozilla/5.0 (LibryCatalogSeed/1.0)" } };
-
-async function fetchText(gid) {
-  const urls = [
-    `https://www.gutenberg.org/cache/epub/${gid}/pg${gid}.txt`,
-    `https://www.gutenberg.org/files/${gid}/${gid}-0.txt`,
-    `https://www.gutenberg.org/ebooks/${gid}.txt.utf-8`,
-  ];
-  for (const u of urls) {
-    try {
-      const r = await fetch(u, UA);
-      if (r.ok) {
-        const t = await r.text();
-        if (t && t.length > 2000) return t;
-      }
-    } catch { /* try next */ }
-  }
-  return null;
-}
-
-// Strip Gutenberg boilerplate and rewrap hard-wrapped lines into clean
-// paragraphs separated by blank lines (which is what the reader splits on).
-function clean(raw) {
-  let t = raw.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  const start = t.search(/\*\*\*\s*START OF TH(E|IS) PROJECT GUTENBERG[^\n]*\*\*\*/i);
-  if (start !== -1) t = t.slice(t.indexOf("\n", start) + 1);
-  const end = t.search(/\*\*\*\s*END OF TH(E|IS) PROJECT GUTENBERG[^\n]*\*\*\*/i);
-  if (end !== -1) t = t.slice(0, end);
-
-  // Drop editorial artifacts and production credits.
-  t = t.replace(/\[\s*Illustration[^\]]*\]/gis, " ");
-  t = t.replace(/^\s*(Produced by|Transcribed from|Updated editions|This eBook is)[^\n]*\n/gim, "");
-
-  // Split into paragraphs, rewrapping hard-wrapped lines into one line each.
-  let blocks = t
-    .split(/\n[ \t]*\n/)
-    .map((b) => b.replace(/\n+/g, " ").replace(/[ \t]{2,}/g, " ").trim())
-    .filter(Boolean);
-
-  // Remove collapsed table-of-contents blocks up front — a single block dense
-  // with chapter headings or roman-numeral entries is never body prose.
-  blocks = blocks.filter(
-    (b, i) => i > 20 || !((b.match(/\bCHAPTER\b/g) || []).length >= 3 || (b.match(/\b[IVXLC]{1,6}\.\s/g) || []).length >= 5)
-  );
-
-  // First, peel off a leading collapsed contents block (a wall of chapter
-  // titles) or a dedication / illustration credit, which otherwise sits above
-  // the story. Safe, narrow rules; stops at the first normal block.
-  const tocWall = (b) => (b.match(/\bCHAPTER\b/g) || []).length >= 3 || (b.match(/\bchapter\b/gi) || []).length >= 4;
-  const credit = (b) => /^(_?the illustrations|to [A-Z]|etymology\b|extracts\b|dedication\b)/i.test(b) || /is (respectfully )?inscribed|copyright of/i.test(b);
-  let g = 0;
-  while (blocks.length > 6 && g++ < 8 && (tocWall(blocks[0]) || credit(blocks[0]))) blocks.shift();
-
-  // Find where the body begins. The reliable signal: the first heading block
-  // (Chapter / Letter / roman-numeral / short all-caps section title) that is
-  // immediately followed by a long paragraph. A table-of-contents entry is
-  // followed by another short entry, never by prose — so this skips the whole
-  // contents list without ever cutting into the story.
-  const isHead = (b) =>
-    !!b && b.length < 120 &&
-    (/^(chapter\b|letter\s+\w|book\s+\w|[IVXLC]{1,6}[.\s])/i.test(b) ||
-      (b.length < 70 && /[A-Z]/.test(b) && b === b.toUpperCase()));
-  const firstLabelIsOne = (b) =>
-    /^(chapter\s+(the\s+first|one|i|1)\b|letter\s+(one|i|1)\b|i[.\s])/i.test(b);
-
-  const headingBody = blocks.findIndex(
-    (b, i) => isHead(b) && blocks[i + 1] && blocks[i + 1].length > 300
-  );
-
-  // Fallback for editions whose Chapter I heading is decorative (an image we
-  // stripped): trim past the last title-page / contents / illustration-list
-  // block (each such entry ends in a page number) near the top.
-  const isNoise = (b) =>
-    !!b &&
-    (/^(heading to|tailpiece|frontispiece|title[- ]?page|dedication|contents|list of illustrations|illustrations?|page|produced by)\b/i.test(b) ||
-      (b.length < 90 && /\s\d{1,4}$/.test(b)));
-  let noiseBody = 0;
-  const win = Math.floor(blocks.length * 0.4);
-  for (let i = 0; i < win; i++) if (isNoise(blocks[i])) noiseBody = i + 1;
-
-  let bodyStart;
-  if (headingBody >= 0 && firstLabelIsOne(blocks[headingBody])) {
-    bodyStart = headingBody; // real first-chapter heading present
-  } else {
-    bodyStart = noiseBody;   // decorative/absent ch.1 heading — trust the noise trim
-  }
-  // Last resort: if nothing matched, jump to the first real paragraph. Front
-  // matter (titles, contents, dedications) is short; a >400-char block is prose.
-  if (bodyStart === 0) {
-    const firstProse = blocks.slice(0, 40).findIndex((b) => b.length > 400);
-    if (firstProse > 0) bodyStart = firstProse;
-  }
-  if (bodyStart > 0 && bodyStart < blocks.length * 0.5) blocks = blocks.slice(bodyStart);
-
-  return blocks.join("\n\n").trim();
-}
-
-function estimatePages(content) {
-  // ~275 words per printed page — a realistic page count for the card.
-  const words = content.split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 275));
-}
-
-const rows = [];
-for (const c of CLASSICS) {
-  process.stdout.write(`Fetching #${c.id} ${c.title} (gutenberg ${c.gid})… `);
-  const raw = await fetchText(c.gid);
-  if (!raw) { console.log("FAILED to download — skipped."); continue; }
-  const content = clean(raw);
-  const firstPara = (content.split("\n\n").find((p) => p.length > 80) || content).slice(0, 200).trim();
-  console.log(`ok (${(content.length / 1000).toFixed(0)}k chars, ~${estimatePages(content)} pages)`);
-  console.log(`      opens: ${content.slice(0, 90).replace(/\n/g, " ")}…`);
-  rows.push({
-    id: c.id, title: c.title, author: c.author, price: 0, type: "Fiction",
-    category: c.category, is_free: true, description: c.description,
-    sneak_peek: firstPara + "…", content, pages: estimatePages(content),
-    status: "Completed", language: "English", rating: 0, reviews: 0,
-    created_by: c.author, age_rating: "Everyday",
-  });
-  await new Promise((r) => setTimeout(r, 600)); // be polite to Gutenberg
-}
-
-console.log(`\nParsed ${rows.length}/${CLASSICS.length} classics.`);
-
-if (DRY) { console.log("Dry run — no database writes."); process.exit(0); }
-
 if (!key || !url) { console.error("Missing SUPABASE creds in .env.local"); process.exit(1); }
 const supabase = createClient(url, key, { auth: { persistSession: false } });
 
-// Try full payload; fall back if optional columns / status value aren't accepted.
-async function upsert(payload) {
-  return supabase.from("books").upsert(payload, { onConflict: "id" }).select("id");
+// ---- Robust Gutenberg parser -------------------------------------------------
+// Handles "CHAPTER X" and roman-numeral heading styles, drops the table of
+// contents / front matter by chapter-body length, frees headings trapped inside
+// illustration brackets, un-wraps hard line breaks, and renumbers cleanly.
+function parseBook(raw) {
+  let t = raw.replace(/\r\n/g, "\n");
+  const s = t.match(/\*\*\*\s*START OF (THE|THIS) PROJECT GUTENBERG EBOOK[^*]*\*\*\*/i);
+  if (s) t = t.slice(s.index + s[0].length);
+  const e = t.search(/\*\*\*\s*END OF (THE|THIS) PROJECT GUTENBERG EBOOK/i);
+  if (e > -1) t = t.slice(0, e);
+  t = t.replace(/(CHAPTER\s+[IVXLCDM\d]+\b\.?)([ \t]*)\]/gi, "]$2$1"); // free trapped heading
+  t = t.replace(/\[Illustration[\s\S]*?\]/g, "");                       // drop illustrations
+  t = t.replace(/_/g, "");                                               // italic markers
+
+  const blocks = t.split(/\n[ \t]*\n/)
+    .map((b) => b.split("\n").map((l) => l.trim()).join(" ").replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+
+  const heading = (b) => {
+    if (b.length > 90) return null;
+    if (/^chapter\b/i.test(b)) return { title: b.replace(/^chapter\s+[a-z0-9\-]+\.?\s*[-–—:.]*\s*/i, "").trim() };
+    let m = b.match(/^([IVXLCDM]{1,7})\.\s*(.*)$/i);
+    if (m) return { title: m[2].trim() };
+    m = b.match(/^(\d{1,3})\.\s+(.+)$/);
+    if (m) return { title: m[2].trim() };
+    return null;
+  };
+  const marks = blocks.map((b) => ({ b, h: heading(b) }));
+
+  const chapters = [];
+  for (let i = 0; i < marks.length; i++) {
+    if (!marks[i].h) continue;
+    const body = [];
+    let j = i + 1;
+    for (; j < marks.length && !marks[j].h; j++) body.push(marks[j].b);
+    const bodyText = body.join("\n\n");
+    if (bodyText.length > 400) chapters.push({ title: marks[i].h.title, body: bodyText });
+    i = j - 1;
+  }
+  const content = chapters.map((c, idx) => {
+    const head = c.title ? `Chapter ${idx + 1} — ${c.title}` : `Chapter ${idx + 1}`;
+    return `${head}\n\n${c.body}`;
+  }).join("\n\n").trim();
+  return { chapters: chapters.length, content };
 }
-let payload = rows.map((r) => ({ ...r, is_published: true }));
-let { data, error } = await upsert(payload);
-if (error && /is_published/i.test(error.message)) {
-  payload = rows;
-  ({ data, error } = await upsert(payload));
+
+// ---- The catalogue -----------------------------------------------------------
+const CLASSICS = [
+  { id: 301, gid: 1342, title: "Pride and Prejudice", author: "Jane Austen", category: "Romance", rating: 4.8, desc: "Elizabeth Bennet and the proud Mr. Darcy spar their way toward love in Austen's sparkling comedy of manners." },
+  { id: 302, gid: 84, title: "Frankenstein", author: "Mary Shelley", category: "Horror", rating: 4.6, desc: "A young scientist creates life — and unleashes a tragedy — in Mary Shelley's founding work of science fiction." },
+  { id: 303, gid: 345, title: "Dracula", author: "Bram Stoker", category: "Horror", rating: 4.6, desc: "Told in letters and journals, Count Dracula comes to England and a small band races to stop him. The vampire novel." },
+  { id: 304, gid: 1661, title: "The Adventures of Sherlock Holmes", author: "Arthur Conan Doyle", category: "Mystery", rating: 4.8, desc: "Twelve classic cases for the world's greatest detective and his friend Dr. Watson." },
+  { id: 305, gid: 11, title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", category: "Fantasy", rating: 4.7, desc: "Down the rabbit-hole into a world of riddles, tea parties, and a very cross Queen." },
+  { id: 306, gid: 174, title: "The Picture of Dorian Gray", author: "Oscar Wilde", category: "Fiction", rating: 4.6, desc: "A portrait ages while its beautiful subject does not — Wilde's dark fable of vanity and corruption." },
+  { id: 307, gid: 1260, title: "Jane Eyre", author: "Charlotte Brontë", category: "Romance", rating: 4.7, desc: "An orphan governess, a brooding master, and a secret in the attic — Brontë's fierce, beloved romance." },
+  { id: 308, gid: 74, title: "The Adventures of Tom Sawyer", author: "Mark Twain", category: "Adventure", rating: 4.5, desc: "Whitewashed fences, buried treasure, and boyhood mischief along the Mississippi." },
+  { id: 309, gid: 1400, title: "Great Expectations", author: "Charles Dickens", category: "Fiction", rating: 4.6, desc: "A blacksmith's boy, a mysterious fortune, and the strange Miss Havisham — Dickens' tale of ambition and the heart." },
+  { id: 310, gid: 35, title: "The Time Machine", author: "H. G. Wells", category: "Sci-Fi", rating: 4.5, desc: "A Victorian inventor travels to the year 802,701 — and far beyond — in Wells' pioneering time-travel novel." },
+  { id: 311, gid: 55, title: "The Wonderful Wizard of Oz", author: "L. Frank Baum", category: "Fantasy", rating: 4.6, desc: "A cyclone, a yellow brick road, and a wizard who isn't quite what he seems." },
+  { id: 312, gid: 768, title: "Wuthering Heights", author: "Emily Brontë", category: "Romance", rating: 4.5, desc: "Heathcliff and Catherine's wild, doomed love haunts the Yorkshire moors." },
+];
+
+let ok = 0;
+for (const c of CLASSICS) {
+  try {
+    const res = await fetch(`https://www.gutenberg.org/cache/epub/${c.gid}/pg${c.gid}.txt`, {
+      headers: { "User-Agent": "Mozilla/5.0 LibryImport/1.0" },
+    });
+    if (!res.ok) { console.error(`  ✗ ${c.title}: HTTP ${res.status}`); continue; }
+    const { chapters, content } = parseBook(await res.text());
+    if (chapters < 2 || content.length < 20000) { console.error(`  ✗ ${c.title}: parse looked wrong (${chapters} ch)`); continue; }
+
+    const firstPara = content.split("\n").slice(2).find((l) => l.trim().length > 60) || "";
+    const sneak = firstPara.slice(0, 200).trim() + (firstPara.length > 200 ? "…" : "");
+
+    const row = {
+      id: c.id, title: c.title, author: c.author, price: 0, type: "Fiction", category: c.category,
+      is_free: true, description: c.desc, sneak_peek: sneak, content, pages: chapters,
+      status: "Ongoing", language: "English", rating: c.rating, reviews: 0,
+      created_by: c.author, age_rating: "Everyday",
+    };
+
+    let payload = { ...row, is_published: true };
+    let { error } = await supabase.from("books").upsert(payload, { onConflict: "id" });
+    if (error && /is_published|age_rating|category|sneak_peek|pages/i.test(error.message)) {
+      // Retry without columns a leaner schema might not have.
+      const { is_published, age_rating, sneak_peek, ...lean } = payload;
+      ({ error } = await supabase.from("books").upsert(lean, { onConflict: "id" }));
+    }
+    if (error) { console.error(`  ✗ ${c.title}: ${error.message}`); continue; }
+
+    console.log(`  ✓ ${c.title} — ${chapters} chapters, ${(content.length / 1000).toFixed(0)}k`);
+    ok++;
+    await new Promise((r) => setTimeout(r, 400)); // be polite to Gutenberg
+  } catch (e) {
+    console.error(`  ✗ ${c.title}: ${e.message}`);
+  }
 }
-if (error && /status/i.test(error.message)) {
-  payload = payload.map((r) => ({ ...r, status: "Ongoing" }));
-  ({ data, error } = await upsert(payload));
-}
-if (error) { console.error("IMPORT ERROR:", error.message, error.details || ""); process.exit(1); }
-console.log(`Imported/updated ${data.length} classics:`, data.map((d) => d.id).join(", "));
+
+console.log(`\nImported ${ok}/${CLASSICS.length} classics as free, published titles (ids 301–312).`);
+process.exit(ok === CLASSICS.length ? 0 : 1);
