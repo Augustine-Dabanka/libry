@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 type Joined = { ref_code: string; position: number; total: number; referrals: number };
 const STORE = "libry_waitlist";
 
-export default function WaitlistForm({ initialRef }: { initialRef?: string }) {
+export default function WaitlistForm({ initialRef, role = "reader", cta = "Join the waitlist" }: { initialRef?: string; role?: string; cta?: string }) {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -34,6 +34,7 @@ export default function WaitlistForm({ initialRef }: { initialRef?: string }) {
     const supabase = createClient();
     const { data, error } = await supabase.rpc("join_waitlist", {
       p_email: email,
+      p_role: role,
       p_ref: initialRef ?? null,
     });
     setBusy(false);
@@ -107,7 +108,7 @@ export default function WaitlistForm({ initialRef }: { initialRef?: string }) {
           style={{ ...input, flex: 1, minWidth: 220 }}
         />
         <button type="submit" className="btn btn-gold" disabled={busy} style={{ borderRadius: 12, padding: "0.75rem 1.4rem" }}>
-          {busy ? "Joining…" : "Join the waitlist"}
+          {busy ? "Joining…" : cta}
         </button>
       </div>
       {initialRef ? (

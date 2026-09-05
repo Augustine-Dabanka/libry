@@ -6,13 +6,13 @@ import HeroArt from "@/components/HeroArt";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
-function Shelf({ title, books }: { title: string; books: Book[] }) {
+function Shelf({ title, books, href = "/catalog" }: { title: string; books: Book[]; href?: string }) {
   if (books.length === 0) return null;
   return (
     <section className="section" style={{ paddingTop: "1.5rem", paddingBottom: 0 }}>
       <div className="section-header">
         <h2>{title}</h2>
-        <a href="/catalog" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>
+        <a href={href} style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>
           View all →
         </a>
       </div>
@@ -57,6 +57,42 @@ export default async function Home() {
   const freeBooks = books.filter((b) => !b.price || b.price <= 0);
   const premiumBooks = books.filter((b) => (b.price ?? 0) > 0);
 
+  // Top rated across the whole catalog.
+  let topRated: Book[] = [];
+  {
+    const tr = await supabase
+      .from("books")
+      .select("id, title, author, price, type, rating")
+      .eq("is_published", true)
+      .gt("rating", 0)
+      .order("rating", { ascending: false })
+      .limit(8);
+    if (!tr.error) topRated = (tr.data ?? []) as Book[];
+  }
+
+  // "Because you read X" — recommend from the reader's most recent book.
+  let becauseTitle = "";
+  let becauseBooks: Book[] = [];
+  {
+    const prog = await supabase
+      .from("reading_progress")
+      .select("book_id")
+      .eq("user_email", user.email ?? "")
+      .order("book_id", { ascending: false });
+    const readIds = [...new Set((prog.data ?? []).map((p: { book_id: number }) => p.book_id))];
+    if (readIds.length) {
+      const seed = await supabase.from("books").select("id, title, category, type").eq("id", readIds[0]).maybeSingle();
+      if (seed.data) {
+        becauseTitle = seed.data.title as string;
+        let q = supabase.from("books").select("id, title, author, price, type, rating").eq("is_published", true).neq("id", readIds[0]).limit(12);
+        if (seed.data.category) q = q.eq("category", seed.data.category as string);
+        else if (seed.data.type) q = q.eq("type", seed.data.type as string);
+        const rec = await q;
+        becauseBooks = ((rec.data ?? []) as Book[]).filter((b) => !readIds.includes(Number(b.id))).slice(0, 8);
+      }
+    }
+  }
+
   return (
     <>
       <AppNav />
@@ -86,8 +122,12 @@ export default async function Home() {
       </section>
 
       <Shelf title="Chosen for you" books={books.slice(0, 8)} />
-      <Shelf title="Free to Read" books={freeBooks} />
-      <Shelf title="Premium Reads" books={premiumBooks} />
+      {becauseBooks.length > 0 ? (
+        <Shelf title={`Because you read ${becauseTitle}`} books={becauseBooks} />
+      ) : null}
+      <Shelf title="Top Rated on Libry" books={topRated} href="/catalog?sort=rating" />
+      <Shelf title="Free to Read" books={freeBooks} href="/catalog?free=1" />
+      <Shelf title="Premium Reads" books={premiumBooks} href="/catalog?paid=1" />
 
       {books.length === 0 ? (
         <section className="section" style={{ paddingTop: "1.5rem" }}>

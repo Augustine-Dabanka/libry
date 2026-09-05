@@ -49,6 +49,7 @@ function Controls({ q, active, sort }: { q: string; active: string; sort: string
         <input name="q" defaultValue={q} type="text" placeholder="Search titles or authors…" aria-label="Search books" style={{ ...inputStyle, flex: 1, minWidth: 200 }} />
         <select name="sort" defaultValue={sort} aria-label="Sort" style={{ ...inputStyle, padding: "0.6rem 0.7rem", cursor: "pointer" }}>
           <option value="">Sort: featured</option>
+          <option value="rating">Top rated</option>
           <option value="title">Title A–Z</option>
           <option value="price-asc">Price: low to high</option>
           <option value="price-desc">Price: high to low</option>
@@ -103,6 +104,7 @@ export default async function Catalog({
     if (paidOnly) query = query.gt("price", 0);
     if (safe) query = query.or(`title.ilike.%${safe}%,author.ilike.%${safe}%`);
     if (sortKey === "title") query = query.order("title", { ascending: true });
+    else if (sortKey === "rating") query = query.order("rating", { ascending: false });
     else if (sortKey === "price-asc") query = query.order("price", { ascending: true });
     else if (sortKey === "price-desc") query = query.order("price", { ascending: false });
     else query = query.order("id", { ascending: false });

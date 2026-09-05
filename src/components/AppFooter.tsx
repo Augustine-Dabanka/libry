@@ -37,6 +37,7 @@ export default function AppFooter() {
         <div className="footer-col">
           <h4>Read</h4>
           <a href="/catalog">Browse the catalog</a>
+          <a href="/unlimited">Libry Unlimited</a>
           <a href="/discover?filter=free">Free to read</a>
           <a href="/discover?filter=interactive">Interactive stories</a>
           <a href="/my-library">My Library</a>

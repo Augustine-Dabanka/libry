@@ -27,6 +27,7 @@ export default async function Landing() {
             <a href="#features">Features</a>
             <a href="#interactive">Interactive</a>
             <a href="#creators">Creators</a>
+            <a href="/unlimited">Unlimited</a>
           </div>
           <div className={s.navRight}>
             <a href="/login" className={s.txt}>
@@ -270,6 +271,7 @@ export default async function Landing() {
             <div>
               <h4>Read</h4>
               <a className="fx" href="/catalog">Browse the catalog</a>
+              <a className="fx" href="/unlimited">Libry Unlimited</a>
               <a className="fx" href="/discover?filter=free">Free to read</a>
               <a className="fx" href="/discover?filter=interactive">Interactive stories</a>
               <a className="fx" href="/my-library">My Library</a>
