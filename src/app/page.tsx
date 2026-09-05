@@ -112,25 +112,25 @@ export default async function Landing() {
       <section id="features" className={`${s.band} ${s.sky}`} style={{ scrollMarginTop: 70 }}>
         <div className={s.wrap}>
           <div className={s.secHead}>
-            <span className={s.eyebrow}>Features</span>
-            <h2>Reading, but social.</h2>
-            <p>A shelf that learns your taste, streaks that keep you turning pages, and a comment tray on every chapter.</p>
+            <span className={s.eyebrow}>Discover</span>
+            <h2>Find your next favorite book.</h2>
+            <p>Search the whole catalog, read the first chapter free, and let honest reviews point the way.</p>
           </div>
           <div className={s.cards}>
             <div className={s.fcard}>
-              <div className={s.ic}>🌿</div>
-              <h3>Curated shelf</h3>
-              <p>A playful onboarding learns your taste, then lays out a shelf that fits — from question one.</p>
+              <div className={s.ic}>🔍</div>
+              <h3>Search &amp; shelves</h3>
+              <p>Search every title and author, filter by genre, and browse curated shelves — with a “readers also read” shelf on every book.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>🔥</div>
-              <h3>Streaks &amp; badges</h3>
-              <p>Daily reading streaks, XP, and post-read challenges make finishing a book feel like a win.</p>
+              <div className={s.ic}>⭐</div>
+              <h3>Reviews &amp; ratings</h3>
+              <p>Star ratings and honest reader reviews on every book, so you know what&apos;s worth your evening before you start.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>🎧</div>
-              <h3>Read-aloud</h3>
-              <p>Any book becomes an audiobook — plus creator narration, in five languages.</p>
+              <div className={s.ic}>📖</div>
+              <h3>Read the first chapter free</h3>
+              <p>Open any book and read the opening chapter — no signup, no card. Keep going when you&apos;re hooked.</p>
             </div>
           </div>
         </div>
@@ -155,9 +155,9 @@ export default async function Landing() {
               <p>Drop reactions on any paragraph and argue about the twist with other readers.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>🎧</div>
-              <h3>Read or listen</h3>
-              <p>Every book has read-aloud, so your story travels with you.</p>
+              <div className={s.ic}>🔖</div>
+              <h3>Never lose your place</h3>
+              <p>The reader saves your spot as you go and picks up right where you left off, on any device.</p>
             </div>
           </div>
         </div>
@@ -171,9 +171,9 @@ export default async function Landing() {
           </div>
           <div className={s.cards}>
             {[
-              { a: "M", c: "#B4547A", u: "@mara_reads", t: "chapter 12 WRECKED me 😭 the branching ending got me", h: 214 },
-              { a: "K", c: "#4E7A8C", u: "@keys", t: "read-aloud at 1am = perfect. what is this app 🥹", h: 176 },
-              { a: "S", c: "#4E7A52", u: "@softreads", t: "the choices actually change the plot?? obsessed", h: 240 },
+              { a: "M", c: "#B4547A", u: "@mara_reads", t: "read the free first chapter and now i've finished 4 books here 😭", h: 214 },
+              { a: "K", c: "#4E7A8C", u: "@keys", t: "following my fave author so i never miss a new drop 🥹", h: 176 },
+              { a: "S", c: "#4E7A52", u: "@softreads", t: "the reviews here are actually honest?? obsessed", h: 240 },
             ].map((x) => (
               <div key={x.u} className={s.fcard} style={{ display: "flex", gap: "0.7rem", alignItems: "flex-start" }}>
                 <span style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, display: "grid", placeItems: "center", color: "#fff", fontWeight: 800, background: x.c }}>
