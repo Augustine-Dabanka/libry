@@ -59,12 +59,17 @@ export default function WaitlistForm({ initialRef, role = "reader", cta = "Join 
     setJoined(j);
     try { localStorage.setItem(STORE, JSON.stringify({ email: email.trim().toLowerCase(), ref_code: j.ref_code })); } catch {}
 
-    // Optional email notification mirror (non-blocking).
+    // Optional email notification mirror (non-blocking). `_subject` gives each
+    // signup type a distinct subject line in your inbox.
     if (FORMSPREE_ENDPOINT) {
+      const subject =
+        role === "unlimited" ? "🔓 New Libry Unlimited interest"
+        : role === "investor" ? "💼 New Libry investor signup"
+        : "✨ New Libry waitlist signup";
       fetch(FORMSPREE_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ email: email.trim(), role, position: j.position, source: "libry/waitlist" }),
+        body: JSON.stringify({ email: email.trim(), role, position: j.position, source: "libry/waitlist", _subject: subject }),
       }).catch(() => {});
     }
   }
