@@ -159,7 +159,11 @@ export default function CartDrawer({ email }: { email?: string }) {
             <div style={{ textAlign: "center", fontFamily: "var(--sans)", padding: "3rem 1rem" }}>
               <div style={{ fontSize: "2.4rem", marginBottom: "0.6rem", color: "#7DBE86" }}>✓</div>
               <p style={{ color: "var(--ivory)", fontSize: "1.05rem", marginBottom: "1rem" }}>{done}</p>
-              <a href="/my-library?tab=purchased" className="btn btn-gold" onClick={() => { setDone(null); setOpen(false); }}>
+              <a
+                href="/my-library?tab=purchased"
+                onClick={() => { setDone(null); setOpen(false); }}
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0.8rem 1.4rem", background: "var(--gold)", color: "#12100E", borderRadius: 999, fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.95rem", textDecoration: "none" }}
+              >
                 View My Library
               </a>
             </div>
@@ -208,7 +212,28 @@ export default function CartDrawer({ email }: { email?: string }) {
               </span>
               <span className="price" style={{ fontSize: "1.2rem" }}>{formatPrice(total)}</span>
             </div>
-            <button className="btn btn-gold" style={{ width: "100%" }} onClick={checkout} disabled={busy}>
+            <button
+              type="button"
+              onClick={checkout}
+              disabled={busy}
+              style={{
+                width: "100%",
+                padding: "0.85rem 1rem",
+                background: "var(--gold)",
+                color: "#12100E",
+                border: "none",
+                borderRadius: 999,
+                fontFamily: "var(--sans)",
+                fontWeight: 700,
+                fontSize: "0.98rem",
+                lineHeight: 1.2,
+                cursor: busy ? "default" : "pointer",
+                opacity: busy ? 0.75 : 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               {busy ? "Adding…" : PAYSTACK_LIVE ? `Pay ${formatPrice(total)}` : "Checkout · Free"}
             </button>
             {err ? (

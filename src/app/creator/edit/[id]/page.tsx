@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import AppNav from "@/components/AppNav";
 import EditBookForm from "@/components/EditBookForm";
 import ChapterEditor, { type Chapter } from "@/components/ChapterEditor";
 import CollaboratorsPanel from "@/components/CollaboratorsPanel";
@@ -85,7 +84,6 @@ export default async function EditBook({
 
   return (
     <>
-      <AppNav />
       <section className="section">
         <div className="section-header">
           <h2>Edit story</h2>

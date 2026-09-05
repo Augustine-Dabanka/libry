@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import AppNav from "@/components/AppNav";
 import QuickUpload from "@/components/QuickUpload";
 import NewStoryButton from "@/components/NewStoryButton";
 import PublishToggle from "@/components/PublishToggle";
@@ -107,7 +106,6 @@ export default async function CreatorDashboard() {
 
   return (
     <>
-      <AppNav />
       <section className="section">
         <div className="dashboard-header">
           <h1>Creator Dashboard</h1>
@@ -187,6 +185,9 @@ export default async function CreatorDashboard() {
                     <td>
                       <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", flexWrap: "wrap" }}>
                         <PublishToggle bookId={Number(b.id)} published={!!b.is_published} />
+                        {b.is_published ? (
+                          <a className="btn btn-outline" href={`/b/${b.id}`} target="_blank" rel="noopener noreferrer" style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>Share ↗</a>
+                        ) : null}
                         <a className="btn btn-outline" href={`/creator/edit/${b.id}`} style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>Edit</a>
                         <DeleteBookButton bookId={Number(b.id)} title={b.title} />
                       </div>
