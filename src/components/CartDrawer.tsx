@@ -202,20 +202,13 @@ export default function CartDrawer({ email }: { email?: string }) {
 
         {items.length > 0 && !done ? (
           <footer style={{ padding: "1.2rem 1.4rem 1.4rem", borderTop: "1px solid var(--border)", background: "var(--charcoal)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem", fontFamily: "var(--sans)", fontSize: "0.86rem", color: "var(--muted)" }}>
-              <span>{items.length} item{items.length === 1 ? "" : "s"}</span>
-              <span>{formatPrice(total)}</span>
-            </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1rem", fontFamily: "var(--sans)" }}>
-              <span style={{ color: "var(--ivory)", fontWeight: 700 }}>Total</span>
-              <span className="price" style={{ fontSize: "1.25rem" }}>{formatPrice(total)}</span>
+              <span style={{ color: "var(--ivory)", fontWeight: 700 }}>
+                Total <span style={{ color: "var(--muted)", fontWeight: 400, fontSize: "0.85rem" }}>· {items.length} item{items.length === 1 ? "" : "s"}</span>
+              </span>
+              <span className="price" style={{ fontSize: "1.2rem" }}>{formatPrice(total)}</span>
             </div>
-            <button
-              className="btn btn-gold"
-              style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", padding: "0.9rem 1rem", fontSize: "1rem", borderRadius: 12 }}
-              onClick={checkout}
-              disabled={busy}
-            >
+            <button className="btn btn-gold" style={{ width: "100%" }} onClick={checkout} disabled={busy}>
               {busy ? "Processing…" : PAYSTACK_LIVE ? `Pay ${formatPrice(total)}` : `Checkout · ${formatPrice(total)}`}
             </button>
             {err ? (

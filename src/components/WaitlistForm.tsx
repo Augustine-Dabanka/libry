@@ -6,6 +6,11 @@ import { createClient } from "@/lib/supabase/client";
 type Joined = { ref_code: string; position: number; total: number; referrals: number };
 const STORE = "libry_waitlist";
 
+// Optional: paste your Formspree endpoint here to ALSO get an email on every
+// signup (Supabase stays the source of truth; this just notifies you).
+// e.g. "https://formspree.io/f/abcdwxyz". Leave "" to disable.
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mppzqqpy";
+
 export default function WaitlistForm({ initialRef, role = "reader", cta = "Join the waitlist" }: { initialRef?: string; role?: string; cta?: string }) {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -53,6 +58,15 @@ export default function WaitlistForm({ initialRef, role = "reader", cta = "Join 
     const j = data as Joined;
     setJoined(j);
     try { localStorage.setItem(STORE, JSON.stringify({ email: email.trim().toLowerCase(), ref_code: j.ref_code })); } catch {}
+
+    // Optional email notification mirror (non-blocking).
+    if (FORMSPREE_ENDPOINT) {
+      fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ email: email.trim(), role, position: j.position, source: "libry/waitlist" }),
+      }).catch(() => {});
+    }
   }
 
   const shareUrl = joined ? `${origin}/waitlist?ref=${joined.ref_code}` : "";
