@@ -6,6 +6,7 @@ import WishlistButton from "@/components/WishlistButton";
 import BookCard from "@/components/BookCard";
 import Stars from "@/components/Stars";
 import ReviewsSection, { type Review } from "@/components/ReviewsSection";
+import ReportButton from "@/components/ReportButton";
 import { formatPrice, type Book } from "@/lib/types";
 import { AGE_LABEL } from "@/lib/content";
 
@@ -176,6 +177,11 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 
         {/* Reviews */}
         <ReviewsSection bookId={Number(book.id)} reviews={reviews} canReview={!!user} myReview={myReview} />
+
+        {/* Trust & safety */}
+        <div style={{ marginTop: "2.5rem", paddingTop: "1.4rem", borderTop: "1px solid var(--border)" }}>
+          <ReportButton bookId={Number(book.id)} canReport={!!user} />
+        </div>
       </section>
     </>
   );

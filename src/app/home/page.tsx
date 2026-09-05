@@ -70,6 +70,25 @@ export default async function Home() {
     if (!tr.error) topRated = (tr.data ?? []) as Book[];
   }
 
+  // New from authors the reader follows.
+  let followedNew: Book[] = [];
+  {
+    const fol = await supabase.from("author_follows").select("author").eq("follower_id", user.id);
+    if (!fol.error) {
+      const authors = [...new Set((fol.data ?? []).map((f: { author: string }) => f.author))];
+      if (authors.length) {
+        const fn = await supabase
+          .from("books")
+          .select("id, title, author, price, type, rating")
+          .eq("is_published", true)
+          .in("author", authors)
+          .order("id", { ascending: false })
+          .limit(8);
+        if (!fn.error) followedNew = (fn.data ?? []) as Book[];
+      }
+    }
+  }
+
   // "Because you read X" — recommend from the reader's most recent book.
   let becauseTitle = "";
   let becauseBooks: Book[] = [];
@@ -122,6 +141,9 @@ export default async function Home() {
       </section>
 
       <Shelf title="Chosen for you" books={books.slice(0, 8)} />
+      {followedNew.length > 0 ? (
+        <Shelf title="New from authors you follow" books={followedNew} />
+      ) : null}
       {becauseBooks.length > 0 ? (
         <Shelf title={`Because you read ${becauseTitle}`} books={becauseBooks} />
       ) : null}
