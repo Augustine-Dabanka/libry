@@ -42,6 +42,9 @@ $$;
 --   referrals : how many this joiner has brought in
 --   ref_code  : this joiner's own code to share
 --   already   : true if they were already on the list
+-- Remove any older 2-arg overload so single-arg calls resolve unambiguously.
+drop function if exists public.join_waitlist(text, text);
+
 create or replace function public.join_waitlist(
   p_email text,
   p_role  text default 'reader',
