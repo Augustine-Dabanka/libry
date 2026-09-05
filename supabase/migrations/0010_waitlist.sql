@@ -13,6 +13,17 @@ create table if not exists public.waitlist (
   created_at  timestamptz default now()
 );
 
+-- Self-heal: if the table already existed with a partial schema, "create if not
+-- exists" above skips it, so add any missing columns here.
+alter table public.waitlist add column if not exists role        text default 'reader';
+alter table public.waitlist add column if not exists referred_by text;
+alter table public.waitlist add column if not exists referrals   int default 0;
+alter table public.waitlist add column if not exists ref_code    text;
+alter table public.waitlist add column if not exists created_at  timestamptz default now();
+update public.waitlist set ref_code = substr(md5(random()::text || id::text || clock_timestamp()::text), 1, 8) where ref_code is null;
+alter table public.waitlist alter column ref_code set default substr(md5(random()::text || clock_timestamp()::text), 1, 8);
+create unique index if not exists waitlist_ref_code_key on public.waitlist (ref_code);
+
 alter table public.waitlist enable row level security;
 -- (intentionally no SELECT/INSERT policies — only the definer functions touch it)
 
