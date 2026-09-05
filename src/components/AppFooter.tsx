@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 // Site footer for every in-app page. Hidden on the landing (which has its own),
 // on the auth/onboarding flow, and in the immersive reader.
-const HIDE = ["/login", "/onboarding", "/reader", "/auth"];
+const HIDE = ["/login", "/onboarding", "/reader", "/auth", "/links"];
 
 export default function AppFooter() {
   const pathname = usePathname() || "/";
