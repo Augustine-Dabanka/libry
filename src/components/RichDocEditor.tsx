@@ -1,8 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { RICH_CSS } from "@/lib/richStyles";
+
+// Heavy canvas designer (Fabric.js) — only loaded when the creator opens it.
+const PageDesigner = dynamic(() => import("@/components/PageDesigner"), { ssr: false });
 
 // A Word-style WYSIWYG surface. You format text, drop images anywhere and
 // align/resize them, add dividers, callouts, comic-panel grids and shapes —
@@ -24,6 +28,7 @@ export default function RichDocEditor({
   const [empty, setEmpty] = useState(!value);
   const [imgBar, setImgBar] = useState<{ top: number; left: number; fig: HTMLElement } | null>(null);
   const [menu, setMenu] = useState<null | "insert" | "shape">(null);
+  const [designer, setDesigner] = useState(false);
 
   // Fill the editable surface once; after that the DOM is the source of truth.
   useEffect(() => {
@@ -215,6 +220,7 @@ export default function RichDocEditor({
             {menu === "insert" ? (
               <div style={pop}>
                 <MI onClick={imageByUrl}>🔗 Image from URL</MI>
+                <MI onClick={() => { setMenu(null); setDesigner(true); }}>🎨 Design a page (comic)</MI>
                 <MI onClick={insertCallout}>💬 Callout box</MI>
                 <MI onClick={() => exec("insertHorizontalRule")}>— Divider</MI>
                 <div style={popLabel}>Comic panels</div>
@@ -286,6 +292,13 @@ export default function RichDocEditor({
           </div>
         ) : null}
       </div>
+
+      {designer ? (
+        <PageDesigner
+          onClose={() => setDesigner(false)}
+          onInsert={(url) => { setDesigner(false); insertHtml(figHtml(url)); }}
+        />
+      ) : null}
     </div>
   );
 }
