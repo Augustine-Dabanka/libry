@@ -205,42 +205,66 @@ export default function CartDrawer({ email }: { email?: string }) {
         </div>
 
         {items.length > 0 && !done ? (
-          <footer style={{ padding: "1.2rem 1.4rem 1.4rem", borderTop: "1px solid var(--border)", background: "var(--charcoal)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1rem", fontFamily: "var(--sans)" }}>
-              <span style={{ color: "var(--ivory)", fontWeight: 700 }}>
-                Total <span style={{ color: "var(--muted)", fontWeight: 400, fontSize: "0.85rem" }}>· {items.length} item{items.length === 1 ? "" : "s"}</span>
+          <footer
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.9rem",
+              padding: "1.2rem 1.4rem calc(1.2rem + env(safe-area-inset-bottom))",
+              borderTop: "1px solid var(--border)",
+              background: "var(--charcoal)",
+              fontFamily: "var(--sans)",
+            }}
+          >
+            {/* Summary line */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "0.75rem" }}>
+              <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+                Subtotal · {items.length} item{items.length === 1 ? "" : "s"}
               </span>
-              <span className="price" style={{ fontSize: "1.2rem" }}>{formatPrice(total)}</span>
+              <span className="price" style={{ fontSize: "1.35rem", fontWeight: 700, whiteSpace: "nowrap" }}>{formatPrice(total)}</span>
             </div>
+
+            {/* Primary action — full-width pill, can never collapse into a circle */}
             <button
               type="button"
               onClick={checkout}
               disabled={busy}
               style={{
-                width: "100%",
-                padding: "0.85rem 1rem",
-                background: "var(--gold)",
-                color: "#12100E",
-                border: "none",
-                borderRadius: 999,
-                fontFamily: "var(--sans)",
-                fontWeight: 700,
-                fontSize: "0.98rem",
-                lineHeight: 1.2,
-                cursor: busy ? "default" : "pointer",
-                opacity: busy ? 0.75 : 1,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                gap: "0.5rem",
+                width: "100%",
+                boxSizing: "border-box",
+                minHeight: 52,
+                padding: "0 1.25rem",
+                margin: 0,
+                background: "var(--gold)",
+                color: "#12100E",
+                border: "none",
+                borderRadius: 14,
+                fontFamily: "var(--sans)",
+                fontWeight: 700,
+                fontSize: "1rem",
+                letterSpacing: "0.01em",
+                lineHeight: 1.2,
+                textAlign: "center",
+                whiteSpace: "nowrap",
+                cursor: busy ? "default" : "pointer",
+                opacity: busy ? 0.7 : 1,
+                transition: "opacity 0.15s ease, filter 0.15s ease",
               }}
+              onMouseEnter={(e) => { if (!busy) e.currentTarget.style.filter = "brightness(1.05)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.filter = "none"; }}
             >
-              {busy ? "Adding…" : PAYSTACK_LIVE ? `Pay ${formatPrice(total)}` : "Checkout · Free"}
+              {busy ? "Processing…" : PAYSTACK_LIVE ? `Pay ${formatPrice(total)}` : `Checkout — ${formatPrice(total)}`}
             </button>
+
             {err ? (
-              <p style={{ color: "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.8rem", textAlign: "center", marginTop: "0.7rem" }}>{err}</p>
+              <p style={{ color: "var(--terracotta)", fontSize: "0.8rem", textAlign: "center", margin: 0 }}>{err}</p>
             ) : (
-              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.78rem", textAlign: "center", marginTop: "0.7rem", lineHeight: 1.5 }}>
-                {PAYSTACK_LIVE ? "🔒 Secured by Paystack." : "Free for now — secure payments coming soon."}
+              <p style={{ color: "var(--muted)", fontSize: "0.76rem", textAlign: "center", margin: 0, lineHeight: 1.5 }}>
+                {PAYSTACK_LIVE ? "🔒 Secured by Paystack" : "🔒 Free while we finish secure payments — no card needed."}
               </p>
             )}
           </footer>

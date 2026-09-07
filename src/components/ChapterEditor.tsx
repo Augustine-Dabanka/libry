@@ -2,8 +2,32 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import RichDocEditor from "@/components/RichDocEditor";
 
 export type Chapter = { title: string; content: string };
+
+const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+// Legacy chapters are plain text (with ![alt](url) image lines). Convert them to
+// editable HTML the first time they load into the rich editor; already-rich
+// chapters pass straight through.
+function toEditable(c: string): string {
+  if (!c) return "";
+  if (/<(p|h[1-6]|figure|section|div|img|ul|ol|blockquote|hr)\b/i.test(c)) return c;
+  return c
+    .split(/\n{2,}/)
+    .map((block) => {
+      const b = block.trim();
+      if (!b) return "";
+      const md = b.match(/^!\[(.*?)\]\((https?:\/\/[^\s)]+)\)$/);
+      if (md) {
+        const cap = esc(md[1] ?? "");
+        return `<figure class="le-fig le-al-c le-sz-l"><img class="le-img" src="${md[2] ?? ""}" alt="${cap}"/><figcaption>${cap}</figcaption></figure>`;
+      }
+      return `<p>${esc(b).replace(/\n/g, "<br/>")}</p>`;
+    })
+    .join("");
+}
 
 const field: React.CSSProperties = {
   width: "100%",
@@ -68,7 +92,9 @@ export default function ChapterEditor({ bookId, initial }: { bookId: number; ini
         return;
       }
     }
-    const compiled = rows.map((r) => `${r.title}\n\n${r.content}`).join("\n\n").trim();
+    const compiled = rows
+      .map((r) => `<section class="ch"><h2 class="chapter-title">${esc(r.title)}</h2>${r.content || ""}</section>`)
+      .join("\n");
     let { error: e2 } = await supabase.from("books").update({ content: compiled, pages: rows.length }).eq("id", bookId);
     if (e2 && /pages/i.test(e2.message)) {
       ({ error: e2 } = await supabase.from("books").update({ content: compiled }).eq("id", bookId));
@@ -107,13 +133,8 @@ export default function ChapterEditor({ bookId, initial }: { bookId: number; ini
                 <button type="button" title="Delete chapter" onClick={() => remove(i)} disabled={chapters.length === 1} style={{ ...iconBtn, color: "var(--terracotta)" }}>✕</button>
               </div>
               {isOpen ? (
-                <div style={{ padding: "0 0.7rem 0.7rem" }}>
-                  <textarea
-                    style={{ ...field, minHeight: 200, resize: "vertical", fontFamily: "var(--serif)", lineHeight: 1.7 }}
-                    value={c.content}
-                    onChange={(e) => patch(i, { content: e.target.value })}
-                    placeholder="Write this chapter… Add an image on its own line with ![caption](https://…​.jpg)"
-                  />
+                <div style={{ padding: "0 0.7rem 0.9rem" }}>
+                  <RichDocEditor value={toEditable(c.content)} onChange={(html) => patch(i, { content: html })} />
                 </div>
               ) : null}
             </div>

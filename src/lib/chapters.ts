@@ -5,6 +5,13 @@
 export function firstChapterExcerpt(content: string): { excerpt: string; truncated: boolean } {
   if (!content) return { excerpt: "", truncated: false };
 
+  // Rich HTML books compile each chapter into a <section class="ch">…</section>.
+  // The free sample is simply the first section.
+  if (/<section[^>]*class=["'][^"']*\bch\b/i.test(content)) {
+    const secs = content.match(/<section[\s\S]*?<\/section>/gi) || [];
+    if (secs[0]) return { excerpt: secs[0], truncated: secs.length > 1 };
+  }
+
   const lines = content.split(/\r?\n/);
   const headingRe = /^\s*chapter\b/i;
   const headings: number[] = [];

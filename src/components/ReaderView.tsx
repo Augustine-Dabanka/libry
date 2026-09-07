@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { sanitizeHtml, looksLikeHtml } from "@/lib/sanitize";
+import { RICH_CSS } from "@/lib/richStyles";
 
 type Theme = "dark" | "sepia";
 
@@ -37,13 +39,17 @@ export default function ReaderView({
   const scrollRef = useRef<HTMLDivElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const isHtml = useMemo(() => looksLikeHtml(content), [content]);
+  const safeHtml = useMemo(() => (isHtml ? sanitizeHtml(content) : ""), [isHtml, content]);
   const paragraphs = useMemo(
     () =>
-      content
-        .split(/\n+/)
-        .map((p) => p.trim())
-        .filter(Boolean),
-    [content]
+      isHtml
+        ? []
+        : content
+            .split(/\n+/)
+            .map((p) => p.trim())
+            .filter(Boolean),
+    [isHtml, content]
   );
 
   const pal = PALETTES[theme];
@@ -171,7 +177,12 @@ export default function ReaderView({
       >
         <h1 style={{ fontFamily: "var(--serif)", fontSize: "clamp(1.8rem,4vw,2.5rem)", marginBottom: "0.3rem" }}>{title}</h1>
         <p style={{ color: pal.muted, fontFamily: "var(--sans)", marginBottom: "2.2rem" }}>by {author || "Unknown author"}</p>
-        {paragraphs.length > 0 ? (
+        {isHtml ? (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: RICH_CSS }} />
+            <div className="le-body" style={{ fontSize: `${fontSize}rem` }} dangerouslySetInnerHTML={{ __html: safeHtml }} />
+          </>
+        ) : paragraphs.length > 0 ? (
           paragraphs.map((p, i) => {
             // Image blocks: ![caption](url) or a bare image URL on its own line.
             const md = p.match(/^!\[(.*?)\]\((https?:\/\/[^\s)]+)\)$/);
