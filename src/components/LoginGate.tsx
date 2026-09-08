@@ -305,17 +305,21 @@ export default function LoginGate({
           <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-          <GoogleButton
-            next={next || "/home"}
-            className="btn"
-            style={{
-              background: "#E9E6EE",
-              color: "#2B2622",
-              border: "1px solid rgba(43,38,34,0.10)",
-            }}
-          />
-          <DiscordButton next={next || "/home"} />
+        <div style={{ display: "flex", gap: "0.6rem" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <GoogleButton
+              next={next || "/home"}
+              className="btn"
+              style={{
+                background: "#E9E6EE",
+                color: "#2B2622",
+                border: "1px solid rgba(43,38,34,0.10)",
+              }}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <DiscordButton next={next || "/home"} />
+          </div>
         </div>
 
         <p style={{ color: "var(--muted)", textAlign: "center", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "1.3rem" }}>

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { sanitizeHtml, looksLikeHtml } from "@/lib/sanitize";
 import { RICH_CSS } from "@/lib/richStyles";
 import ShareButton from "@/components/ShareButton";
+import FinishChallenge from "@/components/FinishChallenge";
 
 type Theme = "dark" | "sepia";
 
@@ -37,6 +38,8 @@ export default function ReaderView({
   const [theme, setTheme] = useState<Theme>("dark");
   const [fontSize, setFontSize] = useState(1.14);
   const [progress, setProgress] = useState(0);
+  const [showFinish, setShowFinish] = useState(false);
+  const finishShown = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -84,6 +87,12 @@ export default function ReaderView({
     const max = el.scrollHeight - el.clientHeight;
     const pct = max > 0 ? Math.min(100, Math.round((el.scrollTop / max) * 100)) : 0;
     setProgress(pct);
+
+    // Reached the end → post-reading challenge (once, for a real signed-in read).
+    if (pct >= 99 && userEmail && !sample && !finishShown.current) {
+      finishShown.current = true;
+      setShowFinish(true);
+    }
 
     if (!userEmail || sample) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -245,6 +254,10 @@ export default function ReaderView({
           </div>
         ) : null}
       </article>
+
+      {showFinish ? (
+        <FinishChallenge bookId={Number(bookId)} title={title} onClose={() => setShowFinish(false)} />
+      ) : null}
     </div>
   );
 }

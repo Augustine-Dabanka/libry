@@ -7,7 +7,7 @@ type ProgRow = { book_id: number; progress_percentage: number | null };
 // Badge catalogue. `unlock` reads the live tallies and returns whether it's
 // earned — so every badge lights up from real reading data, and the rest read
 // honestly as still locked.
-type Tally = { finished: number; inLibrary: number; inProgress: number };
+type Tally = { finished: number; inLibrary: number; inProgress: number; challenges: number; reviews: number; streak: number };
 const BADGES: { key: string; name: string; need: string; unlock: (t: Tally) => boolean }[] = [
   { key: "first", name: "First Chapter", need: "Finish your first book", unlock: (t) => t.finished >= 1 },
   { key: "started", name: "Off the Shelf", need: "Start reading a book", unlock: (t) => t.inProgress + t.finished >= 1 },
@@ -20,12 +20,12 @@ const BADGES: { key: string; name: string; need: string; unlock: (t: Tally) => b
   { key: "collector", name: "Collector", need: "Keep 10 books in your library", unlock: (t) => t.inLibrary >= 10 },
   { key: "curator", name: "Curator", need: "Keep 20 books in your library", unlock: (t) => t.inLibrary >= 20 },
   { key: "juggler", name: "Juggler", need: "Have 3 books on the go at once", unlock: (t) => t.inProgress >= 3 },
-  { key: "deep", name: "Deep Reader", need: "Complete 3 reading challenges", unlock: () => false },
-  { key: "critic", name: "The Critic", need: "Rate 5 books", unlock: () => false },
-  { key: "ears", name: "All Ears", need: "Listen to a book", unlock: () => false },
-  { key: "roll", name: "On a Roll", need: "Reach a 3-day streak", unlock: () => false },
-  { key: "week", name: "Weeklong", need: "Reach a 7-day streak", unlock: () => false },
-  { key: "month", name: "Devoted Month", need: "Reach a 30-day streak", unlock: () => false },
+  { key: "reflective", name: "Reflective", need: "Complete a reading challenge", unlock: (t) => t.challenges >= 1 },
+  { key: "deep", name: "Deep Reader", need: "Complete 3 reading challenges", unlock: (t) => t.challenges >= 3 },
+  { key: "critic", name: "The Critic", need: "Rate 5 books", unlock: (t) => t.reviews >= 5 },
+  { key: "roll", name: "On a Roll", need: "Reach a 3-day streak", unlock: (t) => t.streak >= 3 },
+  { key: "week", name: "Weeklong", need: "Reach a 7-day streak", unlock: (t) => t.streak >= 7 },
+  { key: "month", name: "Devoted Month", need: "Reach a 30-day streak", unlock: (t) => t.streak >= 30 },
   { key: "explorer", name: "World Explorer", need: "Finish an interactive story", unlock: (t) => t.finished >= 1 },
 ];
 
@@ -70,7 +70,25 @@ export default async function Achievements() {
   const inLibrary = bestById.size;
   const finished = [...bestById.values()].filter((p) => p >= 100).length;
   const inProgress = [...bestById.values()].filter((p) => p > 0 && p < 100).length;
-  const tally: Tally = { finished, inLibrary, inProgress };
+
+  // Reading challenges completed, reviews written, current streak (all guarded).
+  let challenges = 0;
+  {
+    const c = await supabase.from("reading_challenges").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+    if (!c.error) challenges = c.count ?? 0;
+  }
+  let reviewsCount = 0;
+  {
+    const r = await supabase.from("reviews").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+    if (!r.error) reviewsCount = r.count ?? 0;
+  }
+  let streak = 0;
+  {
+    const s = await supabase.from("user_stats").select("streak_count").eq("user_id", user.id).maybeSingle();
+    if (!s.error && s.data) streak = s.data.streak_count ?? 0;
+  }
+
+  const tally: Tally = { finished, inLibrary, inProgress, challenges, reviews: reviewsCount, streak };
   const completion = inLibrary ? Math.round((finished / inLibrary) * 100) : 0;
 
   // XP: 25 per finished book, plus a little for progress.
@@ -93,12 +111,27 @@ export default async function Achievements() {
     { n: `${completion}%`, label: "Completion rate" },
     { n: xp, label: "Total XP" },
     { n: level, label: "Reader level" },
-    { n: 0, label: "Challenges done" },
-    { n: 0, label: "Day streak" },
+    { n: challenges, label: "Challenges done" },
+    { n: streak, label: "Day streak" },
   ];
 
   const unlockedKeys = new Set(BADGES.filter((b) => b.unlock(tally)).map((b) => b.key));
   const unlockedCount = unlockedKeys.size;
+  const allUnlocked = unlockedCount >= BADGES.length;
+
+  // Grand prize: unlock every badge → grant a one-time reward (idempotent).
+  let reward: { code: string | null; detail: string | null; redeemed: boolean } | null = null;
+  if (allUnlocked) {
+    const code = "LIBRY-LEGEND-" + user.id.slice(0, 6).toUpperCase();
+    try {
+      await supabase.from("rewards").upsert(
+        { user_id: user.id, kind: "all_badges", code, detail: "2 free books (one-time)" },
+        { onConflict: "user_id,kind", ignoreDuplicates: true }
+      );
+      const got = await supabase.from("rewards").select("code, detail, redeemed").eq("user_id", user.id).eq("kind", "all_badges").maybeSingle();
+      if (!got.error && got.data) reward = got.data as { code: string | null; detail: string | null; redeemed: boolean };
+    } catch { /* rewards table not migrated yet */ }
+  }
 
   return (
     <>
@@ -137,6 +170,24 @@ export default async function Achievements() {
             </div>
           ))}
         </div>
+
+        {/* Grand prize — every badge unlocked */}
+        {allUnlocked ? (
+          <div style={{ background: "linear-gradient(135deg, rgba(197,160,89,0.22), rgba(95,160,104,0.16))", border: "1px solid var(--gold)", borderRadius: 18, padding: "1.6rem 1.8rem", marginBottom: "2.5rem", textAlign: "center" }}>
+            <div style={{ fontSize: "2.4rem", marginBottom: "0.3rem" }}>🎁</div>
+            <h3 style={{ fontFamily: "var(--serif)", fontSize: "1.5rem", marginBottom: "0.3rem" }}>Every badge unlocked — you legend.</h3>
+            <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.95rem", marginBottom: "1rem" }}>
+              You&apos;ve earned the grand prize: <strong style={{ color: "var(--ivory)" }}>{reward?.detail || "2 free books (one-time)"}</strong>.
+            </p>
+            {reward?.code ? (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "0.6rem", background: "var(--charcoal)", border: "1px dashed var(--gold)", borderRadius: 10, padding: "0.6rem 1rem", fontFamily: "var(--sans)" }}>
+                <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>Your code</span>
+                <code style={{ color: "var(--gold)", fontWeight: 700, letterSpacing: "0.05em" }}>{reward.code}</code>
+                <span style={{ color: reward.redeemed ? "var(--muted)" : "#7DBE86", fontSize: "0.78rem" }}>{reward.redeemed ? "· redeemed" : "· ready"}</span>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {/* Badges */}
         <h3 style={{ marginBottom: "0.3rem" }}>Badges</h3>

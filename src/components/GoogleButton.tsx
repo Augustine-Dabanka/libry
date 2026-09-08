@@ -40,7 +40,7 @@ export default function GoogleButton({
         className={className}
         onClick={signIn}
         disabled={loading}
-        style={{ width: "100%", justifyContent: "center", gap: "0.6rem", ...style }}
+        style={{ width: "100%", justifyContent: "center", gap: "0.5rem", whiteSpace: "nowrap", ...style }}
       >
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
           <path
@@ -60,7 +60,7 @@ export default function GoogleButton({
             d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.6l6.5 5.5C40.9 36.3 46.5 30.9 46.5 24c0-1.2-.1-2.3-.4-3.5z"
           />
         </svg>
-        {loading ? "Redirecting…" : "Continue with Google"}
+        {loading ? "…" : "Google"}
       </button>
       {err ? (
         <p

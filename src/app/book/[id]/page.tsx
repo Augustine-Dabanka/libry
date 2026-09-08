@@ -3,6 +3,7 @@ import AppNav from "@/components/AppNav";
 import BackButton from "@/components/BackButton";
 import AddToCartButton from "@/components/AddToCartButton";
 import WishlistButton from "@/components/WishlistButton";
+import LikeButton from "@/components/LikeButton";
 import BookCard from "@/components/BookCard";
 import Stars from "@/components/Stars";
 import ReviewsSection, { type Review } from "@/components/ReviewsSection";
@@ -103,6 +104,18 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   if (user) {
     const wl = await supabase.from("wishlist").select("book_id").eq("user_id", user.id).eq("book_id", book.id).maybeSingle();
     wishlisted = !!wl.data;
+  }
+
+  // Likes (public read; guarded).
+  let likeCount = 0;
+  let liked = false;
+  {
+    const lc = await supabase.from("book_likes").select("user_id", { count: "exact", head: true }).eq("book_id", book.id);
+    if (!lc.error) likeCount = lc.count ?? 0;
+    if (user) {
+      const mine = await supabase.from("book_likes").select("book_id").eq("book_id", book.id).eq("user_id", user.id).maybeSingle();
+      liked = !!mine.data;
+    }
   }
 
   // Reviews (guarded).
@@ -218,6 +231,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
                 <AddToCartButton item={{ id: book.id, title: book.title, author: book.author, price: book.price }} />
               ) : null}
               {user ? <WishlistButton bookId={Number(book.id)} userId={user.id} initial={wishlisted} /> : null}
+              <LikeButton bookId={Number(book.id)} userId={user?.id ?? null} initialLiked={liked} initialCount={likeCount} />
               <ShareButton path={`/book/${book.id}`} title={book.title} />
             </div>
           </div>
