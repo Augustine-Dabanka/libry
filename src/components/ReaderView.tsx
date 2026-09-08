@@ -6,6 +6,7 @@ import { sanitizeHtml, looksLikeHtml } from "@/lib/sanitize";
 import { RICH_CSS } from "@/lib/richStyles";
 import ShareButton from "@/components/ShareButton";
 import FinishChallenge from "@/components/FinishChallenge";
+import CommentTray, { type ParaComment } from "@/components/CommentTray";
 
 type Theme = "dark" | "sepia";
 
@@ -20,6 +21,8 @@ export default function ReaderView({
   author,
   content,
   userEmail,
+  userId = null,
+  userName = null,
   sample = false,
   signedIn = false,
   locked = false,
@@ -30,6 +33,8 @@ export default function ReaderView({
   author: string | null;
   content: string;
   userEmail: string | null;
+  userId?: string | null;
+  userName?: string | null;
   sample?: boolean;
   signedIn?: boolean;
   locked?: boolean;
@@ -40,6 +45,9 @@ export default function ReaderView({
   const [progress, setProgress] = useState(0);
   const [showFinish, setShowFinish] = useState(false);
   const finishShown = useRef(false);
+  const [commentsByPara, setCommentsByPara] = useState<Map<number, ParaComment[]>>(new Map());
+  const [openPara, setOpenPara] = useState<number | null>(null);
+  const [commentBusy, setCommentBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -80,6 +88,60 @@ export default function ReaderView({
       cancelled = true;
     };
   }, [bookId, userEmail]);
+
+  // Load paragraph comments once (plain-text reader only; guarded).
+  useEffect(() => {
+    if (isHtml) return;
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("paragraph_comments")
+        .select("id, para_index, user_id, user_name, body, created_at")
+        .eq("book_id", Number(bookId))
+        .order("created_at", { ascending: true });
+      if (cancelled || error || !data) return;
+      const map = new Map<number, ParaComment[]>();
+      for (const c of data as ParaComment[]) {
+        const arr = map.get(c.para_index) ?? [];
+        arr.push(c);
+        map.set(c.para_index, arr);
+      }
+      setCommentsByPara(map);
+    })();
+    return () => { cancelled = true; };
+  }, [bookId, isHtml]);
+
+  async function addComment(body: string) {
+    if (openPara == null || !userId) return;
+    setCommentBusy(true);
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("paragraph_comments")
+      .insert({ book_id: Number(bookId), para_index: openPara, user_id: userId, user_name: userName, body })
+      .select("id, para_index, user_id, user_name, body, created_at")
+      .single();
+    setCommentBusy(false);
+    if (error || !data) return;
+    setCommentsByPara((prev) => {
+      const next = new Map(prev);
+      const arr = [...(next.get(openPara) ?? []), data as ParaComment];
+      next.set(openPara, arr);
+      return next;
+    });
+  }
+
+  async function deleteComment(id: number) {
+    if (openPara == null) return;
+    const supabase = createClient();
+    const { error } = await supabase.from("paragraph_comments").delete().eq("id", id);
+    if (error) return;
+    setCommentsByPara((prev) => {
+      const next = new Map(prev);
+      next.set(openPara, (next.get(openPara) ?? []).filter((c) => c.id !== id));
+      return next;
+    });
+  }
 
   function onScroll() {
     const el = scrollRef.current;
@@ -211,9 +273,19 @@ export default function ReaderView({
                 </figure>
               );
             }
+            const cs = commentsByPara.get(i) ?? [];
             return (
               <p key={i} style={{ fontFamily: "var(--serif)", fontSize: `${fontSize}rem`, lineHeight: 1.95, marginBottom: "1.3rem" }}>
-                {p}
+                {p}{" "}
+                <button
+                  type="button"
+                  onClick={() => setOpenPara(i)}
+                  title="Comment on this passage"
+                  aria-label={cs.length ? `${cs.length} comment${cs.length === 1 ? "" : "s"} on this passage` : "Comment on this passage"}
+                  style={{ verticalAlign: "baseline", marginLeft: 3, padding: "0 5px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--sans)", fontSize: "0.66em", color: cs.length ? "#C4A35A" : pal.muted, opacity: cs.length ? 1 : 0.4 }}
+                >
+                  💬{cs.length ? ` ${cs.length}` : ""}
+                </button>
               </p>
             );
           })
@@ -257,6 +329,20 @@ export default function ReaderView({
 
       {showFinish ? (
         <FinishChallenge bookId={Number(bookId)} title={title} onClose={() => setShowFinish(false)} />
+      ) : null}
+
+      {!isHtml ? (
+        <CommentTray
+          open={openPara != null}
+          paraText={openPara != null ? paragraphs[openPara] ?? "" : ""}
+          comments={openPara != null ? commentsByPara.get(openPara) ?? [] : []}
+          canComment={!!userId}
+          currentUserId={userId}
+          busy={commentBusy}
+          onClose={() => setOpenPara(null)}
+          onAdd={addComment}
+          onDelete={deleteComment}
+        />
       ) : null}
     </div>
   );

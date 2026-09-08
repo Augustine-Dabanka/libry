@@ -102,6 +102,12 @@ export default async function ReaderPage({
 
   const { excerpt, truncated } = showSample ? firstChapterExcerpt(content) : { excerpt: content, truncated: false };
 
+  let userName: string | null = null;
+  if (user) {
+    const pr = await supabase.from("profiles").select("full_name, username").eq("id", user.id).maybeSingle();
+    userName = pr.data?.full_name || pr.data?.username || (user.email ? user.email.split("@")[0] : null);
+  }
+
   return (
     <ReaderView
       bookId={String(book.id)}
@@ -109,6 +115,8 @@ export default async function ReaderPage({
       author={book.author}
       content={showSample ? excerpt : content}
       userEmail={user?.email ?? null}
+      userId={user?.id ?? null}
+      userName={userName}
       sample={showSample && (truncated || locked)}
       signedIn={!!user}
       locked={locked}
