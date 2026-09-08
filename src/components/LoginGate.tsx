@@ -8,6 +8,11 @@ import DiscordButton from "@/components/DiscordButton";
 
 type Tab = "login" | "signup";
 
+// Pools for the "Surprise me" identity generator.
+const FIRST = ["Aria", "Kai", "Luna", "Milo", "Nova", "Ezra", "Iris", "Theo", "Wren", "Sage", "Juno", "Rumi", "Cleo", "Arlo", "Faye", "Onyx", "Lyra", "Idris", "Nadia", "Colm", "Mara", "Soren", "Elowen", "Dara", "Priya", "Rory", "Yara", "Bram", "Isolde", "Kael"];
+const LAST = ["Ashford", "Vale", "Marsh", "Bennett", "Cole", "Hart", "Lang", "Reyes", "Doyle", "Okoro", "Nair", "Serrano", "Blackwood", "Frost", "Rivers", "Quill", "Sterling", "Hollis", "Mercer", "Wilder", "Bright", "Cross", "Fenn", "Larkspur", "Thorn", "Ellison", "Hale", "Rooke"];
+const pick = <T,>(a: readonly T[]): T => a[Math.floor(Math.random() * a.length)]!;
+
 const field: React.CSSProperties = {
   width: "100%",
   padding: "0.72rem 0.95rem",
@@ -61,8 +66,42 @@ export default function LoginGate({
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(serverError ? "Sign-in failed. Please try again." : null);
   const [info, setInfo] = useState<string | null>(null);
+  const [genBusy, setGenBusy] = useState(false);
 
   const dest = next && /^[a-z0-9_\-./?=&%]+$/i.test(next) && !/^https?:|^\/\//i.test(next) ? next : "/home";
+
+  // Find a username that isn't taken (case-insensitive). Tweaks with digits if
+  // the base is taken; if the lookup can't run (e.g. RLS), returns a candidate
+  // and lets the sign-up proceed.
+  async function ensureFreeUsername(base: string): Promise<string> {
+    const supabase = createClient();
+    const clean = base.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 20) || "reader";
+    const candidates = [clean, ...Array.from({ length: 6 }, () => `${clean.slice(0, 15)}${Math.floor(100 + Math.random() * 9900)}`)];
+    for (const c of candidates) {
+      const { data, error } = await supabase.from("profiles").select("id").ilike("username", c).maybeSingle();
+      if (error) return c;
+      if (!data) return c;
+    }
+    return `${clean.slice(0, 14)}${Date.now().toString().slice(-5)}`;
+  }
+
+  // Fill the form with a random name + a guaranteed-free username.
+  async function generateIdentity() {
+    setGenBusy(true);
+    setMsg(null);
+    const first = pick(FIRST);
+    const last = pick(LAST);
+    setFullName(`${first} ${last}`);
+    setUsername(await ensureFreeUsername(first + last));
+    setGenBusy(false);
+  }
+
+  // On opening the sign-up tab with empty fields, pre-fill a valid identity so
+  // the "username taken" wall never blocks the first attempt.
+  useEffect(() => {
+    if (tab === "signup" && !fullName && !username) generateIdentity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -84,17 +123,17 @@ export default function LoginGate({
         return;
       }
       setBusy(true);
-      // Username taken?
-      const taken = await supabase.from("profiles").select("id").eq("username", username.trim()).maybeSingle();
-      if (taken.data) {
-        setBusy(false);
-        setMsg("That username is taken — try another.");
-        return;
+      // Guarantee a free, case-insensitive username — auto-tweak if the chosen
+      // one is taken instead of dead-ending.
+      const uname = await ensureFreeUsername(username.trim());
+      if (uname !== username.trim().toLowerCase()) {
+        setUsername(uname);
+        setInfo(`“${username.trim()}” was taken, so we set your username to “${uname}”.`);
       }
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: { data: { full_name: fullName.trim(), username: username.trim() } },
+        options: { data: { full_name: fullName.trim(), username: uname } },
       });
       if (error) {
         setBusy(false);
@@ -108,7 +147,7 @@ export default function LoginGate({
         return;
       }
       // Ensure the profile carries the chosen name/username (trigger also does this).
-      const profilePatch: Record<string, unknown> = { full_name: fullName.trim(), username: username.trim() };
+      const profilePatch: Record<string, unknown> = { full_name: fullName.trim(), username: uname };
       if (accountType === "writer") {
         profilePatch.is_creator = true;
         profilePatch.pen_name = fullName.trim();
@@ -116,7 +155,7 @@ export default function LoginGate({
       }
       let up = await supabase.from("profiles").update(profilePatch).eq("id", data.user!.id);
       if (up.error && /is_creator|pen_name|bio/i.test(up.error.message)) {
-        up = await supabase.from("profiles").update({ full_name: fullName.trim(), username: username.trim() }).eq("id", data.user!.id);
+        up = await supabase.from("profiles").update({ full_name: fullName.trim(), username: uname }).eq("id", data.user!.id);
       }
       if (referrer) {
         try {
@@ -284,7 +323,17 @@ export default function LoginGate({
                   </button>
                 ))}
               </div>
-              <label style={{ ...labelStyle, marginTop: "0.6rem" }}>Full name</label>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.6rem" }}>
+                <label style={{ ...labelStyle, marginTop: 0 }}>Full name</label>
+                <button
+                  type="button"
+                  onClick={generateIdentity}
+                  disabled={genBusy}
+                  style={{ background: "transparent", border: "none", color: "var(--gold)", fontFamily: "var(--sans)", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", padding: 0 }}
+                >
+                  {genBusy ? "…" : "🎲 Surprise me"}
+                </button>
+              </div>
               <input className="auth-input" style={field} placeholder="Ada Lovelace" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
               <label style={labelStyle}>Username</label>
               <input className="auth-input" style={field} placeholder="ada" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} />
