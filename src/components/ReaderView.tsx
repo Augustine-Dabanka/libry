@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeHtml, looksLikeHtml } from "@/lib/sanitize";
 import { RICH_CSS } from "@/lib/richStyles";
+import ShareButton from "@/components/ShareButton";
 
 type Theme = "dark" | "sepia";
 
@@ -150,7 +151,7 @@ export default function ReaderView({
         >
           {title}
         </span>
-        <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", "--bar": pal.bar } as React.CSSProperties}>
           <button onClick={() => setFontSize((s) => Math.max(0.9, s - 0.08))} style={ctrl(pal)} aria-label="Smaller text">
             A−
           </button>
@@ -164,6 +165,7 @@ export default function ReaderView({
           >
             {theme === "dark" ? "☀" : "☾"}
           </button>
+          <ShareButton path={`/book/${bookId}`} title={title} variant="chip" />
         </div>
       </div>
 

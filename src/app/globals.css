@@ -944,3 +944,59 @@ html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) {
   .lb-bob, .lb-cheer, .lb-pop, .lb-ring, .lb-chest, .lb-float-in { animation: none !important; }
 }
+
+/* ── Book detail page — responsive across every screen ── */
+.book-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) 1fr;
+  gap: 2.5rem;
+  align-items: start;
+  margin-bottom: 3rem;
+}
+.book-hero .book-cover {
+  aspect-ratio: 2 / 3;
+  border-radius: 14px;
+  display: flex;
+  align-items: flex-end;
+  padding: 1.3rem;
+  box-shadow: var(--shadow);
+}
+.book-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1.6rem; }
+.age-pill {
+  display: inline-flex; align-items: center;
+  font-family: var(--sans); font-weight: 700; font-size: 0.72rem;
+  letter-spacing: 0.03em; padding: 0.18rem 0.5rem; border-radius: 6px;
+  background: rgba(124,124,180,0.18); color: #B7B7E6;
+}
+.age-pill.mature { background: rgba(180,83,9,0.2); color: #E9A356; }
+.book-toc { list-style: none; padding: 0; margin: 0.8rem 0 0; display: grid; gap: 0.35rem; }
+.book-toc a {
+  display: flex; gap: 0.7rem; align-items: baseline; text-decoration: none;
+  color: var(--ivory-muted); font-family: var(--sans); font-size: 0.95rem;
+  padding: 0.55rem 0.8rem; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--stone);
+}
+.book-toc a:hover { color: var(--ivory); border-color: var(--gold); }
+.book-toc .n { color: var(--muted); font-size: 0.8rem; min-width: 1.4rem; }
+.author-card {
+  display: flex; gap: 1rem; align-items: flex-start;
+  padding: 1.3rem 1.4rem; border: 1px solid var(--border);
+  border-radius: 14px; background: var(--stone);
+}
+.author-card .avatar {
+  width: 52px; height: 52px; border-radius: 999px; flex-shrink: 0;
+  display: grid; place-items: center; font-family: var(--serif);
+  font-size: 1.3rem; color: #12100E; background: var(--gold);
+}
+@media (max-width: 720px) {
+  .book-hero { grid-template-columns: 1fr; gap: 1.4rem; }
+  .book-hero .book-cover { max-width: 200px; }
+  .book-actions .btn { flex: 1 1 auto; text-align: center; }
+}
+/* wishlist/cart badge on the heart + bag */
+.icon-link { position: relative; }
+.icon-link .badge-count {
+  font-family: var(--sans); font-size: 0.62rem; font-weight: 700;
+  background: var(--gold); color: #12100E; border-radius: 999px;
+  padding: 0.05rem 0.32rem; margin-left: 0.15rem; vertical-align: super;
+}

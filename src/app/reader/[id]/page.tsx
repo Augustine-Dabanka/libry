@@ -3,6 +3,7 @@ import ReaderView from "@/components/ReaderView";
 import InteractiveReader from "@/components/InteractiveReader";
 import { firstChapterExcerpt } from "@/lib/chapters";
 import { parseInteractive } from "@/lib/interactive";
+import { isMatureRating } from "@/lib/content";
 
 function Gate({ children }: { children: React.ReactNode }) {
   return (
@@ -46,7 +47,7 @@ export default async function ReaderPage({
   }
 
   // ---- 18+ age gate: block Mature titles unless the reader enabled it ----
-  if ((book as { age_rating?: string }).age_rating === "Mature") {
+  if (isMatureRating((book as { age_rating?: string }).age_rating)) {
     let showMature = false;
     if (user) {
       const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();

@@ -31,7 +31,10 @@ export default function WishlistButton({
     if (error) {
       setSaved(!next); // revert
       setErr(/relation .*wishlist.* does not exist/i.test(error.message) ? "Wishlist isn't set up yet." : error.message);
+      return;
     }
+    // Nudge the navbar heart badge.
+    window.dispatchEvent(new CustomEvent("libry:wishlist-change", { detail: next ? 1 : -1 }));
   }
 
   return (

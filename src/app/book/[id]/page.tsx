@@ -7,8 +7,9 @@ import BookCard from "@/components/BookCard";
 import Stars from "@/components/Stars";
 import ReviewsSection, { type Review } from "@/components/ReviewsSection";
 import ReportButton from "@/components/ReportButton";
+import ShareButton from "@/components/ShareButton";
 import { formatPrice, type Book } from "@/lib/types";
-import { AGE_LABEL } from "@/lib/content";
+import { AGE_LABEL, agePill, isMatureRating } from "@/lib/content";
 
 type BookDetail = {
   id: number | string;
@@ -70,8 +71,8 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  // 18+ age gate — block Mature titles unless the reader enabled mature content.
-  if (book.age_rating === "Mature") {
+  // 18+ age gate — block Mature (16+/18+) titles unless the reader enabled it.
+  if (isMatureRating(book.age_rating)) {
     let showMature = false;
     if (user) {
       const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
@@ -130,7 +131,33 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  // Table of contents — chapter titles, if the book has chapter rows.
+  let toc: { title: string; n: number }[] = [];
+  {
+    const ch = await supabase
+      .from("chapters")
+      .select("title, chapter_number")
+      .eq("book_id", book.id)
+      .order("chapter_number", { ascending: true });
+    toc = (ch.data ?? []).map((c: { title: string | null; chapter_number: number | null }, i: number) => ({
+      title: c.title || `Chapter ${i + 1}`,
+      n: c.chapter_number ?? i + 1,
+    }));
+  }
+
+  // About the author — a matching creator profile's bio, if one exists.
+  let authorBio: { bio: string | null; avatar: string | null } | null = null;
+  if (book.author) {
+    const ap = await supabase
+      .from("profiles")
+      .select("bio, avatar_url, full_name, username")
+      .or(`full_name.eq.${book.author},username.eq.${book.author}`)
+      .maybeSingle();
+    if (!ap.error && ap.data) authorBio = { bio: ap.data.bio ?? null, avatar: ap.data.avatar_url ?? null };
+  }
+
   const authorHref = book.author ? `/author/${encodeURIComponent(book.author)}` : null;
+  const authorInitial = (book.author || "?").trim().charAt(0).toUpperCase() || "?";
 
   return (
     <>
@@ -139,8 +166,8 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         <div style={{ marginBottom: "1.5rem" }}>
           <BackButton />
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 220px) 1fr", gap: "2.5rem", alignItems: "start", marginBottom: "3rem" }}>
-          <div style={{ aspectRatio: "2 / 3", borderRadius: 14, background: coverGradient(book.title), display: "flex", alignItems: "flex-end", padding: "1.3rem", boxShadow: "var(--shadow)" }}>
+        <div className="book-hero">
+          <div className="book-cover" style={{ background: coverGradient(book.title) }}>
             <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", color: "rgba(255,255,255,0.96)", fontSize: "1.3rem", lineHeight: 1.2 }}>
               {book.title}
             </span>
@@ -164,20 +191,22 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
                 </span>
               </div>
             ) : null}
-            <div style={{ display: "flex", gap: "0.6rem", margin: "1rem 0", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "0.6rem", margin: "1rem 0", flexWrap: "wrap", alignItems: "center" }}>
               <span className="price" style={{ fontSize: "1.1rem" }}>{formatPrice(book.price)}</span>
-              {book.type ? <span className="badge">{book.type}</span> : null}
+              {book.category ? <span className="badge">{book.category}</span> : null}
+              {book.type && book.type !== book.category ? <span className="badge">{book.type}</span> : null}
               {book.status ? <span className="badge">{book.status}</span> : null}
-              {book.age_rating ? (
-                <span className="badge" style={{ background: "rgba(124,124,180,0.2)", color: "#B7B7E6" }}>
-                  {AGE_LABEL[book.age_rating] ?? book.age_rating}
-                </span>
-              ) : null}
+              <span
+                className={`age-pill${isMatureRating(book.age_rating) ? " mature" : ""}`}
+                title={book.age_rating ? (AGE_LABEL[book.age_rating] ?? book.age_rating) : "All ages"}
+              >
+                {agePill(book.age_rating)}
+              </span>
             </div>
             {book.description ? (
               <p style={{ color: "var(--ivory-muted)", marginTop: "1rem", maxWidth: 560 }}>{book.description}</p>
             ) : null}
-            <div style={{ marginTop: "1.6rem", display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
+            <div className="book-actions">
               {book.content ? (
                 (book.type || "").toLowerCase() === "interactive" ? (
                   <a href={`/reader/${book.id}`} className="btn btn-gold">▸ Play the story →</a>
@@ -189,9 +218,53 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
                 <AddToCartButton item={{ id: book.id, title: book.title, author: book.author, price: book.price }} />
               ) : null}
               {user ? <WishlistButton bookId={Number(book.id)} userId={user.id} initial={wishlisted} /> : null}
+              <ShareButton path={`/book/${book.id}`} title={book.title} />
             </div>
           </div>
         </div>
+
+        {/* Table of contents */}
+        {toc.length > 0 ? (
+          <div style={{ marginBottom: "2.5rem" }}>
+            <h2 style={{ fontSize: "1.4rem", marginBottom: "0.6rem" }}>Table of contents</h2>
+            <ol className="book-toc">
+              {toc.map((c, i) => (
+                <li key={i}>
+                  <a href={`/reader/${book.id}`}>
+                    <span className="n">{String(c.n).padStart(2, "0")}</span>
+                    <span>{c.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
+
+        {/* About the author */}
+        {book.author ? (
+          <div style={{ marginBottom: "2.5rem" }}>
+            <h2 style={{ fontSize: "1.4rem", marginBottom: "0.8rem" }}>About the author</h2>
+            <div className="author-card">
+              {authorBio?.avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={authorBio.avatar} alt={book.author} className="avatar" style={{ objectFit: "cover" }} />
+              ) : (
+                <div className="avatar">{authorInitial}</div>
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "var(--serif)", fontSize: "1.2rem", color: "var(--ivory)" }}>{book.author}</div>
+                <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.92rem", margin: "0.4rem 0 0.7rem", lineHeight: 1.6 }}>
+                  {authorBio?.bio || "This author hasn't added a bio yet."}
+                </p>
+                {authorHref ? (
+                  <a href={authorHref} className="btn btn-outline" style={{ padding: "0.35rem 0.9rem", fontSize: "0.82rem" }}>
+                    More from {book.author} →
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {/* Readers also read */}
         {related.length > 0 ? (

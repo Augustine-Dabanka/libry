@@ -18,18 +18,18 @@ export default async function EditBook({
 
   const primary = await supabase
     .from("books")
-    .select("id, title, description, content, price, type, age_rating, user_id")
+    .select("id, title, description, content, price, type, age_rating, category, user_id")
     .eq("id", id)
     .maybeSingle();
   let book = primary.data;
   if (primary.error) {
-    // age_rating not migrated yet — retry without it.
+    // age_rating/category not migrated yet — retry without them.
     const alt = await supabase
       .from("books")
       .select("id, title, description, content, price, type, user_id")
       .eq("id", id)
       .maybeSingle();
-    book = alt.data ? { ...alt.data, age_rating: "Everyday" } : null;
+    book = alt.data ? { ...alt.data, age_rating: "Everyday", category: null } : null;
   }
 
   let allowed = false;

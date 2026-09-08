@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { AGE_RATINGS, AGE_LABEL } from "@/lib/content";
+import { AGE_RATINGS, AGE_LABEL, GENRES } from "@/lib/content";
 
 type BookEdit = {
   id: number | string;
@@ -13,6 +13,7 @@ type BookEdit = {
   price: number | null;
   type: string | null;
   age_rating: string | null;
+  category?: string | null;
 };
 
 const field: React.CSSProperties = {
@@ -41,6 +42,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
   const [description, setDescription] = useState(book.description ?? "");
   const [content, setContent] = useState(book.content ?? "");
   const [type, setType] = useState(book.type ?? "Fiction");
+  const [category, setCategory] = useState(book.category ?? "");
   const [price, setPrice] = useState(String(book.price ?? 0));
   const [age, setAge] = useState(book.age_rating ?? "Everyday");
   const [busy, setBusy] = useState(false);
@@ -60,13 +62,19 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
       description: description.trim(),
       content: content.trim() || null,
       type,
+      category: category || null,
       price: priceNum,
       is_free: priceNum <= 0,
       age_rating: age,
     };
     let { error } = await supabase.from("books").update(payload).eq("id", book.id);
+    // Retry gracefully if a column/constraint isn't migrated yet.
     if (error && /age_rating/i.test(error.message)) {
       delete payload.age_rating;
+      ({ error } = await supabase.from("books").update(payload).eq("id", book.id));
+    }
+    if (error && /category/i.test(error.message)) {
+      delete payload.category;
       ({ error } = await supabase.from("books").update(payload).eq("id", book.id));
     }
     setBusy(false);
@@ -93,6 +101,13 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
             <option>Fiction</option>
             <option>Non-Fiction</option>
             <option>Interactive</option>
+          </select>
+        </div>
+        <div style={{ flex: 1, minWidth: 150 }}>
+          <label style={label}>Genre</label>
+          <select style={field} value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="">— Select a genre —</option>
+            {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
           </select>
         </div>
         <div style={{ flex: 1, minWidth: 150 }}>

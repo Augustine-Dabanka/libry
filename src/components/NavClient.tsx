@@ -12,22 +12,32 @@ export default function NavClient({
   avatarUrl,
   initials,
   email,
+  wishCount = 0,
 }: {
   signedIn: boolean;
   name: string;
   avatarUrl: string | null;
   initials: string;
   email?: string;
+  wishCount?: number;
 }) {
   const [dd, setDd] = useState<Dd>(null);
   const [mobile, setMobile] = useState(false);
   const [cartN, setCartN] = useState(0);
+  const [wishN, setWishN] = useState(wishCount);
   const rootRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const sync = () => setCartN(cartCount());
     sync();
     return onCartChange(sync);
+  }, []);
+
+  useEffect(() => { setWishN(wishCount); }, [wishCount]);
+  useEffect(() => {
+    const onWish = (e: Event) => setWishN((n) => Math.max(0, n + ((e as CustomEvent).detail || 0)));
+    window.addEventListener("libry:wishlist-change", onWish);
+    return () => window.removeEventListener("libry:wishlist-change", onWish);
   }, []);
 
   useEffect(() => {
@@ -120,7 +130,7 @@ export default function NavClient({
           </button>
 
           <a href="/my-library?tab=wishlist" className="icon-link" title="Wishlist" aria-label="Wishlist">
-            &#9829;
+            &#9829;{wishN > 0 ? <span className="badge-count">{wishN}</span> : null}
           </a>
           <button type="button" className="icon-link" title="Cart" aria-label="Cart" onClick={openCart} style={{ background: "transparent", border: "none", cursor: "pointer", font: "inherit" }}>
             &#128722; <span className="badge-count">{cartN}</span>
