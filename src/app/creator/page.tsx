@@ -43,6 +43,20 @@ export default async function CreatorDashboard() {
   const bs = await supabase.rpc("my_books_sold");
   const booksSold = typeof bs.data === "number" ? bs.data : 0;
 
+  // Real earnings from purchases of this creator's books (creators keep 70%).
+  const earn = await supabase.rpc("my_earnings");
+  const earnRow = (Array.isArray(earn.data) ? earn.data[0] : earn.data) as { gross?: number; net?: number; sales?: number } | null;
+  const netEarnings = Number(earnRow?.net ?? 0);
+  const salesCount = Number(earnRow?.sales ?? booksSold);
+
+  const bookSalesRes = await supabase.rpc("my_book_sales");
+  const salesByBook = new Map<number, { sales: number; revenue: number }>();
+  if (Array.isArray(bookSalesRes.data)) {
+    for (const r of bookSalesRes.data as { book_id: number; sales: number; revenue: number }[]) {
+      salesByBook.set(Number(r.book_id), { sales: Number(r.sales), revenue: Number(r.revenue) });
+    }
+  }
+
   // Owned books (with rating + publish state, guarded pre-migration).
   const primaryMine = await supabase
     .from("books")
@@ -120,9 +134,9 @@ export default async function CreatorDashboard() {
 
         {/* Stat cards */}
         <div className="stats-grid">
-          {stat("Total Revenue", "$0.00", "From real sales")}
-          {stat("Books Sold", "0", "Acquisitions to date")}
-          {stat("Next Payout", "$0.00", "Across your titles")}
+          {stat("Projected earnings", formatPrice(netEarnings), "Your 70% at list price")}
+          {stat("Books sold", String(salesCount), "Copies acquired")}
+          {stat("Next payout", formatPrice(netEarnings), "When payouts open")}
           {stat("Avg Rating", avgRating ? avgRating.toFixed(1) : "—", "Across your titles")}
         </div>
 
@@ -130,6 +144,25 @@ export default async function CreatorDashboard() {
         <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "2.5rem" }}>
           <h3 style={{ marginBottom: "1.2rem" }}>Revenue Overview</h3>
           <RevenueChart daily={revenue7} />
+        </div>
+
+        {/* How you get paid */}
+        <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "2.5rem" }}>
+          <h3 style={{ marginBottom: "0.3rem" }}>How you get paid</h3>
+          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginBottom: "1.2rem" }}>
+            You keep the majority of every sale — openly, on this dashboard.
+          </p>
+          {/* 70 / 30 split bar */}
+          <div style={{ display: "flex", height: 40, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem" }}>
+            <div style={{ flex: 70, background: "var(--gold)", color: "#12100E", display: "flex", alignItems: "center", justifyContent: "center" }}>You keep 70%</div>
+            <div style={{ flex: 30, background: "var(--charcoal)", color: "var(--ivory-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>Libry 30%</div>
+          </div>
+          <ul style={{ margin: "1.2rem 0 0", paddingLeft: "1.1rem", color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.7 }}>
+            <li>Every purchase of your book credits <strong style={{ color: "var(--ivory)" }}>70% of the price</strong> to you — the &ldquo;Projected earnings&rdquo; figure above.</li>
+            <li>Libry keeps 30% to run the platform (hosting, payments, discovery).</li>
+            <li>Payments are simulating while we finish setup, so these are projected at current prices. <strong style={{ color: "var(--ivory)" }}>Real payouts begin via LemonSqueezy</strong> once the merchant account is verified.</li>
+            <li>You keep your readers — followers, reviews, and the relationship — always.</li>
+          </ul>
         </div>
 
         {/* Monetization — progress toward unlocking creator earnings */}
@@ -179,8 +212,8 @@ export default async function CreatorDashboard() {
                   <tr key={b.id}>
                     <td><a href={`/book/${b.id}`} style={{ color: "var(--ivory)", fontFamily: "var(--serif)" }}>{b.title}</a></td>
                     <td>{b.type || "—"}</td>
-                    <td>0</td>
-                    <td>{formatPrice(0)}</td>
+                    <td>{salesByBook.get(Number(b.id))?.sales ?? 0}</td>
+                    <td>{formatPrice(salesByBook.get(Number(b.id))?.revenue ?? 0)}</td>
                     <td>{(b.rating ?? 0) > 0 ? (b.rating ?? 0).toFixed(1) : "—"}</td>
                     <td>
                       <span className="badge" style={b.is_published
