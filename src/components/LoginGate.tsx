@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { persistOnboardingPrefs } from "@/app/actions/auth";
 import GoogleButton from "@/components/GoogleButton";
+import DiscordButton from "@/components/DiscordButton";
 
 type Tab = "login" | "signup";
 
@@ -304,15 +305,18 @@ export default function LoginGate({
           <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
         </div>
 
-        <GoogleButton
-          next={next || "/home"}
-          className="btn"
-          style={{
-            background: "#E9E6EE",
-            color: "#2B2622",
-            border: "1px solid rgba(43,38,34,0.10)",
-          }}
-        />
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+          <GoogleButton
+            next={next || "/home"}
+            className="btn"
+            style={{
+              background: "#E9E6EE",
+              color: "#2B2622",
+              border: "1px solid rgba(43,38,34,0.10)",
+            }}
+          />
+          <DiscordButton next={next || "/home"} />
+        </div>
 
         <p style={{ color: "var(--muted)", textAlign: "center", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "1.3rem" }}>
           By continuing you agree to explore beautiful stories.
