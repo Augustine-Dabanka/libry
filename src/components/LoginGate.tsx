@@ -49,6 +49,8 @@ export default function LoginGate({
   }, [referrer]);
 
   const [tab, setTab] = useState<Tab>(initialTab);
+  const [accountType, setAccountType] = useState<"reader" | "writer">("reader");
+  const [bio, setBio] = useState("");
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -106,7 +108,16 @@ export default function LoginGate({
         return;
       }
       // Ensure the profile carries the chosen name/username (trigger also does this).
-      await supabase.from("profiles").update({ full_name: fullName.trim(), username: username.trim() }).eq("id", data.user!.id);
+      const profilePatch: Record<string, unknown> = { full_name: fullName.trim(), username: username.trim() };
+      if (accountType === "writer") {
+        profilePatch.is_creator = true;
+        profilePatch.pen_name = fullName.trim();
+        if (bio.trim()) profilePatch.bio = bio.trim();
+      }
+      let up = await supabase.from("profiles").update(profilePatch).eq("id", data.user!.id);
+      if (up.error && /is_creator|pen_name|bio/i.test(up.error.message)) {
+        up = await supabase.from("profiles").update({ full_name: fullName.trim(), username: username.trim() }).eq("id", data.user!.id);
+      }
       if (referrer) {
         try {
           await supabase.rpc("record_referral", { referrer });
@@ -115,7 +126,7 @@ export default function LoginGate({
         }
       }
       await persistOnboardingPrefs();
-      window.location.assign(dest);
+      window.location.assign(accountType === "writer" ? "/creator" : dest);
       return;
     }
 
@@ -255,7 +266,25 @@ export default function LoginGate({
         <form onSubmit={submit}>
           {tab === "signup" ? (
             <>
-              <label style={{ ...labelStyle, marginTop: 0 }}>Full name</label>
+              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.2rem" }}>
+                {(["reader", "writer"] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setAccountType(r)}
+                    style={{
+                      flex: 1, borderRadius: 12, padding: "0.6rem", cursor: "pointer",
+                      fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem",
+                      border: `1px solid ${accountType === r ? "var(--gold)" : "var(--border)"}`,
+                      background: accountType === r ? "rgba(197,160,89,0.12)" : "transparent",
+                      color: accountType === r ? "var(--ivory)" : "var(--muted)",
+                    }}
+                  >
+                    {r === "reader" ? "📖 I'm a reader" : "✍️ I'm a writer"}
+                  </button>
+                ))}
+              </div>
+              <label style={{ ...labelStyle, marginTop: "0.6rem" }}>Full name</label>
               <input className="auth-input" style={field} placeholder="Ada Lovelace" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
               <label style={labelStyle}>Username</label>
               <input className="auth-input" style={field} placeholder="ada" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} />
@@ -265,6 +294,12 @@ export default function LoginGate({
               <input className="auth-input" style={field} type={pwType} placeholder="Create a password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
               <label style={labelStyle}>Confirm password</label>
               <input className="auth-input" style={field} type={pwType} placeholder="Repeat it" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              {accountType === "writer" ? (
+                <>
+                  <label style={labelStyle}>Short author bio <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional — readers see this)</span></label>
+                  <textarea className="auth-input" style={{ ...field, minHeight: 70, resize: "vertical" }} maxLength={600} placeholder="A couple of sentences about you and your stories…" value={bio} onChange={(e) => setBio(e.target.value)} />
+                </>
+              ) : null}
             </>
           ) : (
             <>

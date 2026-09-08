@@ -7,6 +7,7 @@ import DeleteBookButton from "@/components/DeleteBookButton";
 import ReferralLink from "@/components/ReferralLink";
 import RevenueChart from "@/components/RevenueChart";
 import MonetizationTracker from "@/components/MonetizationTracker";
+import CreatorProfileForm from "@/components/CreatorProfileForm";
 import { formatPrice } from "@/lib/types";
 
 type MyBook = {
@@ -26,12 +27,15 @@ export default async function CreatorDashboard() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  const primaryProfile = await supabase
     .from("profiles")
-    .select("full_name, username")
+    .select("full_name, username, pen_name, bio")
     .eq("id", user.id)
     .maybeSingle();
-  const authorName = profile?.full_name || profile?.username || user.email || "Independent Creator";
+  const profile = primaryProfile.error
+    ? (await supabase.from("profiles").select("full_name, username").eq("id", user.id).maybeSingle()).data as { full_name?: string; username?: string; pen_name?: string; bio?: string } | null
+    : primaryProfile.data as { full_name?: string; username?: string; pen_name?: string; bio?: string } | null;
+  const authorName = profile?.pen_name || profile?.full_name || profile?.username || user.email || "Independent Creator";
   const refCode = profile?.username || user.id;
 
   const rc = await supabase.rpc("my_referral_count");
@@ -130,6 +134,9 @@ export default async function CreatorDashboard() {
 
         {/* Monetization — progress toward unlocking creator earnings */}
         <MonetizationTracker sales={booksSold} referrals={referralCount} />
+
+        {/* Author profile — powers "About the Author" on your books */}
+        <CreatorProfileForm userId={user.id} initialPenName={profile?.pen_name || profile?.full_name || ""} initialBio={profile?.bio || ""} />
 
         {/* Create — write chapter by chapter, or import a manuscript */}
         <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "2.5rem" }}>
