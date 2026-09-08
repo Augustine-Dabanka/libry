@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { sendWaitlistWelcome } from "@/app/actions/email";
 
 type Joined = { ref_code: string; position: number; total: number; referrals: number };
 const STORE = "libry_waitlist";
@@ -58,6 +59,9 @@ export default function WaitlistForm({ initialRef, role = "reader", cta = "Join 
     const j = data as Joined;
     setJoined(j);
     try { localStorage.setItem(STORE, JSON.stringify({ email: email.trim().toLowerCase(), ref_code: j.ref_code })); } catch {}
+
+    // Send the signer a branded confirmation via Resend (non-blocking).
+    sendWaitlistWelcome(email.trim(), role, j.position).catch(() => {});
 
     // Optional email notification mirror (non-blocking). `_subject` gives each
     // signup type a distinct subject line in your inbox.
