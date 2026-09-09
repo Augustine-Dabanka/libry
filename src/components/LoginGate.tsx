@@ -96,20 +96,21 @@ export default function LoginGate({
     setGenBusy(false);
   }
 
-  // "Surprise me" reroll — changes ONLY the username (leaves the name alone),
-  // and always varies so repeated taps give a different free handle.
+  // "New username" reroll — changes ONLY the username (leaves the name alone),
+  // picking a fresh random handle each tap (a whole new name, not just digits).
   async function regenerateUsername() {
     setGenBusy(true);
     setMsg(null);
     const supabase = createClient();
-    const base = (fullName.trim() || `${pick(FIRST)} ${pick(LAST)}`).toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 15) || "reader";
     let uname = "";
     for (let i = 0; i < 8; i++) {
-      const cand = `${base}${Math.floor(10 + Math.random() * 9990)}`.slice(0, 20);
+      const base = `${pick(FIRST)}${pick(LAST)}`.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 18) || "reader";
+      // First few tries use the bare name; fall back to a numbered variant only if taken.
+      const cand = (i < 3 ? base : `${base.slice(0, 15)}${Math.floor(10 + Math.random() * 990)}`).slice(0, 20);
       const { data, error } = await supabase.from("profiles").select("id").ilike("username", cand).maybeSingle();
       if (error || !data) { uname = cand; break; }
     }
-    if (!uname) uname = `${base.slice(0, 14)}${Date.now().toString().slice(-5)}`;
+    if (!uname) uname = `${pick(FIRST)}${Date.now().toString().slice(-4)}`.toLowerCase();
     setUsername(uname);
     setGenBusy(false);
   }
