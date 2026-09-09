@@ -159,32 +159,56 @@ export default function LoginGate({
         password,
         options: { data: { full_name: fullName.trim(), username: uname } },
       });
-      if (error) {
-        // Email already registered → try signing them in with the password they
-        // just entered rather than dead-ending on "user already exists".
-        if (/already|exists|registered/i.test(error.message)) {
-          const si = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-          if (!si.error && si.data.session) {
-            await persistOnboardingPrefs();
-            window.location.assign(dest);
-            return;
-          }
-          setBusy(false);
-          setIdentifier(email.trim());
-          setTab("login");
-          setInfo("That email already has an account — enter your password to sign in.");
-          return;
-        }
+
+      // Supabase hides existing emails: no error, but a fake user with an empty
+      // identities array and no session. Treat that (and any explicit "already
+      // exists" error) as "this email already has an account".
+      const alreadyExists =
+        (!error && Array.isArray(data.user?.identities) && data.user!.identities!.length === 0) ||
+        (!!error && /already|exists|registered/i.test(error.message));
+
+      if (error && !alreadyExists) {
         setBusy(false);
         setMsg(error.message);
         return;
       }
-      if (!data.session) {
+
+      if (alreadyExists) {
+        // Maybe it's their account and this password matches → sign them in.
+        const si = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (!si.error && si.data.session) {
+          await persistOnboardingPrefs();
+          window.location.assign(dest);
+          return;
+        }
         setBusy(false);
-        setInfo("Check your email to confirm your account, then log in.");
+        setIdentifier(email.trim());
         setTab("login");
+        setInfo("That email already has an account — enter its password to sign in, or use a different email.");
         return;
       }
+
+      // New account. Establish a session: signUp returns one when email
+      // confirmation is off; if not, sign in now (also works when it's off).
+      let userId = data.user?.id ?? null;
+      if (!data.session) {
+        const si = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (si.error || !si.data.session) {
+          setBusy(false);
+          setIdentifier(email.trim());
+          setTab("login");
+          setInfo("Almost there — check your email to confirm your account, then sign in.");
+          return;
+        }
+        userId = si.data.user.id;
+      }
+      if (!userId) {
+        setBusy(false);
+        setTab("login");
+        setInfo("Account created — please sign in.");
+        return;
+      }
+
       // Ensure the profile carries the chosen name/username (trigger also does this).
       const profilePatch: Record<string, unknown> = { full_name: fullName.trim(), username: uname };
       if (accountType === "writer") {
@@ -192,9 +216,9 @@ export default function LoginGate({
         profilePatch.pen_name = fullName.trim();
         if (bio.trim()) profilePatch.bio = bio.trim();
       }
-      let up = await supabase.from("profiles").update(profilePatch).eq("id", data.user!.id);
+      let up = await supabase.from("profiles").update(profilePatch).eq("id", userId);
       if (up.error && /is_creator|pen_name|bio/i.test(up.error.message)) {
-        up = await supabase.from("profiles").update({ full_name: fullName.trim(), username: uname }).eq("id", data.user!.id);
+        up = await supabase.from("profiles").update({ full_name: fullName.trim(), username: uname }).eq("id", userId);
       }
       if (referrer) {
         try {
