@@ -273,6 +273,15 @@ export default function ReaderView({
                 </figure>
               );
             }
+            // Chapter headings render as headings and get no comment chip.
+            const isHeading = /^chapter\b/i.test(p) && p.length <= 60;
+            if (isHeading) {
+              return (
+                <h2 key={i} style={{ fontFamily: "var(--serif)", fontSize: `${Math.min(1.6, fontSize * 1.25)}rem`, lineHeight: 1.3, margin: "2rem 0 1rem" }}>
+                  {p}
+                </h2>
+              );
+            }
             const cs = commentsByPara.get(i) ?? [];
             return (
               <p key={i} style={{ fontFamily: "var(--serif)", fontSize: `${fontSize}rem`, lineHeight: 1.95, marginBottom: "1.3rem" }}>
