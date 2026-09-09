@@ -67,6 +67,7 @@ export default function LoginGate({
   const [msg, setMsg] = useState<string | null>(serverError ? "Sign-in failed. Please try again." : null);
   const [info, setInfo] = useState<string | null>(null);
   const [genBusy, setGenBusy] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const dest = next && /^[a-z0-9_\-./?=&%]+$/i.test(next) && !/^https?:|^\/\//i.test(next) ? next : "/home";
 
@@ -141,6 +142,10 @@ export default function LoginGate({
         setMsg("Passwords don't match.");
         return;
       }
+      if (!agreed) {
+        setMsg("Please agree to the Terms and Privacy Policy to create your account.");
+        return;
+      }
       setBusy(true);
       // Guarantee a free, case-insensitive username — auto-tweak if the chosen
       // one is taken instead of dead-ending.
@@ -155,6 +160,21 @@ export default function LoginGate({
         options: { data: { full_name: fullName.trim(), username: uname } },
       });
       if (error) {
+        // Email already registered → try signing them in with the password they
+        // just entered rather than dead-ending on "user already exists".
+        if (/already|exists|registered/i.test(error.message)) {
+          const si = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+          if (!si.error && si.data.session) {
+            await persistOnboardingPrefs();
+            window.location.assign(dest);
+            return;
+          }
+          setBusy(false);
+          setIdentifier(email.trim());
+          setTab("login");
+          setInfo("That email already has an account — enter your password to sign in.");
+          return;
+        }
         setBusy(false);
         setMsg(error.message);
         return;
@@ -395,6 +415,18 @@ export default function LoginGate({
             Show password
           </label>
 
+          {tab === "signup" ? (
+            <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", marginTop: "0.8rem", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", cursor: "pointer", lineHeight: 1.5 }}>
+              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} style={{ accentColor: "var(--gold)", width: 15, height: 15, marginTop: 2, flexShrink: 0 }} />
+              <span>
+                I agree to the{" "}
+                <a href="/docs?tab=terms" target="_blank" rel="noreferrer" style={{ color: "var(--gold)" }}>Terms of Service</a>{" "}
+                and{" "}
+                <a href="/docs?tab=privacy" target="_blank" rel="noreferrer" style={{ color: "var(--gold)" }}>Privacy Policy</a>.
+              </span>
+            </label>
+          ) : null}
+
           <button className="btn btn-gold" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center", marginTop: "1.1rem" }}>
             {busy ? "…" : tab === "login" ? "Sign in" : "Create account"}
           </button>
@@ -413,6 +445,7 @@ export default function LoginGate({
           <div style={{ flex: 1, minWidth: 0 }}>
             <GoogleButton
               next={next || "/home"}
+              role={tab === "signup" ? accountType : undefined}
               className="btn"
               style={{
                 background: "#E9E6EE",
@@ -422,7 +455,7 @@ export default function LoginGate({
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <DiscordButton next={next || "/home"} />
+            <DiscordButton next={next || "/home"} role={tab === "signup" ? accountType : undefined} />
           </div>
         </div>
 

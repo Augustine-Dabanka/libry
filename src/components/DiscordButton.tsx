@@ -8,9 +8,11 @@ import { createClient } from "@/lib/supabase/client";
 // with a Client ID/Secret from the Discord Developer Portal.
 export default function DiscordButton({
   next,
+  role,
   style,
 }: {
   next?: string;
+  role?: "reader" | "writer";
   style?: React.CSSProperties;
 }) {
   const [loading, setLoading] = useState(false);
@@ -19,6 +21,9 @@ export default function DiscordButton({
   async function signIn() {
     setLoading(true);
     setErr(null);
+    if (role === "writer") {
+      try { document.cookie = "libry_role=writer; path=/; max-age=1800; samesite=lax"; } catch {}
+    }
     const supabase = createClient();
     const callback = `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`;
     const { error } = await supabase.auth.signInWithOAuth({

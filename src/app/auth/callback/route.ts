@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     if (!error) {
       await persistOnboardingPrefs();
       await persistReferral();
+      await persistRole();
 
       const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";
@@ -53,6 +54,27 @@ async function persistOnboardingPrefs() {
     await supabase.from("profiles").update({ prefs }).eq("id", user.id);
   }
   cookieStore.delete("libry_prefs");
+}
+
+// If the visitor chose "I'm a writer" before an OAuth sign-up, a libry_role
+// cookie flags them — mark the profile as a creator (never downgrades).
+async function persistRole() {
+  const cookieStore = await cookies();
+  const role = cookieStore.get("libry_role")?.value;
+  if (role !== "writer") return;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const name = (user.user_metadata?.full_name || user.user_metadata?.name || "") as string;
+    const patch: Record<string, unknown> = { is_creator: true };
+    if (name) patch.pen_name = name;
+    try {
+      await supabase.from("profiles").update(patch).eq("id", user.id);
+    } catch {
+      /* is_creator/pen_name not migrated yet — ignore */
+    }
+  }
+  cookieStore.delete("libry_role");
 }
 
 // If the visitor arrived via a referral link, a libry_ref cookie holds the

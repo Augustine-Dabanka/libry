@@ -5,10 +5,12 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function GoogleButton({
   next,
+  role,
   className = "btn btn-gold",
   style,
 }: {
   next?: string;
+  role?: "reader" | "writer";
   className?: string;
   style?: React.CSSProperties;
 }) {
@@ -18,6 +20,11 @@ export default function GoogleButton({
   async function signIn() {
     setLoading(true);
     setErr(null);
+    // Carry the reader/writer choice through the OAuth round-trip so the
+    // callback can flag writers as creators.
+    if (role === "writer") {
+      try { document.cookie = "libry_role=writer; path=/; max-age=1800; samesite=lax"; } catch {}
+    }
     const supabase = createClient();
     const callback = `${window.location.origin}/auth/callback${
       next ? `?next=${encodeURIComponent(next)}` : ""
