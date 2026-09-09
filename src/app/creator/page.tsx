@@ -6,7 +6,6 @@ import PublishToggle from "@/components/PublishToggle";
 import DeleteBookButton from "@/components/DeleteBookButton";
 import ReferralLink from "@/components/ReferralLink";
 import RevenueChart from "@/components/RevenueChart";
-import MonetizationTracker from "@/components/MonetizationTracker";
 import CreatorProfileForm from "@/components/CreatorProfileForm";
 import { formatPrice } from "@/lib/types";
 
@@ -164,9 +163,6 @@ export default async function CreatorDashboard() {
             <li>You keep your readers — followers, reviews, and the relationship — always.</li>
           </ul>
         </div>
-
-        {/* Monetization — progress toward unlocking creator earnings */}
-        <MonetizationTracker sales={booksSold} referrals={referralCount} />
 
         {/* Author profile — powers "About the Author" on your books */}
         <CreatorProfileForm userId={user.id} initialPenName={profile?.pen_name || profile?.full_name || ""} initialBio={profile?.bio || ""} />

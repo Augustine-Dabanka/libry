@@ -1001,28 +1001,3 @@ html { scroll-behavior: smooth; }
   padding: 0.05rem 0.32rem; margin-left: 0.15rem; vertical-align: super;
 }
 
-/* ── Experimental desktop side rail (toggled by body.has-siderail) ── */
-@media (min-width: 900px) {
-  body.has-siderail { padding-left: 244px; }
-  body.has-siderail .navbar {
-    position: fixed; top: 0; left: 0; bottom: 0; width: 244px; height: 100dvh;
-    flex-direction: column; align-items: stretch; justify-content: flex-start;
-    gap: 1.3rem; padding: 1.6rem 1.15rem; overflow-y: auto;
-    border-bottom: none; border-right: 1px solid var(--border);
-  }
-  body.has-siderail .navbar .nav-left { flex-direction: column; align-items: stretch; gap: 0.55rem; }
-  body.has-siderail .navbar .logo { font-size: 1.95rem; padding: 0 0.4rem 0.4rem; }
-  body.has-siderail .navbar .nav-dd { width: 100%; }
-  body.has-siderail .navbar .nav-dd-btn { width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; }
-  body.has-siderail .navbar .nav-dd-menu { position: static; margin-top: 0.35rem; min-width: 0; box-shadow: none; }
-  body.has-siderail .navbar .nav-badge { display: inline-flex; }
-  body.has-siderail .navbar .nav-right { flex-direction: column; align-items: stretch; gap: 0.5rem; margin-top: auto; }
-  body.has-siderail .navbar .btn-write { text-align: center; }
-  body.has-siderail .navbar .nav-icon-btn { width: 100%; }
-  body.has-siderail .navbar .icon-link { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.6rem; border-radius: 8px; }
-  body.has-siderail .navbar .icon-link:hover { background: rgba(196,163,90,0.12); }
-  body.has-siderail .navbar .nav-user { width: 100%; }
-  body.has-siderail .navbar .user-chip { width: 100%; }
-  body.has-siderail .navbar .user-menu { bottom: calc(100% + 8px); top: auto; left: 0; right: auto; width: 100%; }
-  body.has-siderail .hamburger { display: none; }
-}

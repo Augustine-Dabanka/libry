@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AGE_RATINGS, AGE_LABEL, GENRES } from "@/lib/content";
 
+const MIN_PRICE = 2.99;
+
 type BookEdit = {
   id: number | string;
   title: string;
@@ -54,9 +56,15 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
       setErr("Title can't be empty.");
       return;
     }
+    const priceNum = Math.max(0, parseFloat(price) || 0);
+    // Price floor: paid books must clear the payment-processor fee (~5% + $0.50)
+    // so both the writer and Libry actually profit. Free (0) is always allowed.
+    if (priceNum > 0 && priceNum < MIN_PRICE) {
+      setErr(`Paid books must be free or at least $${MIN_PRICE.toFixed(2)} — below that, payment fees eat the sale.`);
+      return;
+    }
     setBusy(true);
     const supabase = createClient();
-    const priceNum = Math.max(0, parseFloat(price) || 0);
     const payload: Record<string, unknown> = {
       title: title.trim(),
       description: description.trim(),
@@ -111,7 +119,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
           </select>
         </div>
         <div style={{ flex: 1, minWidth: 150 }}>
-          <label style={label}>Price (USD)</label>
+          <label style={label}>Price (USD) · free, or $2.99+</label>
           <input style={field} type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
         </div>
         <div style={{ flex: 1, minWidth: 150 }}>
