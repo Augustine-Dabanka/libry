@@ -11,6 +11,7 @@ import BackgroundPicker from "@/components/BackgroundPicker";
 import LanguagePref from "@/components/LanguagePref";
 import MatureToggle from "@/components/MatureToggle";
 import ReferralLink from "@/components/ReferralLink";
+import ReferralReward from "@/components/ReferralReward";
 
 function initialsFrom(name: string): string {
   return (
@@ -126,6 +127,7 @@ export default async function Settings() {
 
         {/* Refer & earn (ReferralLink is self-boxed) */}
         <ReferralLink refCode={refCode} count={referralCount} />
+        <ReferralReward />
 
         {/* Danger zone */}
         <div style={{ ...card, borderColor: "rgba(181,83,63,0.4)" }}>
