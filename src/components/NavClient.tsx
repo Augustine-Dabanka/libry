@@ -33,6 +33,14 @@ export default function NavClient({
     return onCartChange(sync);
   }, []);
 
+  // Experimental: on desktop the navbar becomes a left side rail. This class
+  // shifts page content right; removed on unmount so no-nav pages (login,
+  // reader, landing) are unaffected.
+  useEffect(() => {
+    document.body.classList.add("has-siderail");
+    return () => document.body.classList.remove("has-siderail");
+  }, []);
+
   useEffect(() => { setWishN(wishCount); }, [wishCount]);
   useEffect(() => {
     const onWish = (e: Event) => setWishN((n) => Math.max(0, n + ((e as CustomEvent).detail || 0)));
