@@ -85,7 +85,7 @@ export default function LoginGate({
     return `${clean.slice(0, 14)}${Date.now().toString().slice(-5)}`;
   }
 
-  // Fill the form with a random name + a guaranteed-free username.
+  // Fill the form with a random name + a guaranteed-free username (on open).
   async function generateIdentity() {
     setGenBusy(true);
     setMsg(null);
@@ -93,6 +93,24 @@ export default function LoginGate({
     const last = pick(LAST);
     setFullName(`${first} ${last}`);
     setUsername(await ensureFreeUsername(first + last));
+    setGenBusy(false);
+  }
+
+  // "Surprise me" reroll — changes ONLY the username (leaves the name alone),
+  // and always varies so repeated taps give a different free handle.
+  async function regenerateUsername() {
+    setGenBusy(true);
+    setMsg(null);
+    const supabase = createClient();
+    const base = (fullName.trim() || `${pick(FIRST)} ${pick(LAST)}`).toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 15) || "reader";
+    let uname = "";
+    for (let i = 0; i < 8; i++) {
+      const cand = `${base}${Math.floor(10 + Math.random() * 9990)}`.slice(0, 20);
+      const { data, error } = await supabase.from("profiles").select("id").ilike("username", cand).maybeSingle();
+      if (error || !data) { uname = cand; break; }
+    }
+    if (!uname) uname = `${base.slice(0, 14)}${Date.now().toString().slice(-5)}`;
+    setUsername(uname);
     setGenBusy(false);
   }
 
@@ -323,19 +341,20 @@ export default function LoginGate({
                   </button>
                 ))}
               </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.6rem" }}>
-                <label style={{ ...labelStyle, marginTop: 0 }}>Full name</label>
+              <label style={{ ...labelStyle, marginTop: "0.6rem" }}>Full name</label>
+              <input className="auth-input" style={field} placeholder="Ada Lovelace" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.85rem" }}>
+                <label style={{ ...labelStyle, marginTop: 0 }}>Username</label>
                 <button
                   type="button"
-                  onClick={generateIdentity}
+                  onClick={regenerateUsername}
                   disabled={genBusy}
+                  title="Generate a new username"
                   style={{ background: "transparent", border: "none", color: "var(--gold)", fontFamily: "var(--sans)", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", padding: 0 }}
                 >
-                  {genBusy ? "…" : "🎲 Surprise me"}
+                  {genBusy ? "…" : "🎲 New username"}
                 </button>
               </div>
-              <input className="auth-input" style={field} placeholder="Ada Lovelace" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-              <label style={labelStyle}>Username</label>
               <input className="auth-input" style={field} placeholder="ada" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} />
               <label style={labelStyle}>Email</label>
               <input className="auth-input" style={field} type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
