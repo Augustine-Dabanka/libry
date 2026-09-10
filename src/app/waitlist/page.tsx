@@ -13,7 +13,7 @@ export default async function WaitlistPage({
   const { ref } = await searchParams;
 
   return (
-    <main style={{ minHeight: "100vh", background: "var(--charcoal)" }}>
+    <main style={{ background: "var(--charcoal)" }}>
       {/* slim header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.2rem clamp(1.1rem,5vw,3rem)" }}>
         <a href="/" style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: "1.25rem", color: "var(--ivory)", textDecoration: "none" }}>

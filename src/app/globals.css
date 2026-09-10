@@ -54,6 +54,11 @@ body {
   color: var(--ivory);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  /* Sticky footer: the page column fills the viewport so the footer always
+     sits at the bottom, on short pages and long alike. */
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Background theme engine — a selectable ambient background on every shell page.
@@ -852,7 +857,7 @@ footer a:hover {
 
 /* -------- Footer v2 (4-column + status bar) -------- */
 footer.site-footer { display: block; background: var(--stone); border-top: 1px solid var(--border);
-  padding: 3rem 5% 1.6rem; margin-top: 4rem; }
+  padding: 3rem 5% 1.6rem; margin-top: auto; }
 .footer-cols { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 2rem; max-width: 1200px; margin: 0 auto 2rem; }
 .footer-logo { font-family: Georgia, serif; font-size: 1.5rem; font-weight: 700; color: var(--ivory); }
 .footer-logo span { color: var(--gold); }
