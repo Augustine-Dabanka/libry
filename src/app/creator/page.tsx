@@ -5,7 +5,6 @@ import NewStoryButton from "@/components/NewStoryButton";
 import PublishToggle from "@/components/PublishToggle";
 import DeleteBookButton from "@/components/DeleteBookButton";
 import ReferralLink from "@/components/ReferralLink";
-import ReferralReward from "@/components/ReferralReward";
 import RevenueChart from "@/components/RevenueChart";
 import CreatorProfileForm from "@/components/CreatorProfileForm";
 import { formatPrice } from "@/lib/types";
@@ -250,7 +249,6 @@ export default async function CreatorDashboard() {
 
         {/* Invite readers */}
         <ReferralLink refCode={refCode} count={referralCount} />
-        <ReferralReward />
 
         {/* Shared with you */}
         {sharedBooks.length > 0 ? (

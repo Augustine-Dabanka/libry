@@ -76,9 +76,9 @@ export default async function Landing() {
             <b>70%</b> to creators
           </div>
           <div className={s.trustItem}>
-            <b>5</b> languages
+            <b>17</b> books to read free
           </div>
-          <div className={s.trustItem}>Read-aloud on every book</div>
+          <div className={s.trustItem}>Interactive, choose-your-path stories</div>
           <div className={s.trustItem}>Free — no card required</div>
         </div>
       </div>
@@ -164,37 +164,34 @@ export default async function Landing() {
         </div>
       </section>
 
-      <section className={`${s.band} ${s.peach}`}>
+      <section className={`${s.band} ${s.cardBg}`}>
         <div className={s.wrap}>
           <div className={s.secHead} style={{ textAlign: "center", marginInline: "auto" }}>
-            <span className={s.eyebrow}>Reader discussions</span>
-            <h2>A comments section better than your group chat.</h2>
+            <span className={s.eyebrow}>The studio</span>
+            <h2>Write anything — from a novel to a comic.</h2>
+            <p>A Word-style editor for prose, a free-canvas designer for comics and handcrafted pages, and real branching tools for interactive stories.</p>
           </div>
           <div className={s.cards}>
-            {[
-              { a: "M", c: "#B4547A", u: "@mara_reads", t: "read the free first chapter and now i've finished 4 books here 😭", h: 214 },
-              { a: "K", c: "#4E7A8C", u: "@keys", t: "following my fave author so i never miss a new drop 🥹", h: 176 },
-              { a: "S", c: "#4E7A52", u: "@softreads", t: "the reviews here are actually honest?? obsessed", h: 240 },
-            ].map((x) => (
-              <div key={x.u} className={s.fcard} style={{ display: "flex", gap: "0.7rem", alignItems: "flex-start" }}>
-                <span style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, display: "grid", placeItems: "center", color: "#fff", fontWeight: 800, background: x.c }}>
-                  {x.a}
-                </span>
-                <span style={{ flex: 1 }}>
-                  <span style={{ fontWeight: 800, fontSize: "0.85rem", display: "block", color: "var(--ink)" }}>{x.u}</span>
-                  <span style={{ fontSize: "0.9rem", color: "var(--body)" }}>{x.t}</span>
-                </span>
-                <span style={{ color: "var(--terra-soft, #D2793B)", fontWeight: 700, fontSize: "0.78rem", textAlign: "center", flexShrink: 0 }}>
-                  ♥<br />
-                  {x.h}
-                </span>
-              </div>
-            ))}
+            <div className={s.fcard}>
+              <div className={s.ic}>✍️</div>
+              <h3>A real writing editor</h3>
+              <p>Headings, images, callouts and shapes — lay your story out the way you picture it, then publish in a click.</p>
+            </div>
+            <div className={s.fcard}>
+              <div className={s.ic}>🎨</div>
+              <h3>Comics &amp; handcrafted pages</h3>
+              <p>Drop art, text and panels anywhere on a page and arrange them by hand — not just walls of text.</p>
+            </div>
+            <div className={s.fcard}>
+              <div className={s.ic}>🌿</div>
+              <h3>Branching stories</h3>
+              <p>Build choose-your-path tales with real forks and multiple endings — no code required.</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="creators" className={`${s.band} ${s.cardBg}`} style={{ scrollMarginTop: 70 }}>
+      <section id="creators" className={`${s.band} ${s.peach}`} style={{ scrollMarginTop: 70 }}>
         <div className={`${s.wrap} ${s.earn}`}>
           <div>
             <span className={s.eyebrow}>For creators</span>
@@ -212,7 +209,7 @@ export default async function Landing() {
             <div className={s.step}>
               <b>1</b>
               <span>
-                <strong>Write</strong> — draft your story right in the editor, or paste your manuscript.
+                <strong>Write</strong> — draft prose, comics or choose-your-path stories in the studio, or paste your manuscript.
               </span>
             </div>
             <div className={s.step}>
