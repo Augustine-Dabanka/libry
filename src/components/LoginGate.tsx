@@ -68,6 +68,7 @@ export default function LoginGate({
   const [info, setInfo] = useState<string | null>(null);
   const [genBusy, setGenBusy] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [marketing, setMarketing] = useState(false);
 
   const dest = next && /^[a-z0-9_\-./?=&%]+$/i.test(next) && !/^https?:|^\/\//i.test(next) ? next : "/home";
 
@@ -216,8 +217,9 @@ export default function LoginGate({
         profilePatch.pen_name = fullName.trim();
         if (bio.trim()) profilePatch.bio = bio.trim();
       }
+      if (marketing) profilePatch.marketing_opt_in = true;
       let up = await supabase.from("profiles").update(profilePatch).eq("id", userId);
-      if (up.error && /is_creator|pen_name|bio/i.test(up.error.message)) {
+      if (up.error && /is_creator|pen_name|bio|marketing_opt_in/i.test(up.error.message)) {
         up = await supabase.from("profiles").update({ full_name: fullName.trim(), username: uname }).eq("id", userId);
       }
       if (referrer) {
@@ -447,6 +449,16 @@ export default function LoginGate({
                 <a href="/docs?tab=terms" target="_blank" rel="noreferrer" style={{ color: "var(--gold)" }}>Terms of Service</a>{" "}
                 and{" "}
                 <a href="/docs?tab=privacy" target="_blank" rel="noreferrer" style={{ color: "var(--gold)" }}>Privacy Policy</a>.
+              </span>
+            </label>
+          ) : null}
+
+          {tab === "signup" ? (
+            <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", marginTop: "0.6rem", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", cursor: "pointer", lineHeight: 1.5 }}>
+              <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} style={{ accentColor: "var(--gold)", width: 15, height: 15, marginTop: 2, flexShrink: 0 }} />
+              <span>
+                Email me occasional Libry updates and offers <span style={{ color: "var(--faint, var(--muted))" }}>(optional)</span> — opt in and get a{" "}
+                <strong style={{ color: "var(--ivory)" }}>free month of Libry Unlimited</strong> when it launches.
               </span>
             </label>
           ) : null}

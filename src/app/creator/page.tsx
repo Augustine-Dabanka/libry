@@ -7,6 +7,7 @@ import DeleteBookButton from "@/components/DeleteBookButton";
 import ReferralLink from "@/components/ReferralLink";
 import RevenueChart from "@/components/RevenueChart";
 import CreatorProfileForm from "@/components/CreatorProfileForm";
+import BecomeCreator from "@/components/BecomeCreator";
 import { formatPrice } from "@/lib/types";
 
 type MyBook = {
@@ -26,16 +27,20 @@ export default async function CreatorDashboard() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  type Prof = { full_name?: string; username?: string; pen_name?: string; bio?: string; is_creator?: boolean };
   const primaryProfile = await supabase
     .from("profiles")
-    .select("full_name, username, pen_name, bio")
+    .select("full_name, username, pen_name, bio, is_creator")
     .eq("id", user.id)
     .maybeSingle();
   const profile = primaryProfile.error
-    ? (await supabase.from("profiles").select("full_name, username").eq("id", user.id).maybeSingle()).data as { full_name?: string; username?: string; pen_name?: string; bio?: string } | null
-    : primaryProfile.data as { full_name?: string; username?: string; pen_name?: string; bio?: string } | null;
+    ? ((await supabase.from("profiles").select("full_name, username").eq("id", user.id).maybeSingle()).data as Prof | null)
+    : (primaryProfile.data as Prof | null);
   const authorName = profile?.pen_name || profile?.full_name || profile?.username || user.email || "Independent Creator";
   const refCode = profile?.username || user.id;
+  // Readers can't publish. If the column isn't migrated, default to allowing
+  // (so nothing breaks before the migration is run).
+  const isCreator = primaryProfile.error ? true : !!profile?.is_creator;
 
   const rc = await supabase.rpc("my_referral_count");
   const referralCount = typeof rc.data === "number" ? rc.data : 0;
@@ -130,6 +135,11 @@ export default async function CreatorDashboard() {
             Welcome back, {authorName}. Here&apos;s how your stories are performing.
           </p>
         </div>
+
+        {!isCreator ? (
+          <BecomeCreator />
+        ) : (
+          <>
 
         {/* Stat cards */}
         <div className="stats-grid">
@@ -273,6 +283,8 @@ export default async function CreatorDashboard() {
             </div>
           </>
         ) : null}
+          </>
+        )}
       </section>
     </>
   );

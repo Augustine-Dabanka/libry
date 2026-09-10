@@ -12,6 +12,7 @@ import LanguagePref from "@/components/LanguagePref";
 import MatureToggle from "@/components/MatureToggle";
 import ReferralLink from "@/components/ReferralLink";
 import ReferralReward from "@/components/ReferralReward";
+import BecomeCreator from "@/components/BecomeCreator";
 
 function initialsFrom(name: string): string {
   return (
@@ -54,6 +55,9 @@ export default async function Settings() {
   const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
   const showMature = sm.data?.show_mature ?? false;
 
+  const cr = await supabase.from("profiles").select("is_creator").eq("id", user.id).maybeSingle();
+  const isCreator = cr.error ? false : !!cr.data?.is_creator;
+
   const rc = await supabase.rpc("my_referral_count");
   const referralCount = typeof rc.data === "number" ? rc.data : 0;
 
@@ -91,6 +95,22 @@ export default async function Settings() {
           <h3 style={cardTitle}>Account</h3>
           <p style={cardLead}>Update your display name or change your password.</p>
           <AccountSettings userId={user.id} initialName={displayName} />
+        </div>
+
+        {/* Creator account */}
+        <div style={card}>
+          <h3 style={cardTitle}>Creator account</h3>
+          <p style={cardLead}>
+            {isCreator ? "You can publish stories on Libry." : "You have a reader account. Become a creator to publish."}
+          </p>
+          {isCreator ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+              <span className="badge" style={{ background: "rgba(78,122,82,0.2)", color: "#7DBE86" }}>Creator ✓</span>
+              <a className="btn btn-outline" href="/creator" style={{ padding: "0.4rem 1rem", fontSize: "0.85rem" }}>Open Creator Dashboard →</a>
+            </div>
+          ) : (
+            <BecomeCreator variant="row" />
+          )}
         </div>
 
         {/* Language */}
