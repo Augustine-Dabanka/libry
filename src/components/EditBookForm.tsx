@@ -121,6 +121,27 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
         <div style={{ flex: 1, minWidth: 150 }}>
           <label style={label}>Price (USD) · free, or $2.99+</label>
           <input style={field} type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
+          <div style={{ display: "flex", gap: "0.35rem", marginTop: "0.45rem", flexWrap: "wrap" }}>
+            {["0", "2.99", "4.99", "6.99"].map((p) => {
+              const on = String(parseFloat(price) || 0) === String(parseFloat(p));
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPrice(p)}
+                  style={{
+                    padding: "0.3rem 0.7rem", borderRadius: 999, cursor: "pointer",
+                    fontFamily: "var(--sans)", fontSize: "0.78rem", fontWeight: 700,
+                    border: `1px solid ${on ? "var(--gold)" : "var(--border)"}`,
+                    background: on ? "rgba(197,160,89,0.14)" : "transparent",
+                    color: on ? "var(--gold)" : "var(--ivory-muted)",
+                  }}
+                >
+                  {p === "0" ? "Free" : `$${p}`}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div style={{ flex: 1, minWidth: 150 }}>
           <label style={label}>Age rating</label>
