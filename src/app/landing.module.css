@@ -103,19 +103,13 @@
 .finalCta h2 { font-size: clamp(2rem, 5vw, 3.2rem); max-width: 20ch; margin: 0 auto 1.2rem; }
 
 .footer { background: var(--card2); border-top: 1px solid var(--line2); padding: 3rem 0 2.2rem; }
-.footGrid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 2rem 2.5rem; margin-bottom: 2rem; }
-/* Tablet: brand block spans the full width, the three link columns line up under it. */
-@media (max-width: 900px) {
-  .footGrid { grid-template-columns: repeat(3, 1fr); }
-  .footGrid > div:first-child { grid-column: 1 / -1; }
-}
-@media (max-width: 560px) {
-  .footGrid { grid-template-columns: 1fr 1fr; }
-  .footGrid > div:first-child { grid-column: 1 / -1; }
-}
-@media (max-width: 380px) {
-  .footGrid { grid-template-columns: 1fr; text-align: center; }
-  .footGrid > div:first-child .footSocial { justify-content: center; }
+/* Brand to the left, the Read/Write/Legal columns grouped to the right. */
+.footGrid { display: flex; justify-content: space-between; gap: 2rem 3rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+.footBrand { min-width: 200px; }
+.footLinks { display: flex; gap: 2rem 3rem; flex-wrap: wrap; }
+@media (max-width: 640px) {
+  .footGrid { flex-direction: column; gap: 1.6rem; text-align: center; align-items: center; }
+  .footLinks { justify-content: center; gap: 1.6rem 2.4rem; width: 100%; }
 }
 .footLogo { font-family: var(--serif, 'Fraunces', Georgia, serif); font-style: italic; font-size: 1.5rem; color: var(--ink); }
 .footLogo span { color: var(--gold); }
@@ -123,9 +117,8 @@
 .footer h4 { font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.85rem; }
 .footer a:global(.fx) { display: block; color: var(--body); font-size: 0.9rem; font-weight: 600; margin-bottom: 0.55rem; text-decoration: none; }
 .footer a:global(.fx):hover { color: var(--goldSoft); }
-.footSocial { display: flex; gap: 0.6rem; margin-top: 1.1rem; }
+.footSocial { display: flex; gap: 0.7rem; justify-content: center; margin: 1.8rem 0 1.4rem; }
 .footSocial a { width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); transition: 0.2s; }
 .footSocial a:hover { color: var(--gold); border-color: var(--gold); transform: translateY(-2px); }
 .footSocial svg { width: 17px; height: 17px; }
-.footBar { border-top: 1px solid var(--line2); padding-top: 1.4rem; display: flex; justify-content: space-between; gap: 0.6rem 1rem; flex-wrap: wrap; color: var(--muted); font-size: 0.82rem; }
-@media (max-width: 560px) { .footBar { justify-content: center; text-align: center; } }
+.footBar { border-top: 1px solid var(--line2); padding-top: 1.4rem; display: flex; justify-content: center; gap: 0.3rem 1rem; flex-wrap: wrap; text-align: center; color: var(--muted); font-size: 0.82rem; }
