@@ -11,7 +11,7 @@ async function booksByIds(
 ): Promise<Map<number, BookRow>> {
   const map = new Map<number, BookRow>();
   if (!ids.length) return map;
-  const { data } = await supabase.from("books").select("id, title, author, price, type").in("id", ids);
+  const { data } = await supabase.from("books").select("id, title, author, price, type, category").in("id", ids);
   (data as BookRow[] | null)?.forEach((b) => map.set(Number(b.id), b));
   return map;
 }

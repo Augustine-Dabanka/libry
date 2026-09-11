@@ -32,9 +32,13 @@ export default function BookCard({ book }: { book: Book }) {
         {book.rating && book.rating > 0 ? (
           <div style={{ marginTop: "0.4rem" }}><Stars value={book.rating} size={13} showValue /></div>
         ) : null}
-        <div className="book-meta" style={{ marginTop: "0.6rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="book-meta" style={{ marginTop: "0.6rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.4rem" }}>
           <span className="price">{formatPrice(book.price)}</span>
-          {book.type ? <span className="badge">{book.type}</span> : null}
+          {(() => {
+            // Prefer the genre; flag Interactive as a format; fall back to type.
+            const label = (book.type || "").toLowerCase() === "interactive" ? "Interactive" : book.category || book.type || null;
+            return label ? <span className="badge" style={{ whiteSpace: "nowrap" }}>{label}</span> : null;
+          })()}
         </div>
       </div>
     </a>

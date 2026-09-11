@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import NavClient from "@/components/NavClient";
+import { GENRES } from "@/lib/content";
 
 // The full Libry navbar (ported from the original app.js renderNavbar): category
 // dropdown, Interactive badge, search, Write button, theme cycle, user menu.
@@ -32,5 +33,16 @@ export default async function AppNav() {
       .join("")
       .toUpperCase() || "?";
 
-  return <NavClient signedIn={!!user} name={name} avatarUrl={avatarUrl} initials={initials} email={user?.email ?? ""} wishCount={wishCount} />;
+  // Genres that actually have published books — so the Browse menu never shows
+  // an empty category (which reads as "no content").
+  let genres: string[] = [];
+  {
+    const g = await supabase.from("books").select("category").eq("is_published", true).not("category", "is", null).limit(1000);
+    if (!g.error) {
+      const set = new Set(((g.data ?? []) as { category: string | null }[]).map((r) => r.category).filter(Boolean) as string[]);
+      genres = GENRES.filter((x) => set.has(x));
+    }
+  }
+
+  return <NavClient signedIn={!!user} name={name} avatarUrl={avatarUrl} initials={initials} email={user?.email ?? ""} wishCount={wishCount} genres={genres} />;
 }

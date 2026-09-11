@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeHtml, looksLikeHtml } from "@/lib/sanitize";
 import { RICH_CSS } from "@/lib/richStyles";
@@ -40,8 +41,19 @@ export default function ReaderView({
   locked?: boolean;
   price?: number | null;
 }) {
+  const router = useRouter();
   const [theme, setTheme] = useState<Theme>("dark");
   const [fontSize, setFontSize] = useState(1.14);
+
+  // Back to the book. If we arrived from the book page, pop it off history
+  // (router.back) so a second Back doesn't bounce back into the reader; else go
+  // to the book page directly.
+  function goBackToBook() {
+    const ref = typeof document !== "undefined" ? document.referrer : "";
+    const cameFromBook = new RegExp(`/book/${bookId}(?:[/?#]|$)`).test(ref);
+    if (cameFromBook && typeof window !== "undefined" && window.history.length > 1) router.back();
+    else router.push(`/book/${bookId}`);
+  }
   const [progress, setProgress] = useState(0);
   const [showFinish, setShowFinish] = useState(false);
   const finishShown = useRef(false);
@@ -205,9 +217,9 @@ export default function ReaderView({
           borderBottom: `1px solid ${pal.bar}`,
         }}
       >
-        <a href={`/book/${bookId}`} style={{ color: pal.muted, fontSize: "0.85rem", textDecoration: "none" }}>
+        <button type="button" onClick={goBackToBook} style={{ background: "transparent", border: "none", color: pal.muted, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
           ← Back
-        </a>
+        </button>
         <span
           style={{
             flex: 1,

@@ -13,6 +13,7 @@ export default function NavClient({
   initials,
   email,
   wishCount = 0,
+  genres = [],
 }: {
   signedIn: boolean;
   name: string;
@@ -20,6 +21,7 @@ export default function NavClient({
   initials: string;
   email?: string;
   wishCount?: number;
+  genres?: string[];
 }) {
   const [dd, setDd] = useState<Dd>(null);
   const [mobile, setMobile] = useState(false);
@@ -107,16 +109,26 @@ export default function NavClient({
             >
               &#9776; Browse <span className="caret">▾</span>
             </button>
-            <div className={`nav-dd-menu${dd === "browse" ? " open" : ""}`}>
-              <a href="/catalog">Browse all</a>
-              <a href="/catalog?type=Interactive">Interactive stories</a>
-              <a href="/catalog?genre=Romance">Romance</a>
-              <a href="/catalog?genre=Fantasy">Fantasy</a>
-              <a href="/catalog?genre=Sci-Fi">Sci-Fi</a>
-              <a href="/catalog?genre=Mystery">Mystery</a>
-              <a href="/catalog?genre=Thriller">Thriller</a>
-              <a href="/catalog?free=1">Free to read</a>
-              <a href="/catalog" className="dd-all">All genres →</a>
+            <div className={`nav-mega${dd === "browse" ? " open" : ""}`}>
+              <div className="nav-mega-col nav-mega-genres">
+                <h5>Genres</h5>
+                {(genres.length ? genres : ["Fiction", "Non-Fiction"]).map((g) => (
+                  <a key={g} href={`/catalog?genre=${encodeURIComponent(g)}`}>{g}</a>
+                ))}
+              </div>
+              <div className="nav-mega-col">
+                <h5>Formats</h5>
+                <a href="/catalog?type=Interactive">✦ Interactive</a>
+                <a href="/catalog?free=1">Free to read</a>
+                <a href="/catalog?paid=1">Premium</a>
+              </div>
+              <div className="nav-mega-col">
+                <h5>Discover</h5>
+                <a href="/catalog">Browse all</a>
+                <a href="/discover">Trending</a>
+                <a href="/discover?filter=editors-pick">Editor&apos;s Pick</a>
+                <a href="/unlimited">Libry Unlimited</a>
+              </div>
             </div>
           </div>
 
@@ -182,6 +194,9 @@ export default function NavClient({
         ) : null}
         <a href="/catalog">Browse all</a>
         <a href="/catalog?type=Interactive">Interactive stories</a>
+        {(genres.length ? genres : ["Fiction", "Non-Fiction"]).slice(0, 8).map((g) => (
+          <a key={g} href={`/catalog?genre=${encodeURIComponent(g)}`}>{g}</a>
+        ))}
         <a href="/my-library">My Library</a>
         <a href="/achievements">Achievements</a>
         <a href="/wishlist">Wishlist</a>

@@ -11,6 +11,7 @@ import ReportButton from "@/components/ReportButton";
 import ShareButton from "@/components/ShareButton";
 import { formatPrice, type Book } from "@/lib/types";
 import { AGE_LABEL, agePill, isMatureRating } from "@/lib/content";
+import { AUTHOR_BIOS } from "@/lib/authorBios";
 
 type BookDetail = {
   id: number | string;
@@ -133,13 +134,13 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   // "Readers also read" — same category, else same type, else anything published.
   let related: Book[] = [];
   {
-    let q = supabase.from("books").select("id, title, author, price, type, rating").eq("is_published", true).neq("id", book.id).limit(6);
+    let q = supabase.from("books").select("id, title, author, price, type, rating, category").eq("is_published", true).neq("id", book.id).limit(6);
     if (book.category) q = q.eq("category", book.category);
     else if (book.type) q = q.eq("type", book.type);
     const rl = await q;
     related = (rl.data ?? []) as Book[];
     if (related.length === 0) {
-      const rl2 = await supabase.from("books").select("id, title, author, price, type, rating").eq("is_published", true).neq("id", book.id).limit(6);
+      const rl2 = await supabase.from("books").select("id, title, author, price, type, rating, category").eq("is_published", true).neq("id", book.id).limit(6);
       related = (rl2.data ?? []) as Book[];
     }
   }
@@ -268,7 +269,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: "var(--serif)", fontSize: "1.2rem", color: "var(--ivory)" }}>{book.author}</div>
                 <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.92rem", margin: "0.4rem 0 0.7rem", lineHeight: 1.6 }}>
-                  {authorBio?.bio || "This author hasn't added a bio yet."}
+                  {authorBio?.bio || (book.author && AUTHOR_BIOS[book.author]) || "This author hasn't added a bio yet."}
                 </p>
                 {authorHref ? (
                   <a href={authorHref} className="btn btn-outline" style={{ padding: "0.35rem 0.9rem", fontSize: "0.82rem" }}>

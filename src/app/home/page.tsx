@@ -44,13 +44,13 @@ export default async function Home() {
 
   const primaryBooks = await supabase
     .from("books")
-    .select("id, title, author, price, type, age_rating, rating")
+    .select("id, title, author, price, type, age_rating, rating, category")
     .eq("is_published", true)
     .in("age_rating", allowed)
     .limit(24);
   let books: Book[];
   if (primaryBooks.error) {
-    const alt = await supabase.from("books").select("id, title, author, price, type, rating").limit(24);
+    const alt = await supabase.from("books").select("id, title, author, price, type, rating, category").limit(24);
     books = (alt.data ?? []) as Book[];
   } else {
     books = (primaryBooks.data ?? []) as Book[];
@@ -119,7 +119,7 @@ export default async function Home() {
   {
     const tr = await supabase
       .from("books")
-      .select("id, title, author, price, type, rating")
+      .select("id, title, author, price, type, rating, category")
       .eq("is_published", true)
       .gt("rating", 0)
       .order("rating", { ascending: false })
@@ -136,7 +136,7 @@ export default async function Home() {
       if (authors.length) {
         const fn = await supabase
           .from("books")
-          .select("id, title, author, price, type, rating")
+          .select("id, title, author, price, type, rating, category")
           .eq("is_published", true)
           .in("author", authors)
           .order("id", { ascending: false })
@@ -160,7 +160,7 @@ export default async function Home() {
       const seed = await supabase.from("books").select("id, title, category, type").eq("id", readIds[0]).maybeSingle();
       if (seed.data) {
         becauseTitle = seed.data.title as string;
-        let q = supabase.from("books").select("id, title, author, price, type, rating").eq("is_published", true).neq("id", readIds[0]).limit(12);
+        let q = supabase.from("books").select("id, title, author, price, type, rating, category").eq("is_published", true).neq("id", readIds[0]).limit(12);
         if (seed.data.category) q = q.eq("category", seed.data.category as string);
         else if (seed.data.type) q = q.eq("type", seed.data.type as string);
         const rec = await q;
