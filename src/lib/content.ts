@@ -1,18 +1,18 @@
 // Age ratings a creator can pick. Finer scale than before (Everyone → 18+);
 // legacy stored values (Everyday/Teen/Mature/"All Ages") still display and gate
 // correctly via the helpers below.
-export const AGE_RATINGS = ["Everyone", "9+", "12+", "16+", "18+"] as const;
+export const AGE_RATINGS = ["Everyone", "9+", "13+", "16+", "18+"] as const;
 export type AgeRating = (typeof AGE_RATINGS)[number];
 
 // Full labels for the editor's select.
 export const AGE_LABEL: Record<string, string> = {
   Everyone: "Everyone",
   "9+": "Older kids (9+)",
-  "12+": "Preteen (12+)",
+  "13+": "Teen (13+)",
   "16+": "Older teen (16+)",
   "18+": "Mature (18+)",
   // legacy values still in the DB
-  "13+": "Teen (13+)",
+  "12+": "Preteen (12+)",
   Everyday: "Everyone",
   Teen: "Teen (13+)",
   Mature: "Mature (18+)",
