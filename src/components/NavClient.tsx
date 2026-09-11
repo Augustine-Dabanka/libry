@@ -110,11 +110,13 @@ export default function NavClient({
             <div className={`nav-dd-menu${dd === "browse" ? " open" : ""}`}>
               <a href="/catalog">Browse all</a>
               <a href="/catalog?type=Interactive">Interactive stories</a>
-              <a href="/catalog?type=Fiction">Fiction</a>
-              <a href="/catalog?type=Non-Fiction">Non-Fiction</a>
+              <a href="/catalog?genre=Romance">Romance</a>
+              <a href="/catalog?genre=Fantasy">Fantasy</a>
+              <a href="/catalog?genre=Sci-Fi">Sci-Fi</a>
+              <a href="/catalog?genre=Mystery">Mystery</a>
+              <a href="/catalog?genre=Thriller">Thriller</a>
               <a href="/catalog?free=1">Free to read</a>
-              <a href="/discover?filter=editors-pick">Editor&apos;s Pick</a>
-              <a href="/discover" className="dd-all">Trending →</a>
+              <a href="/catalog" className="dd-all">All genres →</a>
             </div>
           </div>
 

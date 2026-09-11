@@ -3,8 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BookCard from "@/components/BookCard";
 import CatalogSort from "@/components/CatalogSort";
-import { allowedRatings } from "@/lib/content";
+import { allowedRatings, GENRES } from "@/lib/content";
 import { type Book } from "@/lib/types";
+
+// A curated, reader-friendly subset shown as browse chips (the full list lives
+// in GENRES for the editor).
+const BROWSE_GENRES = ["Romance", "Fantasy", "Sci-Fi", "Mystery", "Thriller", "Horror", "Historical", "Young Adult", "Adventure", "Non-Fiction"];
 
 type CatBook = Book & { is_free?: boolean | null };
 
@@ -27,7 +31,7 @@ function Shelf({ title, href, books }: { title: string; href: string; books: Cat
   );
 }
 
-function Controls({ q, active, sort }: { q: string; active: string; sort: string }) {
+function Controls({ q, active, sort, genre }: { q: string; active: string; sort: string; genre: string }) {
   const base = (extra: Record<string, string>) => {
     const p = new URLSearchParams();
     if (q) p.set("q", q);
@@ -43,7 +47,12 @@ function Controls({ q, active, sort }: { q: string; active: string; sort: string
     { label: "Free", href: base({ free: "1" }), key: "free" },
     { label: "Premium", href: base({ paid: "1" }), key: "paid" },
   ];
+  // Show the curated genres, plus the active one if it isn't in the shortlist.
+  const genreChips = [...new Set([...BROWSE_GENRES, ...(genre && !BROWSE_GENRES.includes(genre) ? [genre] : [])])].filter((g) => GENRES.includes(g as (typeof GENRES)[number]) || g === genre);
   const inputStyle: React.CSSProperties = { background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 999, color: "var(--ivory)", fontFamily: "var(--sans)", padding: "0.6rem 1rem", outline: "none" };
+  const chip = (label: string, href: string, on: boolean) => (
+    <a key={label} href={href} style={{ textDecoration: "none", padding: "0.4rem 0.95rem", fontSize: "0.85rem", borderRadius: 999, fontFamily: "var(--sans)", fontWeight: 600, background: on ? "var(--gold)" : "rgba(95,160,104,0.12)", color: on ? "#12100E" : "var(--ivory-muted)", border: "1px solid var(--border)", whiteSpace: "nowrap" }}>{label}</a>
+  );
   return (
     <section className="section" style={{ paddingTop: "1.2rem", paddingBottom: 0 }}>
       <form action="/catalog" method="get" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center", marginBottom: "1rem", maxWidth: 660 }}>
@@ -52,15 +61,12 @@ function Controls({ q, active, sort }: { q: string; active: string; sort: string
         <CatalogSort value={sort} />
         <button type="submit" className="btn btn-gold" style={{ padding: "0.6rem 1.3rem" }}>Search</button>
       </form>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.7rem" }}>
+        {chips.map((c) => chip(c.label, c.href, active === c.key && !genre))}
+      </div>
+      <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", fontFamily: "var(--sans)", margin: "0.2rem 0 0.5rem" }}>Genres</div>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        {chips.map((c) => {
-          const on = active === c.key;
-          return (
-            <a key={c.key} href={c.href} style={{ textDecoration: "none", padding: "0.4rem 0.95rem", fontSize: "0.85rem", borderRadius: 999, fontFamily: "var(--sans)", fontWeight: 600, background: on ? "var(--gold)" : "rgba(95,160,104,0.12)", color: on ? "#12100E" : "var(--ivory-muted)", border: "1px solid var(--border)" }}>
-              {c.label}
-            </a>
-          );
-        })}
+        {genreChips.map((g) => chip(g, base({ genre: g }), genre === g))}
       </div>
     </section>
   );
@@ -69,9 +75,9 @@ function Controls({ q, active, sort }: { q: string; active: string; sort: string
 export default async function Catalog({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; type?: string; free?: string; paid?: string; sort?: string }>;
+  searchParams: Promise<{ q?: string; type?: string; free?: string; paid?: string; sort?: string; genre?: string }>;
 }) {
-  const { q, type, free, paid, sort } = await searchParams;
+  const { q, type, free, paid, sort, genre } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -84,10 +90,11 @@ export default async function Catalog({
   const term = (q ?? "").trim();
   const safe = term.replace(/[,()*]/g, " ").trim();
   const typeFilter = (type ?? "").trim();
+  const genreFilter = (genre ?? "").trim();
   const freeOnly = free === "1" || free === "true";
   const paidOnly = paid === "1" || paid === "true";
   const sortKey = (sort ?? "").trim();
-  const filtered = !!(safe || typeFilter || freeOnly || paidOnly);
+  const filtered = !!(safe || typeFilter || genreFilter || freeOnly || paidOnly);
   const activeChip = typeFilter === "Interactive" ? "Interactive" : typeFilter === "Fiction" ? "Fiction" : typeFilter === "Non-Fiction" ? "Non-Fiction" : freeOnly ? "free" : paidOnly ? "paid" : "all";
 
   const runQuery = (withAge: boolean) => {
@@ -96,6 +103,7 @@ export default async function Catalog({
       .select(withAge ? "id, title, author, price, type, is_free, age_rating, rating" : "id, title, author, price, type, is_free, rating");
     if (withAge) query = query.eq("is_published", true).in("age_rating", allowed);
     if (typeFilter) query = query.eq("type", typeFilter);
+    if (genreFilter) query = query.eq("category", genreFilter);
     if (freeOnly) query = query.or("price.eq.0,is_free.eq.true");
     if (paidOnly) query = query.gt("price", 0);
     if (safe) query = query.or(`title.ilike.%${safe}%,author.ilike.%${safe}%`);
@@ -112,11 +120,11 @@ export default async function Catalog({
 
   // ---------- Filtered / search view: a single flat grid ----------
   if (filtered) {
-    const heading = term ? `Results for “${term}”` : freeOnly ? "Free to Read" : paidOnly ? "Premium Reads" : typeFilter ? `${typeFilter} stories` : "Catalog";
+    const heading = term ? `Results for “${term}”` : genreFilter ? `${genreFilter}` : freeOnly ? "Free to Read" : paidOnly ? "Premium Reads" : typeFilter ? `${typeFilter} stories` : "Catalog";
     return (
       <>
         <AppNav />
-        <Controls q={term} active={activeChip} sort={sortKey} />
+        <Controls q={term} active={activeChip} sort={sortKey} genre={genreFilter} />
         <section className="section">
           <div className="section-header">
             <h2>{heading}</h2>
@@ -148,7 +156,7 @@ export default async function Catalog({
   return (
     <>
       <AppNav />
-      <Controls q={term} active={activeChip} sort={sortKey} />
+      <Controls q={term} active={activeChip} sort={sortKey} genre={genreFilter} />
       <section className="section" style={{ paddingBottom: 0 }}>
         <div className="section-header">
           <h2>Catalog</h2>

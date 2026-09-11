@@ -682,16 +682,10 @@ img {
 .auth-input::placeholder { color: #8A8178; opacity: 1; }
 .auth-input:focus { box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.55); }
 
-/* ========== FOOTER ========== */
-footer {
-  background: var(--footer-bg);
-  padding: 4rem 5% 3rem;
-  margin-top: 5rem;
-  border-top: 1px solid var(--border);
-  display: grid;
-  grid-template-columns: 1.8fr 1fr 1fr 1fr 1fr;
-  gap: 3rem;
-}
+/* ========== FOOTER (legacy text styles only) ========== */
+/* NOTE: the bare `footer` element must NOT set display/grid — both current
+   footers (site-footer v2 and the landing module footer) manage their own
+   layout. A stray `display:grid` here previously squished the landing footer. */
 
 .footer-legal {
   display: flex;
@@ -761,9 +755,6 @@ footer a:hover {
   .book-detail {
     grid-template-columns: 1fr;
   }
-  footer {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
 @media (max-width: 600px) {
@@ -775,9 +766,6 @@ footer a:hover {
   }
   .book-cover {
     height: 240px;
-  }
-  footer {
-    grid-template-columns: 1fr;
   }
 }
 
