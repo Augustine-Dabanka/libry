@@ -10,7 +10,7 @@ export async function setShowMature(value: boolean) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return;
-  await supabase.from("profiles").update({ show_mature: value }).eq("id", user.id);
+  await supabase.from("profiles").upsert({ id: user.id, show_mature: value }, { onConflict: "id" });
   revalidatePath("/settings");
   revalidatePath("/home");
   revalidatePath("/catalog");
@@ -24,6 +24,6 @@ export async function setAvatar(dataUrl: string | null) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return;
-  await supabase.from("profiles").update({ avatar_url: dataUrl }).eq("id", user.id);
+  await supabase.from("profiles").upsert({ id: user.id, avatar_url: dataUrl }, { onConflict: "id" });
   revalidatePath("/settings");
 }

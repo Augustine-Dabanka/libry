@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const field: React.CSSProperties = {
@@ -24,6 +25,7 @@ const label: React.CSSProperties = {
 };
 
 export default function AccountSettings({ userId, initialName }: { userId: string; initialName: string }) {
+  const router = useRouter();
   const [name, setName] = useState(initialName);
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
@@ -36,9 +38,13 @@ export default function AccountSettings({ userId, initialName }: { userId: strin
     if (!name.trim()) { setNameMsg("Enter a display name."); return; }
     setBusy(true);
     const supabase = createClient();
-    const { error } = await supabase.from("profiles").update({ full_name: name.trim() }).eq("id", userId);
+    // Upsert (not update) so a missing profile row is created rather than a
+    // silent no-op that looks saved but isn't.
+    const { error } = await supabase.from("profiles").upsert({ id: userId, full_name: name.trim() }, { onConflict: "id" });
     setBusy(false);
-    setNameMsg(error ? error.message : "Saved ✓");
+    if (error) { setNameMsg(error.message); return; }
+    setNameMsg("Saved ✓");
+    router.refresh(); // update the navbar/name without a full reload
   }
 
   async function savePassword() {
