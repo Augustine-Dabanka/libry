@@ -107,6 +107,28 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
     wishlisted = !!wl.data;
   }
 
+  // Ownership + saved reading position, so the CTA can become "Continue reading".
+  const isFreeBook = (book.price ?? 0) <= 0;
+  let owned = isFreeBook;
+  let progressPct = 0;
+  if (user) {
+    if (!owned) {
+      const pu = await supabase.from("purchases").select("id").eq("buyer_id", user.id).eq("book_id", book.id).maybeSingle();
+      owned = !!pu.data;
+    }
+    if (user.email) {
+      const rp = await supabase
+        .from("reading_progress")
+        .select("progress_percentage")
+        .eq("user_email", user.email)
+        .eq("book_id", String(book.id))
+        .maybeSingle();
+      if (!rp.error) progressPct = Math.min(100, Math.round(Number(rp.data?.progress_percentage ?? 0)));
+    }
+  }
+  const isInteractive = (book.type || "").toLowerCase() === "interactive";
+  const hasProgress = owned && progressPct > 3 && progressPct < 100;
+
   // Likes (public read; guarded).
   let likeCount = 0;
   let liked = false;
@@ -222,19 +244,33 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
             ) : null}
             <div className="book-actions">
               {book.content ? (
-                (book.type || "").toLowerCase() === "interactive" ? (
+                isInteractive ? (
                   <a href={`/reader/${book.id}`} className="btn btn-gold">▸ Play the story →</a>
+                ) : owned ? (
+                  <a href={`/reader/${book.id}`} className="btn btn-gold">
+                    {hasProgress ? `Continue reading · ${progressPct}%` : "Read now →"}
+                  </a>
                 ) : (
                   <a href={`/reader/${book.id}?sample=1`} className="btn btn-gold">Read a free sample →</a>
                 )
               ) : null}
-              {(book.price ?? 0) > 0 ? (
+              {(book.price ?? 0) > 0 && !owned ? (
                 <AddToCartButton item={{ id: book.id, title: book.title, author: book.author, price: book.price }} />
               ) : null}
               {user ? <WishlistButton bookId={Number(book.id)} userId={user.id} initial={wishlisted} /> : null}
               <LikeButton bookId={Number(book.id)} userId={user?.id ?? null} initialLiked={liked} initialCount={likeCount} />
               <ShareButton path={`/book/${book.id}`} title={book.title} />
             </div>
+            {hasProgress ? (
+              <div style={{ marginTop: "0.4rem", maxWidth: 320 }}>
+                <div style={{ height: 5, borderRadius: 999, background: "var(--border)", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${progressPct}%`, background: "linear-gradient(90deg,#5FA068,#C5A059)" }} />
+                </div>
+                <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "0.35rem" }}>
+                  You&apos;re {progressPct}% through — pick up where you left off.
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 

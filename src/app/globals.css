@@ -946,7 +946,28 @@ footer a:hover {
   .mm-sub,
   .mm-caret,
   .nav-mega { transition: none !important; }
+  .cat-genres-panel { animation: none !important; }
 }
+
+/* Catalog — genres tucked into a disclosure dropdown */
+.cat-genres { margin-top: 0.2rem; }
+.cat-genres > summary {
+  list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.55rem;
+  padding: 0.5rem 1.05rem; border-radius: 999px; border: 1px solid var(--border);
+  background: rgba(95, 160, 104, 0.12); color: var(--ivory); font-family: var(--sans);
+  font-size: 0.85rem; font-weight: 600; user-select: none; width: fit-content;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.cat-genres > summary::-webkit-details-marker { display: none; }
+.cat-genres > summary:hover { border-color: var(--gold); color: var(--gold); }
+.cat-genres-caret { font-size: 0.7rem; color: var(--muted); transition: transform 0.2s ease; }
+.cat-genres[open] > summary .cat-genres-caret { transform: rotate(180deg); color: var(--gold); }
+.cat-genres-panel {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; padding: 0.9rem 1rem;
+  border: 1px solid var(--border); border-radius: 14px; background: var(--stone);
+  animation: catGenreIn 0.2s ease;
+}
+@keyframes catGenreIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Center search + autocomplete */
 .nav-search { position: relative; display: flex; align-items: center; gap: 0.5rem; width: 100%; max-width: 460px;

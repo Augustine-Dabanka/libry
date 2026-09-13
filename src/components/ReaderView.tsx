@@ -16,6 +16,45 @@ const PALETTES: Record<Theme, { bg: string; fg: string; muted: string; bar: stri
   sepia: { bg: "#F5F1E8", fg: "#241f1b", muted: "#7a7268", bar: "rgba(20,16,13,0.12)" },
 };
 
+// A small pool of literary epigraphs (all long-public-domain / historical voices),
+// shown once at the top of a read as a "book-opening" flourish. Chosen
+// deterministically per book so it never flickers or mismatches on hydration.
+const EPIGRAPHS: { text: string; who: string }[] = [
+  { text: "A room without books is like a body without a soul.", who: "Cicero" },
+  { text: "There is no frigate like a book to take us lands away.", who: "Emily Dickinson" },
+  { text: "Once you learn to read, you will be forever free.", who: "Frederick Douglass" },
+  { text: "Reading is to the mind what exercise is to the body.", who: "Joseph Addison" },
+  { text: "Read the best books first, or you may not have a chance to read them at all.", who: "Henry David Thoreau" },
+  { text: "A good book is the precious life-blood of a master spirit.", who: "John Milton" },
+];
+
+function pickIndex(seed: string, mod: number): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return mod > 0 ? h % mod : 0;
+}
+
+// Reader-only presentation polish: drop cap, chapter ornaments, title-page rule.
+// Scoped to .rd-scope so nothing here leaks into the rest of the app.
+const READER_ENHANCE_CSS = `
+.rd-header { text-align: center; margin-bottom: 2.2rem; }
+.rd-kicker { font-family: var(--sans); font-size: 0.7rem; letter-spacing: 0.24em; text-transform: uppercase; opacity: 0.55; }
+.rd-title { font-family: var(--serif); font-size: clamp(1.9rem, 4vw, 2.6rem); line-height: 1.14; margin: 0.55rem 0 0.5rem; }
+.rd-byline { font-family: var(--sans); font-size: 0.92rem; opacity: 0.72; }
+.rd-meta { font-family: var(--sans); font-size: 0.78rem; opacity: 0.5; margin-top: 0.35rem; letter-spacing: 0.02em; }
+.rd-rule { display: flex; align-items: center; justify-content: center; gap: 0.9rem; margin: 1.5rem auto 0; max-width: 240px; }
+.rd-rule::before, .rd-rule::after { content: ""; height: 1px; flex: 1; background: currentColor; opacity: 0.28; }
+.rd-rule span { font-size: 0.95rem; color: #C4A35A; opacity: 0.9; }
+.rd-epigraph { font-family: var(--serif); font-style: italic; text-align: center; opacity: 0.78; max-width: 460px; margin: 0 auto 2.6rem; line-height: 1.7; font-size: 1.02rem; }
+.rd-epigraph cite { display: block; font-style: normal; font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.65; margin-top: 0.7rem; }
+.rd-drop::first-letter,
+.rd-scope .le-body > p:first-of-type::first-letter {
+  font-family: var(--serif); float: left; font-size: 3.3em; line-height: 0.76;
+  padding: 0.04em 0.12em 0 0; font-weight: 600; color: #C4A35A;
+}
+.rd-orn { text-align: center; font-size: 1rem; letter-spacing: 0.4em; opacity: 0.45; color: #C4A35A; margin: 2.6rem 0 0.2rem; }
+`;
+
 export default function ReaderView({
   bookId,
   title,
@@ -77,6 +116,21 @@ export default function ReaderView({
   );
 
   const pal = PALETTES[theme];
+
+  // Reading-time estimate (~220 wpm) and the index of the first real body
+  // paragraph (so only it gets the drop cap, not a heading or an image).
+  const isImagePara = (p: string) =>
+    /^!\[.*?\]\((https?:\/\/[^\s)]+)\)$/.test(p) || /^https?:\/\/\S+\.(png|jpe?g|gif|webp|svg)(\?\S*)?$/i.test(p);
+  const isHeadingPara = (p: string) => /^chapter\b/i.test(p) && p.length <= 60;
+  const readingMinutes = useMemo(() => {
+    const words = (isHtml ? content.replace(/<[^>]+>/g, " ") : content).trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.round(words / 220));
+  }, [isHtml, content]);
+  const firstBodyIndex = useMemo(
+    () => paragraphs.findIndex((p) => !isImagePara(p) && !isHeadingPara(p)),
+    [paragraphs]
+  );
+  const epigraph = EPIGRAPHS[pickIndex(String(bookId), EPIGRAPHS.length)]!;
 
   // Restore saved progress once on mount (not while reading a sample).
   useEffect(() => {
@@ -235,6 +289,9 @@ export default function ReaderView({
           {title}
         </span>
         <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", "--bar": pal.bar } as React.CSSProperties}>
+          <span aria-label={`${progress} percent read`} style={{ fontFamily: "var(--sans)", fontSize: "0.72rem", color: pal.muted, minWidth: 34, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+            {progress}%
+          </span>
           <button onClick={() => setFontSize((s) => Math.max(0.9, s - 0.08))} style={ctrl(pal)} aria-label="Smaller text">
             A−
           </button>
@@ -253,15 +310,28 @@ export default function ReaderView({
       </div>
 
       {/* content */}
+      <style dangerouslySetInnerHTML={{ __html: READER_ENHANCE_CSS }} />
       <article
+        className="rd-scope"
         style={{
           maxWidth: 680,
           margin: "0 auto",
-          padding: "2.5rem clamp(1.1rem,4vw,2rem) 6rem",
+          padding: "3rem clamp(1.1rem,4vw,2rem) 6rem",
         }}
       >
-        <h1 style={{ fontFamily: "var(--serif)", fontSize: "clamp(1.8rem,4vw,2.5rem)", marginBottom: "0.3rem" }}>{title}</h1>
-        <p style={{ color: pal.muted, fontFamily: "var(--sans)", marginBottom: "2.2rem" }}>by {author || "Unknown author"}</p>
+        <header className="rd-header">
+          <div className="rd-kicker">{sample ? "Free sample" : "Now reading"}</div>
+          <h1 className="rd-title">{title}</h1>
+          <div className="rd-byline">by {author || "Unknown author"}</div>
+          <div className="rd-meta">{readingMinutes} min read{sample ? " · first chapter" : ""}</div>
+          <div className="rd-rule" aria-hidden="true"><span>❦</span></div>
+        </header>
+
+        <p className="rd-epigraph">
+          “{epigraph.text}”
+          <cite>{epigraph.who}</cite>
+        </p>
+
         {isHtml ? (
           <>
             <style dangerouslySetInnerHTML={{ __html: RICH_CSS }} />
@@ -285,18 +355,21 @@ export default function ReaderView({
                 </figure>
               );
             }
-            // Chapter headings render as headings and get no comment chip.
+            // Chapter headings render as headings, prefaced by an ornament.
             const isHeading = /^chapter\b/i.test(p) && p.length <= 60;
             if (isHeading) {
               return (
-                <h2 key={i} style={{ fontFamily: "var(--serif)", fontSize: `${Math.min(1.6, fontSize * 1.25)}rem`, lineHeight: 1.3, margin: "2rem 0 1rem" }}>
-                  {p}
-                </h2>
+                <div key={i}>
+                  <div className="rd-orn" aria-hidden="true">❦ ❦ ❦</div>
+                  <h2 style={{ fontFamily: "var(--serif)", textAlign: "center", fontSize: `${Math.min(1.6, fontSize * 1.25)}rem`, lineHeight: 1.3, margin: "0.4rem 0 1.4rem" }}>
+                    {p}
+                  </h2>
+                </div>
               );
             }
             const cs = commentsByPara.get(i) ?? [];
             return (
-              <p key={i} style={{ fontFamily: "var(--serif)", fontSize: `${fontSize}rem`, lineHeight: 1.95, marginBottom: "1.3rem" }}>
+              <p key={i} className={i === firstBodyIndex ? "rd-drop" : undefined} style={{ fontFamily: "var(--serif)", fontSize: `${fontSize}rem`, lineHeight: 1.95, marginBottom: "1.3rem" }}>
                 {p}{" "}
                 <button
                   type="button"

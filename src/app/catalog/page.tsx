@@ -8,7 +8,9 @@ import { type Book } from "@/lib/types";
 
 // A curated, reader-friendly subset shown as browse chips (the full list lives
 // in GENRES for the editor).
-const BROWSE_GENRES = ["Romance", "Fantasy", "Sci-Fi", "Mystery", "Thriller", "Horror", "Historical", "Young Adult", "Adventure", "Non-Fiction"];
+// Non-Fiction is a Format chip (books.type), so it's intentionally NOT repeated
+// here as a genre — that was the doubled "Non-Fiction" in the filter row.
+const BROWSE_GENRES = ["Romance", "Fantasy", "Sci-Fi", "Mystery", "Thriller", "Horror", "Historical", "Young Adult", "Adventure", "Children", "Poetry", "Biography & Memoir"];
 
 type CatBook = Book & { is_free?: boolean | null };
 
@@ -64,10 +66,18 @@ function Controls({ q, active, sort, genre }: { q: string; active: string; sort:
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.7rem" }}>
         {chips.map((c) => chip(c.label, c.href, active === c.key && !genre))}
       </div>
-      <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", fontFamily: "var(--sans)", margin: "0.2rem 0 0.5rem" }}>Genres</div>
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        {genreChips.map((g) => chip(g, base({ genre: g }), genre === g))}
-      </div>
+      {/* Genres tucked into a native disclosure so the row never becomes a wall
+          of chips on mobile. Fully keyboard-accessible, no JS required. */}
+      <details className="cat-genres" open={!!genre}>
+        <summary>
+          <span>{genre ? `Genre: ${genre}` : "Browse by genre"}</span>
+          <span className="cat-genres-caret" aria-hidden="true">▾</span>
+        </summary>
+        <div className="cat-genres-panel">
+          {chip("All genres", base({}), !genre)}
+          {genreChips.map((g) => chip(g, base({ genre: g }), genre === g))}
+        </div>
+      </details>
     </section>
   );
 }
@@ -94,7 +104,9 @@ export default async function Catalog({
   const freeOnly = free === "1" || free === "true";
   const paidOnly = paid === "1" || paid === "true";
   const sortKey = (sort ?? "").trim();
-  const filtered = !!(safe || typeFilter || genreFilter || freeOnly || paidOnly);
+  // A chosen sort also switches to the flat grid — otherwise the shelf view
+  // buckets books and the sort order is invisible (that's why sort "did nothing").
+  const filtered = !!(safe || typeFilter || genreFilter || freeOnly || paidOnly || sortKey);
   const activeChip = typeFilter === "Interactive" ? "Interactive" : typeFilter === "Fiction" ? "Fiction" : typeFilter === "Non-Fiction" ? "Non-Fiction" : freeOnly ? "free" : paidOnly ? "paid" : "all";
 
   const runQuery = (withAge: boolean) => {
