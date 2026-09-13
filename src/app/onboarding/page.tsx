@@ -8,10 +8,24 @@ type Question = {
   key: string;
   line: string;
   q: string;
-  type?: "country";
+  type?: "country" | "trial";
   multi?: boolean;
   options?: Option[];
 };
+
+// Interactive micro-trial: a 2-sentence taste of a Libry interactive story, so a
+// newcomer feels the "you choose" magic before they ever sign up. Every choice is
+// "right" — it just changes the wink you get back.
+const TRIAL = {
+  story:
+    "The library’s oldest door has no handle — only a brass keyhole shaped like a leaf. As you lean close, a whisper drifts through the wood: “Say what you seek, and I will open.”",
+  prompt: "What do you whisper?",
+  choices: [
+    { v: "story", label: "“A story I’ve never read.”", note: "The lock turns at once. Of course it does — that’s exactly why you’re here." },
+    { v: "truth", label: "“The truth.”", note: "A long pause… then a click. Bold answer. The door seems to respect that." },
+    { v: "escape", label: "“A way out.”", note: "It swings wide immediately — but opens toward somewhere new, not back the way you came." },
+  ],
+} as const;
 
 const QUESTIONS: Question[] = [
   {
@@ -68,6 +82,16 @@ const QUESTIONS: Question[] = [
     ],
   },
   {
+    key: "goal",
+    line: "Let’s build a gentle habit.",
+    q: "What’s your daily reading goal?",
+    options: [
+      { v: "casual", label: "Casual", sub: "5 minutes a day" },
+      { v: "regular", label: "Regular", sub: "15 minutes a day" },
+      { v: "bookworm", label: "Bookworm", sub: "30 minutes a day" },
+    ],
+  },
+  {
     key: "budget",
     line: "Almost done…",
     q: "And your reading budget?",
@@ -75,6 +99,17 @@ const QUESTIONS: Question[] = [
       { v: "free", label: "Free reads", sub: "Show me what’s free first" },
       { v: "paid", label: "Happy to pay for a gem" },
       { v: "any", label: "Either’s fine" },
+    ],
+  },
+  {
+    key: "source",
+    line: "One quick thing.",
+    q: "How did you hear about Libry?",
+    options: [
+      { v: "friend", label: "A friend or family", sub: "Word of mouth" },
+      { v: "social", label: "Social media", sub: "TikTok, Instagram, X…" },
+      { v: "search", label: "A search engine" },
+      { v: "other", label: "Somewhere else" },
     ],
   },
   {
@@ -90,7 +125,8 @@ const QUESTIONS: Question[] = [
       { v: "50+", label: "50 or older" },
     ],
   },
-  { key: "country", type: "country", line: "Last one, promise.", q: "Where are you reading from?" },
+  { key: "country", type: "country", line: "Nearly there.", q: "Where are you reading from?" },
+  { key: "trial", type: "trial", line: "Now — a tiny taste.", q: "Try a Libry interactive story" },
 ];
 
 const COUNTRIES = [
@@ -160,9 +196,12 @@ const DEFAULT_ANSWERS: Record<string, string> = {
   mood: "adventurous",
   genre: "scifi,fantasy",
   pace: "epic",
+  goal: "regular",
   budget: "any",
+  source: "friend",
   age: "18-24",
   country: "United States",
+  trial: "story",
 };
 
 export default function OnboardingPage() {
@@ -172,6 +211,7 @@ export default function OnboardingPage() {
   const [picked, setPicked] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [genreSel, setGenreSel] = useState<string[]>([]);
+  const [trialChoice, setTrialChoice] = useState<string | null>(null);
   const [theme, setTheme] = useState("obsidian"); // default effect: Obsidian Neon
   const [frame, setFrame] = useState("gold");
 
@@ -253,6 +293,15 @@ export default function OnboardingPage() {
     else setIdx(idx + 1);
   }
 
+  function finishTrial() {
+    if (!q || !trialChoice) return;
+    const next = { ...answers, [q.key]: trialChoice };
+    setTrialChoice(null);
+    setAnswers(next);
+    if (idx + 1 >= total) setIdx(total);
+    else setIdx(idx + 1);
+  }
+
   return (
     <div className={styles.root}>
       <div className={styles.bg} />
@@ -318,7 +367,7 @@ export default function OnboardingPage() {
         )}
 
         {/* Single-select questions */}
-        {q && q.type !== "country" && !q.multi && (
+        {q && q.type !== "country" && q.type !== "trial" && !q.multi && (
           <div className={styles.screen} key={q.key}>
             <Koala />
             <div className={styles.mascotLine}>{cheer || q.line}</div>
@@ -372,6 +421,42 @@ export default function OnboardingPage() {
           </div>
         )}
 
+        {/* Interactive micro-trial */}
+        {q && q.type === "trial" && (
+          <div className={styles.screen} key="trial">
+            <Koala />
+            <div className={styles.mascotLine}>{q.line}</div>
+            <div className={styles.count}>Question {idx + 1} of {total}</div>
+            <h1 className={styles.q}>{q.q}</h1>
+            <p className={styles.trialStory}>{TRIAL.story}</p>
+            <div className={styles.trialPrompt}>{TRIAL.prompt}</div>
+            <div className={styles.options}>
+              {TRIAL.choices.map((c) => (
+                <button
+                  key={c.v}
+                  type="button"
+                  className={`${styles.opt} ${trialChoice === c.v ? styles.picked : ""}`}
+                  onClick={() => setTrialChoice(c.v)}
+                >
+                  <span>{c.label}</span>
+                </button>
+              ))}
+            </div>
+            {trialChoice ? (
+              <>
+                <p className={styles.trialFeedback}>
+                  {TRIAL.choices.find((c) => c.v === trialChoice)?.note}
+                </p>
+                <button className={styles.btn} type="button" onClick={finishTrial} style={{ marginTop: "0.4rem" }}>
+                  That&apos;s the idea — finish up →
+                </button>
+              </>
+            ) : (
+              <p className={styles.trialHint}>Pick one — there&apos;s no wrong answer.</p>
+            )}
+          </div>
+        )}
+
         {/* Customise & sign up (endowment) */}
         {idx >= total && (
           <div className={styles.screen} key="done">
@@ -384,10 +469,17 @@ export default function OnboardingPage() {
                 />
               ))}
             </div>
+            <div className={styles.xpBadge}>
+              <span className={styles.xpMark}>✦</span>
+              <div className={styles.xpText}>
+                <strong>+50 XP earned</strong>
+                <span>“First Chapter” badge unlocked</span>
+              </div>
+            </div>
             <h1 className={styles.doneTitle}>
               Your shelf is <span>ready</span>.
             </h1>
-            <p className={styles.tag}>Make it yours — pick a look you love. It&apos;s already set up for you.</p>
+            <p className={styles.tag}>Save your progress to keep your XP, badge, and handpicked shelf. It&apos;s already set up for you.</p>
 
             {/* Avatar frame preview */}
             <div style={{ display: "grid", placeItems: "center", marginBottom: "1.4rem" }}>
