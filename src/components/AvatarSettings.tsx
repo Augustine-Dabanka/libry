@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { setAvatar } from "@/app/actions/settings";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 // Downscale a chosen image to a small square JPEG data URL.
 function downscale(file: File, size = 256): Promise<string> {
@@ -36,28 +37,64 @@ export default function AvatarSettings({
   initialUrl: string | null;
   initials: string;
 }) {
+  const router = useRouter();
   const [url, setUrl] = useState<string | null>(initialUrl);
   const [pending, start] = useTransition();
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Write directly through the authenticated browser client (same proven path
+  // as the display-name save), so the photo actually persists to the profile.
+  async function persist(value: string | null): Promise<{ ok: boolean; error?: string }> {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { ok: false, error: "Not signed in." };
+    const { error } = await supabase
+      .from("profiles")
+      .upsert({ id: user.id, avatar_url: value }, { onConflict: "id" })
+      .select("id")
+      .single();
+    return error ? { ok: false, error: error.message } : { ok: true };
+  }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
     setErr(null);
+    let data: string;
     try {
-      const data = await downscale(file);
-      setUrl(data);
-      start(() => setAvatar(data));
+      data = await downscale(file);
     } catch {
       setErr("Couldn't read that image.");
+      return;
     }
+    const prev = url;
+    setUrl(data); // optimistic preview
+    start(async () => {
+      const res = await persist(data);
+      if (res.ok) router.refresh();
+      else {
+        setUrl(prev); // roll back so we never show a photo that didn't save
+        setErr(res.error || "Couldn't save that photo. Please try again.");
+      }
+    });
   }
 
   function remove() {
+    const prev = url;
     setUrl(null);
-    start(() => setAvatar(null));
+    setErr(null);
+    start(async () => {
+      const res = await persist(null);
+      if (res.ok) router.refresh();
+      else {
+        setUrl(prev);
+        setErr(res.error || "Couldn't remove the photo. Please try again.");
+      }
+    });
   }
 
   return (

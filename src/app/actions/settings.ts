@@ -16,14 +16,3 @@ export async function setShowMature(value: boolean) {
   revalidatePath("/catalog");
   revalidatePath("/discover");
 }
-
-// Set or clear the profile photo (a downscaled data URL, or null to remove).
-export async function setAvatar(dataUrl: string | null) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
-  await supabase.from("profiles").upsert({ id: user.id, avatar_url: dataUrl }, { onConflict: "id" });
-  revalidatePath("/settings");
-}

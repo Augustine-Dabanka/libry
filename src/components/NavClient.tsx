@@ -25,6 +25,7 @@ export default function NavClient({
 }) {
   const [dd, setDd] = useState<Dd>(null);
   const [mobile, setMobile] = useState(false);
+  const [mSection, setMSection] = useState<null | "genres" | "discover">(null);
   const [cartN, setCartN] = useState(0);
   const [wishN, setWishN] = useState(wishCount);
   const rootRef = useRef<HTMLElement>(null);
@@ -177,39 +178,95 @@ export default function NavClient({
             <a href="/login" className="btn-login">Log in</a>
           )}
 
-          <div className="hamburger" onClick={() => setMobile((v) => !v)}>
+          <button
+            type="button"
+            className={`hamburger${mobile ? " open" : ""}`}
+            aria-label={mobile ? "Close menu" : "Open menu"}
+            aria-expanded={mobile}
+            aria-controls="mobile-menu"
+            onClick={() => setMobile((v) => !v)}
+          >
             <span></span>
             <span></span>
             <span></span>
-          </div>
+          </button>
         </div>
       </nav>
 
-      <div id="mobile-menu" className={mobile ? "open" : ""}>
+      <div id="mobile-menu" className={mobile ? "open" : ""} aria-hidden={!mobile}>
         {signedIn ? (
           <div className="mm-user">
             <span className="user-avatar">{avatar}</span>
             <span className="mm-user-name">{name}</span>
           </div>
         ) : null}
-        <a href="/catalog">Browse all</a>
-        <a href="/catalog?type=Interactive">Interactive stories</a>
-        {(genres.length ? genres : ["Fiction", "Non-Fiction"]).slice(0, 8).map((g) => (
-          <a key={g} href={`/catalog?genre=${encodeURIComponent(g)}`}>{g}</a>
-        ))}
-        <a href="/my-library">My Library</a>
-        <a href="/achievements">Achievements</a>
-        <a href="/wishlist">Wishlist</a>
-        <a href="/cart" onClick={(e) => { e.preventDefault(); setMobile(false); openCart(); }}>Cart</a>
-        <a href="/creator">Write / Creator Dashboard</a>
-        <a href="/about">About</a>
-        <a href="/settings">Settings</a>
+
+        <div className="mm-scroll">
+          <a className="mm-link" href="/catalog">Browse all</a>
+          <a className="mm-link" href="/catalog?type=Interactive">✦ Interactive stories</a>
+
+          {/* Genres — collapsed by default so the menu stays short & scrollable */}
+          <div className="mm-group">
+            <button
+              type="button"
+              className={`mm-acc${mSection === "genres" ? " open" : ""}`}
+              aria-expanded={mSection === "genres"}
+              onClick={() => setMSection((s) => (s === "genres" ? null : "genres"))}
+            >
+              <span>Genres</span>
+              <span className="mm-caret">▾</span>
+            </button>
+            <div className={`mm-sub${mSection === "genres" ? " open" : ""}`}>
+              {(genres.length ? genres : ["Fiction", "Non-Fiction"]).map((g) => (
+                <a key={g} href={`/catalog?genre=${encodeURIComponent(g)}`}>{g}</a>
+              ))}
+            </div>
+          </div>
+
+          {/* Discover */}
+          <div className="mm-group">
+            <button
+              type="button"
+              className={`mm-acc${mSection === "discover" ? " open" : ""}`}
+              aria-expanded={mSection === "discover"}
+              onClick={() => setMSection((s) => (s === "discover" ? null : "discover"))}
+            >
+              <span>Discover</span>
+              <span className="mm-caret">▾</span>
+            </button>
+            <div className={`mm-sub${mSection === "discover" ? " open" : ""}`}>
+              <a href="/discover">Trending</a>
+              <a href="/discover?filter=editors-pick">Editor&apos;s Pick</a>
+              <a href="/catalog?free=1">Free to read</a>
+              <a href="/catalog?paid=1">Premium</a>
+              <a href="/unlimited">Libry Unlimited</a>
+            </div>
+          </div>
+
+          <div className="mm-divider" />
+
+          <a className="mm-link" href="/my-library">My Library</a>
+          <a className="mm-link" href="/my-library?tab=wishlist">
+            Wishlist{wishN > 0 ? <span className="mm-count">{wishN}</span> : null}
+          </a>
+          <a className="mm-link" href="/cart" onClick={(e) => { e.preventDefault(); setMobile(false); openCart(); }}>
+            Cart{cartN > 0 ? <span className="mm-count">{cartN}</span> : null}
+          </a>
+          <a className="mm-link" href="/achievements">Achievements</a>
+          <a className="mm-link" href="/creator">✎ Write / Creator</a>
+
+          <div className="mm-divider" />
+
+          <a className="mm-link" href="/about">About</a>
+          <a className="mm-link" href="/settings">Settings</a>
+        </div>
+
         {signedIn ? (
           <form action="/auth/signout" method="post">
-            <button type="submit" style={{ ...menuBtn, padding: "0.4rem 0" }}>Log out</button>
+            <button type="submit" className="mm-signout">Log out</button>
           </form>
         ) : (
-          <a href="/login">Log in</a>
+          <a className="btn btn-gold mm-cta" href="/login">Log in</a>
         )}
       </div>
 
