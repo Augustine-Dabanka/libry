@@ -113,7 +113,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   let progressPct = 0;
   if (user) {
     if (!owned) {
-      const pu = await supabase.from("purchases").select("id").eq("buyer_id", user.id).eq("book_id", book.id).maybeSingle();
+      const pu = await supabase.from("purchases").select("id").eq("user_id", user.id).eq("book_id", book.id).maybeSingle();
       owned = !!pu.data;
     }
     if (user.email) {
