@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeHtml, looksLikeHtml } from "@/lib/sanitize";
@@ -291,6 +291,348 @@ export default function ReaderView({
     }, 1200);
   }
 
+  // ---- Paged ("book") mode — CSS multi-column horizontal pagination ----------
+  // Verified mechanic: a fixed-height flow with column-width == viewport width
+  // and column-fill:auto lays content into side-by-side page columns; we clip to
+  // one page and translateX between them. Plain-text books only (rich HTML flows
+  // unpredictably), and only when there's real content.
+  const PAD = 30;
+  const GAP = 60;
+  const canPage = !isHtml && paragraphs.length > 0;
+  const [paged, setPaged] = useState(true);
+  const [page, setPage] = useState(0);
+  const [pages, setPages] = useState(1);
+  const vpRef = useRef<HTMLDivElement>(null);
+  const flowRef = useRef<HTMLDivElement>(null);
+  const stepRef = useRef(0);
+  const restoredRef = useRef(false);
+  const usePaged = canPage && paged;
+
+  const measure = useCallback(() => {
+    const vp = vpRef.current;
+    const flow = flowRef.current;
+    if (!vp || !flow) return;
+    const w = vp.clientWidth;
+    flow.style.width = `${w}px`;
+    flow.style.columnWidth = `${w}px`;
+    flow.style.columnGap = `${GAP}px`;
+    // Derive the true column pitch from where the laid-out children actually sit
+    // (robust to the multicol box's own padding, which throws off width+gap math).
+    const kids = flow.children;
+    const starts: number[] = [];
+    for (let i = 0; i < kids.length; i++) {
+      const x = Math.round((kids[i] as HTMLElement).offsetLeft);
+      if (!starts.includes(x)) starts.push(x);
+    }
+    starts.sort((a, b) => a - b);
+    let pitch = w + GAP; // fallback
+    let min = Infinity;
+    for (let i = 1; i < starts.length; i++) {
+      const d = (starts[i] ?? 0) - (starts[i - 1] ?? 0);
+      if (d > 8 && d < min) min = d;
+    }
+    if (min !== Infinity) pitch = min;
+    stepRef.current = pitch;
+    const total = flow.scrollWidth;
+    const n = Math.max(1, Math.round(total / pitch));
+    setPages(n);
+    setPage((p) => Math.min(p, n - 1));
+  }, []);
+
+  // Measure on mount and whenever layout inputs change; keep in sync on resize.
+  // The first synchronous pass can run before web fonts load and the flex height
+  // settles (under-counting pages), so we re-measure after paint and once fonts
+  // are ready — both change line heights and therefore the page count.
+  useLayoutEffect(() => {
+    if (!usePaged) return;
+    measure();
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = requestAnimationFrame(() => { raf2 = requestAnimationFrame(measure); });
+    try { (document as Document & { fonts?: FontFaceSet }).fonts?.ready?.then(() => measure()); } catch { /* no font API */ }
+    const vp = vpRef.current;
+    let ro: ResizeObserver | null = null;
+    if (vp && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => measure());
+      ro.observe(vp);
+    }
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); ro?.disconnect(); };
+  }, [usePaged, fontSize, content, measure]);
+
+  // Apply the page transform + progress + end-of-book challenge.
+  useLayoutEffect(() => {
+    const flow = flowRef.current;
+    if (!flow || !usePaged) return;
+    flow.style.transform = `translateX(${-page * stepRef.current}px)`;
+    setProgress(pages > 1 ? Math.round((page / (pages - 1)) * 100) : 100);
+    if (page >= pages - 1 && pages > 1 && userEmail && !sample && !finishShown.current) {
+      finishShown.current = true;
+      setShowFinish(true);
+    }
+  }, [page, pages, usePaged, userEmail, sample]);
+
+  // Persist page progress (debounced) and restore it once after first measure.
+  useEffect(() => {
+    if (!usePaged || !userEmail || sample) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    const pct = pages > 1 ? Math.round((page / (pages - 1)) * 100) : 0;
+    saveTimer.current = setTimeout(async () => {
+      const supabase = createClient();
+      await supabase
+        .from("reading_progress")
+        .upsert({ user_email: userEmail, book_id: bookId, current_chapter: 1, progress_percentage: pct }, { onConflict: "user_email,book_id" });
+    }, 900);
+  }, [page, pages, usePaged, userEmail, sample, bookId]);
+
+  useEffect(() => {
+    if (!usePaged || restoredRef.current || !userEmail || sample || pages <= 1) return;
+    restoredRef.current = true;
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase.from("reading_progress").select("progress_percentage").eq("user_email", userEmail).eq("book_id", bookId).maybeSingle();
+      const pct = Number(data?.progress_percentage ?? 0);
+      if (pct > 3) setPage(Math.min(pages - 1, Math.round((pct / 100) * (pages - 1))));
+    })();
+  }, [usePaged, pages, userEmail, sample, bookId]);
+
+  const goPage = useCallback((n: number) => setPage(() => Math.min(pages - 1, Math.max(0, n))), [pages]);
+  const nextPage = useCallback(() => setPage((p) => Math.min(pages - 1, p + 1)), [pages]);
+  const prevPage = useCallback(() => setPage((p) => Math.max(0, p - 1)), []);
+
+  // Keyboard navigation (ignored while a dialog/tray is open).
+  useEffect(() => {
+    if (!usePaged) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (openPara != null || tocOpen) return;
+      if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); nextPage(); }
+      else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); prevPage(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [usePaged, nextPage, prevPage, openPara, tocOpen]);
+
+  // Swipe navigation.
+  const touchX = useRef<number | null>(null);
+  function onTouchStart(e: React.TouchEvent) { touchX.current = e.changedTouches[0]?.clientX ?? null; }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchX.current == null) return;
+    const dx = (e.changedTouches[0]?.clientX ?? 0) - touchX.current;
+    touchX.current = null;
+    if (Math.abs(dx) > 45) { if (dx < 0) nextPage(); else prevPage(); }
+  }
+
+  // TOC jump lands on the chapter's page (paged) or scrolls to it (scroll mode).
+  function goToChapter(i: number) {
+    setTocOpen(false);
+    if (usePaged) {
+      const el = document.getElementById(`rd-ch-${i}`) as HTMLElement | null;
+      if (el && stepRef.current > 0) setPage(Math.max(0, Math.round((el.offsetLeft - PAD) / stepRef.current)));
+    } else {
+      document.getElementById(`rd-ch-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  // The book content, shared by both scroll and paged layouts.
+  const bodyContent = (
+    <>
+      <header className="rd-header">
+        <div className="rd-kicker">{sample ? "Free sample" : "Now reading"}</div>
+        <h1 className="rd-title">{title}</h1>
+        <div className="rd-byline">by {author || "Unknown author"}</div>
+        <div className="rd-meta">{readingMinutes} min read{sample ? " · first chapter" : ""}</div>
+        <div className="rd-rule" aria-hidden="true"><span>❦</span></div>
+      </header>
+
+      <p className="rd-epigraph">
+        “{epigraph.text}”
+        <cite>{epigraph.who}</cite>
+      </p>
+
+      {isHtml ? (
+        <>
+          <style dangerouslySetInnerHTML={{ __html: RICH_CSS }} />
+          <div className="le-body" style={{ fontSize: `${fontSize}rem` }} dangerouslySetInnerHTML={{ __html: safeHtml }} />
+        </>
+      ) : paragraphs.length > 0 ? (
+        paragraphs.map((p, i) => {
+          const md = p.match(/^!\[(.*?)\]\((https?:\/\/[^\s)]+)\)$/);
+          const url = md ? md[2] : /^https?:\/\/\S+\.(png|jpe?g|gif|webp|svg)(\?\S*)?$/i.test(p) ? p : null;
+          if (url) {
+            return (
+              <figure key={i} style={{ margin: "1.6rem 0" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={md?.[1] || ""} style={{ maxWidth: "100%", borderRadius: 12, display: "block", margin: "0 auto" }} />
+                {md?.[1] ? (
+                  <figcaption style={{ textAlign: "center", color: pal.muted, fontSize: "0.85rem", marginTop: "0.4rem", fontFamily: "var(--sans)" }}>{md[1]}</figcaption>
+                ) : null}
+              </figure>
+            );
+          }
+          const isHeading = /^chapter\b/i.test(p) && p.length <= 60;
+          if (isHeading) {
+            return (
+              <div key={i}>
+                <div className="rd-orn" aria-hidden="true">❦ ❦ ❦</div>
+                <h2 id={`rd-ch-${i}`} style={{ fontFamily: "var(--serif)", textAlign: "center", fontSize: `${Math.min(1.6, fontSize * 1.25)}rem`, lineHeight: 1.3, margin: "0.4rem 0 1.4rem", scrollMarginTop: "70px" }}>{p}</h2>
+              </div>
+            );
+          }
+          const cs = commentsByPara.get(i) ?? [];
+          const showChip = cs.length > 0 || p.length >= 120;
+          return (
+            <p key={i} className={`rd-p${i === firstBodyIndex ? " rd-drop" : ""}`} style={{ fontFamily: "var(--serif)", fontSize: `${fontSize}rem`, lineHeight: 1.95, marginBottom: "1.3rem" }}>
+              {p}
+              {showChip ? (
+                <>
+                  {" "}
+                  <button
+                    type="button"
+                    onClick={() => setOpenPara(i)}
+                    title="Comment on this passage"
+                    aria-label={cs.length ? `${cs.length} comment${cs.length === 1 ? "" : "s"} on this passage` : "Comment on this passage"}
+                    className={`rd-chip${cs.length ? " rd-chip-has" : ""}`}
+                  >
+                    💬{cs.length ? ` ${cs.length}` : ""}
+                  </button>
+                </>
+              ) : null}
+            </p>
+          );
+        })
+      ) : (
+        <p style={{ color: pal.muted }}>This story has no readable content yet.</p>
+      )}
+
+      {sample ? (
+        <div style={{ marginTop: "2.6rem", padding: "1.9rem 1.6rem", borderRadius: 16, border: `1px solid ${pal.bar}`, background: theme === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", textAlign: "center", fontFamily: "var(--sans)" }}>
+          <div style={{ fontFamily: "var(--serif)", fontSize: "1.35rem", marginBottom: "0.5rem", color: pal.fg }}>End of the free sample</div>
+          {locked ? (
+            <>
+              <p style={{ color: pal.muted, marginBottom: "1.4rem", maxWidth: 460, marginInline: "auto", lineHeight: 1.6 }}>
+                That&apos;s the free first chapter. Buy the book to keep reading — it&apos;s yours forever.
+              </p>
+              <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
+                <a href={`/book/${bookId}`} className="btn btn-gold">Buy to keep reading{price && price > 0 ? ` — $${Number(price).toFixed(2)}` : ""}</a>
+                <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
+              </div>
+            </>
+          ) : (
+            <>
+              <p style={{ color: pal.muted, marginBottom: "1.4rem", maxWidth: 460, marginInline: "auto", lineHeight: 1.6 }}>
+                {signedIn ? "That's the free first chapter. Keep going to read the rest." : "That's the free first chapter — create a free account to keep reading. No card required."}
+              </p>
+              <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
+                <a href={signedIn ? `/reader/${bookId}` : "/onboarding"} className="btn btn-gold">{signedIn ? "Continue reading →" : "Create free account →"}</a>
+                <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
+              </div>
+            </>
+          )}
+        </div>
+      ) : null}
+    </>
+  );
+
+  // Shared top bar (progress hairline + controls). `pageToggle` lets prose books
+  // switch between the book-style pager and continuous scroll.
+  const topBar = (
+    <>
+      <div style={{ position: "sticky", top: 0, height: 4, background: pal.bar, zIndex: 5, flexShrink: 0 }}>
+        <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#C4A35A,#B45309)", transition: "width 0.3s ease" }} />
+      </div>
+      <div
+        style={{
+          position: "sticky", top: 4, zIndex: 5, flexShrink: 0, display: "flex", alignItems: "center", gap: "1rem",
+          padding: "0.7rem clamp(1rem,4vw,2rem)",
+          background: theme === "dark" ? "rgba(28,25,23,0.85)" : "rgba(245,241,232,0.9)",
+          backdropFilter: "blur(12px)", borderBottom: `1px solid ${pal.bar}`,
+        }}
+      >
+        <button type="button" onClick={goBackToBook} style={{ background: "transparent", border: "none", color: pal.muted, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>← Back</button>
+        {chapters.length > 1 ? (
+          <button type="button" className="rd-toc-btn" onClick={() => setTocOpen(true)} style={{ color: pal.muted }} aria-label="Table of contents" aria-expanded={tocOpen}>☰ Contents</button>
+        ) : null}
+        <span style={{ flex: 1, textAlign: "center", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.98rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
+        <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+          {!usePaged ? (
+            <span aria-label={`${progress} percent read`} style={{ fontFamily: "var(--sans)", fontSize: "0.72rem", color: pal.muted, minWidth: 34, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{progress}%</span>
+          ) : null}
+          {canPage ? (
+            <button onClick={() => setPaged((v) => !v)} style={ctrl(pal)} aria-label={paged ? "Switch to scrolling" : "Switch to pages"} title={paged ? "Scrolling view" : "Book (paged) view"}>
+              {paged ? "≣" : "▤"}
+            </button>
+          ) : null}
+          <button onClick={() => setFontSize((s) => Math.max(0.9, s - 0.08))} style={ctrl(pal)} aria-label="Smaller text">A−</button>
+          <button onClick={() => setFontSize((s) => Math.min(1.6, s + 0.08))} style={ctrl(pal)} aria-label="Larger text">A+</button>
+          <button onClick={() => setTheme((t) => (t === "dark" ? "sepia" : "dark"))} style={ctrl(pal)} aria-label="Toggle reading theme">{theme === "dark" ? "☀" : "☾"}</button>
+          <ShareButton path={`/book/${bookId}`} title={title} variant="chip" />
+        </div>
+      </div>
+    </>
+  );
+
+  const overlays = (
+    <>
+      {chapters.length > 1 ? (
+        <>
+          <div className={`rd-toc-overlay${tocOpen ? " open" : ""}`} onClick={() => setTocOpen(false)} aria-hidden={!tocOpen} />
+          <nav className={`rd-toc-panel${tocOpen ? " open" : ""}`} style={{ background: pal.bg, color: pal.fg, borderRight: `1px solid ${pal.bar}` }} aria-label="Table of contents" aria-hidden={!tocOpen}>
+            <div className="rd-toc-h">Contents</div>
+            {chapters.map((c, n) => (
+              <button key={c.i} type="button" className="rd-toc-item" onClick={() => goToChapter(c.i)}>
+                <span className="n">{String(n + 1).padStart(2, "0")}</span>
+                <span>{c.title}</span>
+              </button>
+            ))}
+          </nav>
+        </>
+      ) : null}
+      {showFinish ? <FinishChallenge bookId={Number(bookId)} title={title} onClose={() => setShowFinish(false)} /> : null}
+      {!isHtml ? (
+        <CommentTray
+          open={openPara != null}
+          paraText={openPara != null ? paragraphs[openPara] ?? "" : ""}
+          comments={openPara != null ? commentsByPara.get(openPara) ?? [] : []}
+          canComment={!!userId}
+          currentUserId={userId}
+          busy={commentBusy}
+          onClose={() => setOpenPara(null)}
+          onAdd={addComment}
+          onDelete={deleteComment}
+        />
+      ) : null}
+    </>
+  );
+
+  // ---- Paged layout ----
+  if (usePaged) {
+    return (
+      <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "column", background: pal.bg, color: pal.fg, transition: "background 0.3s, color 0.3s", overflow: "hidden" }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <style dangerouslySetInnerHTML={{ __html: READER_ENHANCE_CSS }} />
+        {topBar}
+        <div ref={vpRef} style={{ position: "relative", flex: 1, minHeight: 0, overflow: "hidden", maxWidth: 760, width: "100%", margin: "0 auto" }}>
+          <article
+            ref={flowRef}
+            className="rd-scope"
+            style={{ height: "100%", columnFill: "auto", padding: `1.6rem ${PAD}px`, willChange: "transform", transition: "transform 0.42s cubic-bezier(0.4,0,0.2,1)" }}
+          >
+            {bodyContent}
+          </article>
+          {/* edge tap zones for turning pages */}
+          <button type="button" aria-label="Previous page" onClick={prevPage} disabled={page <= 0} style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "14%", background: "transparent", border: "none", cursor: page > 0 ? "pointer" : "default", padding: 0 }} />
+          <button type="button" aria-label="Next page" onClick={nextPage} disabled={page >= pages - 1} style={{ position: "absolute", top: 0, bottom: 0, right: 0, width: "14%", background: "transparent", border: "none", cursor: page < pages - 1 ? "pointer" : "default", padding: 0 }} />
+        </div>
+        {/* pager */}
+        <div style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "1.3rem", padding: "0.55rem 1rem", borderTop: `1px solid ${pal.bar}`, background: theme === "dark" ? "rgba(28,25,23,0.85)" : "rgba(245,241,232,0.9)", backdropFilter: "blur(12px)" }}>
+          <button type="button" onClick={prevPage} disabled={page <= 0} style={{ ...ctrl(pal), opacity: page <= 0 ? 0.35 : 1, width: 36, height: 36 }} aria-label="Previous page">‹</button>
+          <span style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: pal.muted, fontVariantNumeric: "tabular-nums", minWidth: 120, textAlign: "center" }}>Page {page + 1} of {pages}</span>
+          <button type="button" onClick={nextPage} disabled={page >= pages - 1} style={{ ...ctrl(pal), opacity: page >= pages - 1 ? 0.35 : 1, width: 36, height: 36 }} aria-label="Next page">›</button>
+        </div>
+        {overlays}
+      </div>
+    );
+  }
+
+  // ---- Scroll layout ----
   return (
     <div
       ref={scrollRef}
@@ -304,71 +646,8 @@ export default function ReaderView({
         transition: "background 0.3s, color 0.3s",
       }}
     >
-      {/* progress bar */}
-      <div style={{ position: "sticky", top: 0, height: 4, background: pal.bar, zIndex: 5 }}>
-        <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#C4A35A,#B45309)" }} />
-      </div>
-
-      {/* top bar */}
-      <div
-        style={{
-          position: "sticky",
-          top: 4,
-          zIndex: 5,
-          display: "flex",
-          alignItems: "center",
-          gap: "1rem",
-          padding: "0.7rem clamp(1rem,4vw,2rem)",
-          background: theme === "dark" ? "rgba(28,25,23,0.85)" : "rgba(245,241,232,0.9)",
-          backdropFilter: "blur(12px)",
-          borderBottom: `1px solid ${pal.bar}`,
-        }}
-      >
-        <button type="button" onClick={goBackToBook} style={{ background: "transparent", border: "none", color: pal.muted, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
-          ← Back
-        </button>
-        {chapters.length > 1 ? (
-          <button type="button" className="rd-toc-btn" onClick={() => setTocOpen(true)} style={{ color: pal.muted }} aria-label="Table of contents" aria-expanded={tocOpen}>
-            ☰ Contents
-          </button>
-        ) : null}
-        <span
-          style={{
-            flex: 1,
-            textAlign: "center",
-            fontFamily: "var(--serif)",
-            fontStyle: "italic",
-            fontSize: "0.98rem",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {title}
-        </span>
-        <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", "--bar": pal.bar } as React.CSSProperties}>
-          <span aria-label={`${progress} percent read`} style={{ fontFamily: "var(--sans)", fontSize: "0.72rem", color: pal.muted, minWidth: 34, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-            {progress}%
-          </span>
-          <button onClick={() => setFontSize((s) => Math.max(0.9, s - 0.08))} style={ctrl(pal)} aria-label="Smaller text">
-            A−
-          </button>
-          <button onClick={() => setFontSize((s) => Math.min(1.6, s + 0.08))} style={ctrl(pal)} aria-label="Larger text">
-            A+
-          </button>
-          <button
-            onClick={() => setTheme((t) => (t === "dark" ? "sepia" : "dark"))}
-            style={ctrl(pal)}
-            aria-label="Toggle reading theme"
-          >
-            {theme === "dark" ? "☀" : "☾"}
-          </button>
-          <ShareButton path={`/book/${bookId}`} title={title} variant="chip" />
-        </div>
-      </div>
-
-      {/* content */}
       <style dangerouslySetInnerHTML={{ __html: READER_ENHANCE_CSS }} />
+      {topBar}
       <article
         className="rd-scope"
         style={{
