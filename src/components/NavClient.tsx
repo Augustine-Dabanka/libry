@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import CartDrawer from "@/components/CartDrawer";
+import LogoutSurvey from "@/components/LogoutSurvey";
 import { cartCount, onCartChange, openCart } from "@/lib/cart";
 
 type Dd = null | "browse" | "user";
@@ -169,9 +170,7 @@ export default function NavClient({
                 <a href="/creator">Creator Dashboard</a>
                 <a href="/settings">Settings</a>
                 <a href="/about">About</a>
-                <form action="/auth/signout" method="post">
-                  <button type="submit" style={menuBtn}>Log out</button>
-                </form>
+                <LogoutSurvey style={menuBtn} />
               </div>
             </div>
           ) : (
@@ -262,9 +261,7 @@ export default function NavClient({
         </div>
 
         {signedIn ? (
-          <form action="/auth/signout" method="post">
-            <button type="submit" className="mm-signout">Log out</button>
-          </form>
+          <LogoutSurvey className="mm-signout" />
         ) : (
           <a className="btn btn-gold mm-cta" href="/login">Log in</a>
         )}

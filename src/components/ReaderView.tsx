@@ -53,6 +53,46 @@ const READER_ENHANCE_CSS = `
   padding: 0.04em 0.12em 0 0; font-weight: 600; color: #C4A35A;
 }
 .rd-orn { text-align: center; font-size: 1rem; letter-spacing: 0.4em; opacity: 0.45; color: #C4A35A; margin: 2.6rem 0 0.2rem; }
+
+/* Comment chips: quiet by default, revealed on hover of the paragraph (or
+   always shown when a passage already has comments). Only substantial
+   paragraphs get one — short dialogue lines stay clean. */
+.rd-p { position: relative; }
+.rd-chip {
+  vertical-align: baseline; margin-left: 4px; padding: 0 4px; border: none;
+  background: transparent; cursor: pointer; font-family: var(--sans);
+  font-size: 0.62em; color: var(--muted); opacity: 0.22; transition: opacity 0.15s ease;
+}
+.rd-p:hover .rd-chip, .rd-chip:focus-visible { opacity: 0.6; }
+.rd-chip-has { opacity: 1; color: #C4A35A; }
+
+/* In-reader Table of Contents (slide-in panel) */
+.rd-toc-btn {
+  background: transparent; border: 1px solid currentColor; border-radius: 999px;
+  padding: 0.3rem 0.7rem; font-size: 0.78rem; cursor: pointer; font-family: var(--sans);
+  opacity: 0.75; white-space: nowrap;
+}
+.rd-toc-btn:hover { opacity: 1; }
+.rd-toc-overlay {
+  position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,0.4);
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+}
+.rd-toc-overlay.open { opacity: 1; pointer-events: auto; }
+.rd-toc-panel {
+  position: fixed; top: 0; bottom: 0; left: 0; width: min(320px, 82vw); z-index: 41;
+  padding: 1.4rem 1.2rem; overflow-y: auto; transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 12px 0 40px -12px rgba(0,0,0,0.5);
+}
+.rd-toc-panel.open { transform: translateX(0); }
+.rd-toc-h { font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.55; margin: 0 0 0.9rem; }
+.rd-toc-item {
+  display: flex; gap: 0.7rem; width: 100%; text-align: left; background: transparent;
+  border: none; border-radius: 8px; padding: 0.6rem 0.5rem; cursor: pointer;
+  font-family: var(--serif); font-size: 0.98rem; color: inherit; line-height: 1.35;
+}
+.rd-toc-item:hover { background: rgba(196,163,90,0.14); }
+.rd-toc-item .n { font-family: var(--sans); font-size: 0.78rem; opacity: 0.5; min-width: 1.6em; }
 `;
 
 export default function ReaderView({
@@ -131,6 +171,19 @@ export default function ReaderView({
     [paragraphs]
   );
   const epigraph = EPIGRAPHS[pickIndex(String(bookId), EPIGRAPHS.length)]!;
+
+  // Chapter list for the in-reader Table of Contents (plain-text books).
+  const chapters = useMemo(
+    () => paragraphs.map((p, i) => ({ i, title: p })).filter(({ title }) => isHeadingPara(title)),
+    [paragraphs]
+  );
+  const [tocOpen, setTocOpen] = useState(false);
+  function jumpTo(i: number) {
+    setTocOpen(false);
+    if (typeof document !== "undefined") {
+      document.getElementById(`rd-ch-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
 
   // Restore saved progress once on mount (not while reading a sample).
   useEffect(() => {
@@ -274,6 +327,11 @@ export default function ReaderView({
         <button type="button" onClick={goBackToBook} style={{ background: "transparent", border: "none", color: pal.muted, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
           ← Back
         </button>
+        {chapters.length > 1 ? (
+          <button type="button" className="rd-toc-btn" onClick={() => setTocOpen(true)} style={{ color: pal.muted }} aria-label="Table of contents" aria-expanded={tocOpen}>
+            ☰ Contents
+          </button>
+        ) : null}
         <span
           style={{
             flex: 1,
@@ -361,25 +419,33 @@ export default function ReaderView({
               return (
                 <div key={i}>
                   <div className="rd-orn" aria-hidden="true">❦ ❦ ❦</div>
-                  <h2 style={{ fontFamily: "var(--serif)", textAlign: "center", fontSize: `${Math.min(1.6, fontSize * 1.25)}rem`, lineHeight: 1.3, margin: "0.4rem 0 1.4rem" }}>
+                  <h2 id={`rd-ch-${i}`} style={{ fontFamily: "var(--serif)", textAlign: "center", fontSize: `${Math.min(1.6, fontSize * 1.25)}rem`, lineHeight: 1.3, margin: "0.4rem 0 1.4rem", scrollMarginTop: "70px" }}>
                     {p}
                   </h2>
                 </div>
               );
             }
             const cs = commentsByPara.get(i) ?? [];
+            // Only substantial paragraphs get a comment affordance — short dialogue
+            // lines (sentences) stay clean. Existing comments always show.
+            const showChip = cs.length > 0 || p.length >= 120;
             return (
-              <p key={i} className={i === firstBodyIndex ? "rd-drop" : undefined} style={{ fontFamily: "var(--serif)", fontSize: `${fontSize}rem`, lineHeight: 1.95, marginBottom: "1.3rem" }}>
-                {p}{" "}
-                <button
-                  type="button"
-                  onClick={() => setOpenPara(i)}
-                  title="Comment on this passage"
-                  aria-label={cs.length ? `${cs.length} comment${cs.length === 1 ? "" : "s"} on this passage` : "Comment on this passage"}
-                  style={{ verticalAlign: "baseline", marginLeft: 3, padding: "0 5px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--sans)", fontSize: "0.66em", color: cs.length ? "#C4A35A" : pal.muted, opacity: cs.length ? 1 : 0.4 }}
-                >
-                  💬{cs.length ? ` ${cs.length}` : ""}
-                </button>
+              <p key={i} className={`rd-p${i === firstBodyIndex ? " rd-drop" : ""}`} style={{ fontFamily: "var(--serif)", fontSize: `${fontSize}rem`, lineHeight: 1.95, marginBottom: "1.3rem" }}>
+                {p}
+                {showChip ? (
+                  <>
+                    {" "}
+                    <button
+                      type="button"
+                      onClick={() => setOpenPara(i)}
+                      title="Comment on this passage"
+                      aria-label={cs.length ? `${cs.length} comment${cs.length === 1 ? "" : "s"} on this passage` : "Comment on this passage"}
+                      className={`rd-chip${cs.length ? " rd-chip-has" : ""}`}
+                    >
+                      💬{cs.length ? ` ${cs.length}` : ""}
+                    </button>
+                  </>
+                ) : null}
               </p>
             );
           })
@@ -420,6 +486,22 @@ export default function ReaderView({
           </div>
         ) : null}
       </article>
+
+      {/* In-reader Table of Contents */}
+      {chapters.length > 1 ? (
+        <>
+          <div className={`rd-toc-overlay${tocOpen ? " open" : ""}`} onClick={() => setTocOpen(false)} aria-hidden={!tocOpen} />
+          <nav className={`rd-toc-panel${tocOpen ? " open" : ""}`} style={{ background: pal.bg, color: pal.fg, borderRight: `1px solid ${pal.bar}` }} aria-label="Table of contents" aria-hidden={!tocOpen}>
+            <div className="rd-toc-h">Contents</div>
+            {chapters.map((c, n) => (
+              <button key={c.i} type="button" className="rd-toc-item" onClick={() => jumpTo(c.i)}>
+                <span className="n">{String(n + 1).padStart(2, "0")}</span>
+                <span>{c.title}</span>
+              </button>
+            ))}
+          </nav>
+        </>
+      ) : null}
 
       {showFinish ? (
         <FinishChallenge bookId={Number(bookId)} title={title} onClose={() => setShowFinish(false)} />

@@ -320,7 +320,26 @@ export default function LoginGate({
           boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: "1.3rem" }}>
+        <a
+          href="/"
+          style={{
+            position: "absolute",
+            top: "1.1rem",
+            left: "1.2rem",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.3rem",
+            color: "var(--muted)",
+            fontFamily: "var(--sans)",
+            fontSize: "0.82rem",
+            textDecoration: "none",
+          }}
+          aria-label="Back to the Libry home page"
+        >
+          ← Back
+        </a>
+
+        <div style={{ textAlign: "center", marginBottom: "1.3rem", marginTop: "0.4rem" }}>
           <span className="logo" style={{ fontSize: "2rem" }}>
             Libry<span>.</span>
           </span>

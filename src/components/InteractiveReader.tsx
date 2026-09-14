@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { type IStory, resolveEnding } from "@/lib/interactive";
 
@@ -19,8 +20,19 @@ export default function InteractiveReader({
   story: IStory;
   userEmail: string | null;
 }) {
+  const router = useRouter();
   const [idx, setIdx] = useState(0);
   const [path, setPath] = useState<number[]>([]);
+
+  // Back to the book without the history "trap": if we arrived from the book
+  // page, pop it off history (so browser-Back doesn't bounce into the reader
+  // again); otherwise navigate there directly.
+  function goBackToBook() {
+    const ref = typeof document !== "undefined" ? document.referrer : "";
+    const cameFromBook = new RegExp(`/book/${bookId}(?:[/?#]|$)`).test(ref);
+    if (cameFromBook && typeof window !== "undefined" && window.history.length > 1) router.back();
+    else router.push(`/book/${bookId}`);
+  }
   const total = story.chapters.length;
   const atEnd = idx >= total;
   const endingIdx = atEnd ? resolveEnding(path, story.endings.length) : -1;
@@ -63,7 +75,7 @@ export default function InteractiveReader({
         <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#5FA068,#C5A059)", transition: "width 0.4s ease" }} />
       </div>
       <div style={{ position: "sticky", top: 4, zIndex: 5, display: "flex", alignItems: "center", gap: "1rem", padding: "0.7rem clamp(1rem,4vw,2rem)", background: "rgba(28,25,23,0.85)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${PAL.bar}` }}>
-        <a href={`/book/${bookId}`} style={{ color: PAL.muted, fontSize: "0.85rem", textDecoration: "none" }}>← Back</a>
+        <button type="button" onClick={goBackToBook} style={{ background: "transparent", border: "none", color: PAL.muted, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>← Back</button>
         <span style={{ flex: 1, textAlign: "center", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.98rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
         <span style={{ color: PAL.muted, fontFamily: "var(--sans)", fontSize: "0.78rem" }}>{atEnd ? "The End" : `${idx + 1} / ${total}`}</span>
       </div>
