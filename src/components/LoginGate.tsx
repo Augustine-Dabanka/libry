@@ -509,9 +509,9 @@ export default function LoginGate({
               <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} style={{ accentColor: "var(--gold)", width: 15, height: 15, marginTop: 2, flexShrink: 0 }} />
               <span>
                 I agree to the{" "}
-                <a href="/docs?tab=terms" target="_blank" rel="noreferrer" style={{ color: "var(--gold)" }}>Terms of Service</a>{" "}
+                <a href="/terms" target="_blank" rel="noreferrer" style={{ color: "var(--gold)" }}>Terms of Service</a>{" "}
                 and{" "}
-                <a href="/docs?tab=privacy" target="_blank" rel="noreferrer" style={{ color: "var(--gold)" }}>Privacy Policy</a>.
+                <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: "var(--gold)" }}>Privacy Policy</a>.
               </span>
             </label>
           ) : null}

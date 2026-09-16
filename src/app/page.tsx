@@ -281,14 +281,15 @@ export default async function Landing() {
             </div>
             <div>
               <h4>Legal</h4>
-              <a className="fx" href="/docs?tab=terms">Terms of Service</a>
-              <a className="fx" href="/docs?tab=privacy">Privacy Policy</a>
-              <a className="fx" href="/docs?tab=guidelines">Guidelines</a>
+              <a className="fx" href="/terms">Terms of Service</a>
+              <a className="fx" href="/privacy">Privacy Policy</a>
+              <a className="fx" href="/cookies">Cookie Policy</a>
+              <a className="fx" href="/refunds">Refund Policy</a>
             </div>
           </div>
 
           <div className={s.footBar}>
-            <span>© 2026 Libry. All rights reserved.</span>
+            <span>© 2026 Libry. Operated by Craft &amp; Anchor [registered legal name], [registered address].</span>
             <span>Crafted with care for readers &amp; writers.</span>
           </div>
         </div>

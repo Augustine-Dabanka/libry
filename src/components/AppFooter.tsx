@@ -55,8 +55,10 @@ export default function AppFooter() {
         <div className="footer-col">
           <h4>Company</h4>
           <a href="/about">About</a>
-          <a href="/docs?tab=terms">Terms of Service</a>
-          <a href="/docs?tab=privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Service</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/cookies">Cookie Policy</a>
+          <a href="/refunds">Refund Policy</a>
         </div>
       </div>
 
@@ -66,6 +68,10 @@ export default function AppFooter() {
         </span>
         <span className="footer-copy">© 2026 Libry. Crafted with care for readers &amp; writers.</span>
       </div>
+      <p className="footer-legal">
+        Libry is operated by Craft &amp; Anchor [registered legal name], [registered address].
+        {" "}<a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/cookies">Cookies</a> · <a href="/refunds">Refunds</a>
+      </p>
     </footer>
   );
 }

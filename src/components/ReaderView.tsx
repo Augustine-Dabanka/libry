@@ -398,15 +398,20 @@ export default function ReaderView({
   // turn — setting it here in a layout effect would skip the animation.
   useEffect(() => {
     if (!usePaged) return;
-    setProgress(pages > 1 ? Math.round((page / (pages - 1)) * 100) : 100);
+    const pct = pages > 1 ? Math.round((page / (pages - 1)) * 100) : 100;
+    setProgress(pct);
     if (page >= pages - 1 && pages > 1 && userEmail && !sample && !finishShown.current) {
       finishShown.current = true;
       setShowFinish(true);
     }
-    // Gentle mid-read check-in every 5 pages (once each, never on the last page).
-    if (!checkinsOff && !sample && page > 0 && page % 5 === 0 && page < pages - 1 && !checkinShown.current.has(page)) {
-      checkinShown.current.add(page);
-      setCheckin(page);
+    // Gentle mid-read check-in at 25 / 50 / 75% only — at most three times a book,
+    // each shown once. (Anything more often is just annoying.)
+    if (!checkinsOff && !sample && pages > 3 && page < pages - 1) {
+      const due = [25, 50, 75].filter((m) => pct >= m && !checkinShown.current.has(m));
+      if (due.length) {
+        due.forEach((m) => checkinShown.current.add(m));
+        setCheckin(due[0]!);
+      }
     }
   }, [page, pages, usePaged, userEmail, sample, checkinsOff]);
 

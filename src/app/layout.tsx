@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 import BackgroundFX from "@/components/BackgroundFX";
 import AppFooter from "@/components/AppFooter";
+import CookieBanner from "@/components/CookieBanner";
 
 export const metadata: Metadata = {
   title: "Libry — Stories worth lingering in",
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <BackgroundFX />
         {children}
         <AppFooter />
+        <CookieBanner />
       </body>
     </html>
   );

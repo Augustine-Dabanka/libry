@@ -969,6 +969,39 @@ footer a:hover {
 }
 @keyframes catGenreIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
+/* Legal documents */
+.legal-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.4rem 0 1rem; }
+.legal-nav a { font-family: var(--sans); font-size: 0.82rem; padding: 0.35rem 0.85rem; border-radius: 999px;
+  border: 1px solid var(--border); color: var(--muted); text-decoration: none; transition: border-color 0.15s, color 0.15s; }
+.legal-nav a.on { border-color: var(--gold); color: var(--gold); }
+.legal-nav a:hover { color: var(--ivory); border-color: var(--gold); }
+.legal-intro { font-family: var(--sans); color: var(--ivory-muted); line-height: 1.7; font-size: 1rem; margin: 0.6rem 0 1.6rem; }
+.legal-body h2 { font-family: var(--serif); font-size: 1.28rem; margin: 2.1rem 0 0.6rem; color: var(--ivory); }
+.legal-body p, .legal-body li { font-family: var(--sans); color: var(--ivory-muted); line-height: 1.7; font-size: 0.95rem; }
+.legal-body p { margin: 0 0 0.9rem; }
+.legal-body ul { margin: 0 0 1.1rem; padding-left: 1.2rem; }
+.legal-body li { margin-bottom: 0.45rem; }
+.legal-body a { color: var(--gold); }
+.legal-body strong { color: var(--ivory); font-weight: 700; }
+.legal-note { margin-top: 2.2rem; padding-top: 1.2rem; border-top: 1px solid var(--border);
+  font-family: var(--sans); font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+/* Cookie consent banner */
+.cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2000; background: var(--stone);
+  border-top: 1px solid var(--border); box-shadow: 0 -12px 44px -22px rgba(0,0,0,0.65); }
+.cookie-inner { max-width: 1100px; margin: 0 auto; padding: 1rem 5%; display: flex; align-items: center;
+  gap: 1.3rem; flex-wrap: wrap; }
+.cookie-inner p { flex: 1; min-width: 280px; margin: 0; font-family: var(--sans); font-size: 0.86rem;
+  color: var(--ivory-muted); line-height: 1.55; }
+.cookie-inner a { color: var(--gold); }
+.cookie-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+@media (max-width: 560px) { .cookie-actions { width: 100%; } .cookie-actions .btn { flex: 1; justify-content: center; } }
+
+/* Footer business details */
+.footer-legal { font-family: var(--sans); font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-top: 0.6rem; }
+.footer-legal a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
+.footer-legal a:hover { color: var(--gold); }
+
 /* Center search + autocomplete */
 .nav-search { position: relative; display: flex; align-items: center; gap: 0.5rem; width: 100%; max-width: 460px;
   background: var(--stone); border: 1px solid var(--border); border-radius: 999px; padding: 0.5rem 1rem; }
