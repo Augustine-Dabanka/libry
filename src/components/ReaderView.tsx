@@ -29,6 +29,18 @@ const EPIGRAPHS: { text: string; who: string }[] = [
   { text: "A good book is the precious life-blood of a master spirit.", who: "John Milton" },
 ];
 
+// Gentle mid-read "reflection beats" — an engagement nudge every few pages, not a
+// test. Always skippable. (Real per-book comprehension questions can layer on
+// later once the author-vs-AI source is decided.)
+const REFLECTIONS: string[] = [
+  "Still with the story? Take a breath — then carry on.",
+  "You're building a real reading habit. Keep the thread.",
+  "A natural place to pause… or press on. Your call.",
+  "Notice what's pulling you through this one.",
+  "Lingering is the whole point here. No rush.",
+  "Nicely done. The next part is waiting.",
+];
+
 function pickIndex(seed: string, mod: number): number {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
@@ -331,6 +343,9 @@ export default function ReaderView({
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(1);
   const [step, setStep] = useState(0);
+  const [checkin, setCheckin] = useState<number | null>(null);
+  const [checkinsOff, setCheckinsOff] = useState(false);
+  const checkinShown = useRef<Set<number>>(new Set());
   const vpRef = useRef<HTMLDivElement>(null);
   const flowRef = useRef<HTMLDivElement>(null);
   const stepRef = useRef(0);
@@ -388,7 +403,12 @@ export default function ReaderView({
       finishShown.current = true;
       setShowFinish(true);
     }
-  }, [page, pages, usePaged, userEmail, sample]);
+    // Gentle mid-read check-in every 5 pages (once each, never on the last page).
+    if (!checkinsOff && !sample && page > 0 && page % 5 === 0 && page < pages - 1 && !checkinShown.current.has(page)) {
+      checkinShown.current.add(page);
+      setCheckin(page);
+    }
+  }, [page, pages, usePaged, userEmail, sample, checkinsOff]);
 
   // Persist page progress (debounced) and restore it once after first measure.
   useEffect(() => {
@@ -422,13 +442,13 @@ export default function ReaderView({
   useEffect(() => {
     if (!usePaged) return;
     const onKey = (e: KeyboardEvent) => {
-      if (openPara != null || tocOpen) return;
+      if (openPara != null || tocOpen || checkin != null) return;
       if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); nextPage(); }
       else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); prevPage(); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [usePaged, nextPage, prevPage, openPara, tocOpen]);
+  }, [usePaged, nextPage, prevPage, openPara, tocOpen, checkin]);
 
   // Swipe navigation.
   const touchX = useRef<number | null>(null);
@@ -605,6 +625,24 @@ export default function ReaderView({
           </nav>
         </>
       ) : null}
+      {checkin != null ? (
+        <div style={{ position: "fixed", inset: 0, zIndex: 70, display: "grid", placeItems: "center", padding: "1.4rem", background: "rgba(10,8,6,0.55)", backdropFilter: "blur(3px)" }} role="dialog" aria-modal="true" aria-label="Reading check-in">
+          <div style={{ maxWidth: 380, width: "100%", background: pal.bg, color: pal.fg, border: `1px solid ${pal.bar}`, borderRadius: 18, padding: "1.7rem 1.5rem", textAlign: "center", boxShadow: "0 30px 80px rgba(0,0,0,0.5)" }}>
+            <div style={{ fontSize: "1.4rem", color: "#C4A35A" }} aria-hidden="true">✦</div>
+            <div style={{ fontFamily: "var(--serif)", fontSize: "1.35rem", margin: "0.35rem 0 0.3rem" }}>You&apos;re {progress}% in</div>
+            <p style={{ color: pal.muted, fontFamily: "var(--sans)", fontSize: "0.92rem", margin: "0.3rem auto 1.3rem", lineHeight: 1.6, maxWidth: 300 }}>
+              {REFLECTIONS[pickIndex(`${bookId}-${checkin}`, REFLECTIONS.length)]}
+            </p>
+            <button type="button" className="btn btn-gold" onClick={() => setCheckin(null)} style={{ width: "100%", justifyContent: "center" }}>
+              Keep reading →
+            </button>
+            <button type="button" onClick={() => { setCheckinsOff(true); setCheckin(null); }} style={{ marginTop: "0.85rem", background: "transparent", border: "none", color: pal.muted, fontFamily: "var(--sans)", fontSize: "0.82rem", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>
+              Don&apos;t show these
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {showFinish ? <FinishChallenge bookId={Number(bookId)} title={title} onClose={() => setShowFinish(false)} /> : null}
       {!isHtml ? (
         <CommentTray

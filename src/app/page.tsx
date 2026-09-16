@@ -115,7 +115,7 @@ export default async function Landing() {
           <div className={s.secHead}>
             <span className={s.eyebrow}>Discover</span>
             <h2>Find your next favorite book.</h2>
-            <p>Search the whole catalog, read the first chapter free, and let honest reviews point the way.</p>
+            <p>Browse the catalog, preview any book, and let honest reviews point the way — then read free with a free account.</p>
           </div>
           <div className={s.cards}>
             <div className={s.fcard}>
@@ -130,8 +130,8 @@ export default async function Landing() {
             </div>
             <div className={s.fcard}>
               <div className={s.ic}>📖</div>
-              <h3>Read the first chapter free</h3>
-              <p>Open any book and read the opening chapter — no signup, no card. Keep going when you&apos;re hooked.</p>
+              <h3>Read like a real book</h3>
+              <p>A calm, page-turning reader — flip through pages, choose your theme and type size, and keep your place on any device. Free to start, no card.</p>
             </div>
           </div>
         </div>
