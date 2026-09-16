@@ -242,6 +242,11 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
             {book.description ? (
               <p style={{ color: "var(--ivory-muted)", marginTop: "1rem", maxWidth: 560 }}>{book.description}</p>
             ) : null}
+            {(book.price ?? 0) > 0 && !owned && !isInteractive ? (
+              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.84rem", marginTop: "0.8rem" }}>
+                ✓ Buy once — read online <em>and</em> download your own EPUB copy to keep.
+              </p>
+            ) : null}
             <div className="book-actions">
               {book.content ? (
                 isInteractive ? (
@@ -253,6 +258,11 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
                 ) : (
                   <a href={`/reader/${book.id}?sample=1`} className="btn btn-gold">Read a free sample →</a>
                 )
+              ) : null}
+              {owned && book.content && !isInteractive ? (
+                <a href={`/api/book/${book.id}/epub`} className="btn btn-outline" download title="Download a personal, watermarked EPUB you keep">
+                  ⬇ Download EPUB
+                </a>
               ) : null}
               {(book.price ?? 0) > 0 && !owned ? (
                 <AddToCartButton item={{ id: book.id, title: book.title, author: book.author, price: book.price }} />

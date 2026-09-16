@@ -130,8 +130,8 @@ export default async function Landing() {
             </div>
             <div className={s.fcard}>
               <div className={s.ic}>📖</div>
-              <h3>Read like a real book</h3>
-              <p>A calm, page-turning reader — flip through pages, choose your theme and type size, and keep your place on any device. Free to start, no card.</p>
+              <h3>Read it, then keep it</h3>
+              <p>A calm, page-turning reader — flip through pages, pick your theme and type size, keep your place on any device, and download your own EPUB copy to read offline.</p>
             </div>
           </div>
         </div>
