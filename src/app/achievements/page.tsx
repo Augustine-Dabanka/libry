@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
+import StreakCard from "@/components/StreakCard";
+import { computeStreak, goalMinutes, type DayRow } from "@/lib/streak";
 
 type ProgRow = { book_id: number; progress_percentage: number | null };
 
@@ -82,10 +84,15 @@ export default async function Achievements() {
     const r = await supabase.from("reviews").select("id", { count: "exact", head: true }).eq("user_id", user.id);
     if (!r.error) reviewsCount = r.count ?? 0;
   }
+  // Current reading streak — from the hour-based reading_days source (same as the
+  // streak card), so badges and the card always agree. Guarded (pre-migration → 0).
   let streak = 0;
   {
-    const s = await supabase.from("user_stats").select("streak_count").eq("user_id", user.id).maybeSingle();
-    if (!s.error && s.data) streak = s.data.streak_count ?? 0;
+    const prof2 = await supabase.from("profiles").select("prefs").eq("id", user.id).maybeSingle();
+    const prefs = (prof2.data?.prefs && typeof prof2.data.prefs === "object" ? prof2.data.prefs : {}) as Record<string, unknown>;
+    const goal = goalMinutes(typeof prefs.goal === "string" ? prefs.goal : null);
+    const rd = await supabase.from("reading_days").select("day, minutes");
+    if (!rd.error) streak = computeStreak((rd.data ?? []) as DayRow[], goal).current;
   }
 
   const tally: Tally = { finished, inLibrary, inProgress, challenges, reviews: reviewsCount, streak };
@@ -159,6 +166,11 @@ export default async function Achievements() {
               {xp} XP total · {next ? `${booksToNext} book${booksToNext === 1 ? "" : "s"} to “${next.name}”` : "Top level reached — you legend."}
             </div>
           </div>
+        </div>
+
+        {/* Reading streak */}
+        <div style={{ marginBottom: "2.5rem" }}>
+          <StreakCard />
         </div>
 
         {/* Stat tiles */}

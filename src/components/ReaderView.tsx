@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeHtml, looksLikeHtml } from "@/lib/sanitize";
 import { RICH_CSS } from "@/lib/richStyles";
+import { todayISO } from "@/lib/streak";
 import ShareButton from "@/components/ShareButton";
 import FinishChallenge from "@/components/FinishChallenge";
 import CommentTray, { type ParaComment } from "@/components/CommentTray";
@@ -239,6 +240,24 @@ export default function ReaderView({
     })();
     return () => { cancelled = true; };
   }, [bookId, isHtml]);
+
+  // Count active reading time toward the daily reading streak — one minute per
+  // minute the reader is open and visible. Best-effort and guarded: no-ops until
+  // the reading_days table/RPC is migrated.
+  useEffect(() => {
+    if (!userEmail || sample) return;
+    const tick = async () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      try {
+        const supabase = createClient();
+        await supabase.rpc("add_reading_minutes", { p_mins: 1, p_day: todayISO() });
+      } catch {
+        /* streak not migrated yet — ignore */
+      }
+    };
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, [userEmail, sample]);
 
   async function addComment(body: string) {
     if (openPara == null || !userId) return;

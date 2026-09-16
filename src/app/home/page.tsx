@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BookCard from "@/components/BookCard";
 import HeroArt from "@/components/HeroArt";
+import StreakCard from "@/components/StreakCard";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 import { rankBooks, type BookSignals } from "@/lib/ranking";
@@ -196,6 +197,12 @@ export default async function Home() {
           <HeroArt />
         </div>
       </section>
+
+      <div className="section" style={{ paddingTop: "1.6rem", paddingBottom: 0 }}>
+        <div style={{ maxWidth: 680 }}>
+          <StreakCard />
+        </div>
+      </div>
 
       <Shelf title="✦ Featured this week" books={featured} />
       <Shelf title="Trending on Libry" books={trending.length ? trending : books.slice(0, 8)} />

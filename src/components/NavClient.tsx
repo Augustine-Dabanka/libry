@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import CartDrawer from "@/components/CartDrawer";
 import LogoutSurvey from "@/components/LogoutSurvey";
+import StreakCard from "@/components/StreakCard";
 import { cartCount, onCartChange, openCart } from "@/lib/cart";
 
 type Dd = null | "browse" | "user";
@@ -139,6 +140,7 @@ export default function NavClient({
 
         {/* RIGHT: Write · theme · wishlist · cart · avatar */}
         <div className="nav-right">
+          {signedIn ? <StreakCard compact /> : null}
           <a className="btn-write" href="/creator">✎ Write</a>
 
           <button type="button" className="nav-icon-btn" title="Toggle theme" aria-label="Toggle light or dark" onClick={toggleTheme}>
