@@ -33,6 +33,48 @@ const labelStyle: React.CSSProperties = {
   marginTop: "0.85rem",
 };
 
+// Eye / eye-off toggle shown inside the password field.
+function Eye({ off }: { off: boolean }) {
+  return (
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+      {off ? <line x1="3" y1="3" x2="21" y2="21" /> : null}
+    </svg>
+  );
+}
+
+// Password strength → a 4-segment red/amber/green meter. Weak..Strong.
+function strengthOf(pw: string): { score: number; label: string; color: string } {
+  if (!pw) return { score: 0, label: "", color: "transparent" };
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (pw.length >= 12) s++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
+  if (/\d/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  const score = Math.max(1, Math.min(4, s));
+  if (score <= 1) return { score: 1, label: "Weak", color: "#C4553F" };
+  if (score === 2) return { score: 2, label: "Fair", color: "#D9A441" };
+  if (score === 3) return { score: 3, label: "Good", color: "#B7A93C" };
+  return { score: 4, label: "Strong", color: "#5FA068" };
+}
+
+const eyeBtn: React.CSSProperties = {
+  position: "absolute",
+  right: 8,
+  top: "50%",
+  transform: "translateY(-50%)",
+  background: "transparent",
+  border: "none",
+  cursor: "pointer",
+  color: "#8a8178",
+  padding: 6,
+  display: "grid",
+  placeItems: "center",
+  lineHeight: 0,
+};
+
 export default function LoginGate({
   initialTab,
   next,
@@ -266,7 +308,7 @@ export default function LoginGate({
     }
   }
 
-  const pwType = showPw ? "text" : "password";
+  const pwStrength = strengthOf(password);
 
   return (
     <main
@@ -425,9 +467,24 @@ export default function LoginGate({
               <label style={labelStyle}>Email</label>
               <input className="auth-input" style={field} type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               <label style={labelStyle}>Password</label>
-              <input className="auth-input" style={field} type={pwType} placeholder="Create a password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <div style={{ position: "relative", marginTop: "0.35rem" }}>
+                <input className="auth-input" style={{ ...field, marginTop: 0, paddingRight: 44 }} type={showPw ? "text" : "password"} placeholder="Create a password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <button type="button" onClick={() => setShowPw((v) => !v)} aria-label={showPw ? "Hide password" : "Show password"} style={eyeBtn}><Eye off={showPw} /></button>
+              </div>
+              {password ? (
+                <div style={{ marginTop: "0.5rem" }}>
+                  <div style={{ display: "flex", gap: 4 }} aria-hidden="true">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} style={{ flex: 1, height: 5, borderRadius: 999, background: i <= pwStrength.score ? pwStrength.color : "rgba(250,247,242,0.14)", transition: "background 0.2s ease" }} />
+                    ))}
+                  </div>
+                  <div style={{ fontSize: "0.74rem", color: pwStrength.color, fontFamily: "var(--sans)", marginTop: "0.32rem", textAlign: "right" }}>
+                    {pwStrength.label} password
+                  </div>
+                </div>
+              ) : null}
               <label style={labelStyle}>Confirm password</label>
-              <input className="auth-input" style={field} type={pwType} placeholder="Repeat it" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              <input className="auth-input" style={field} type="password" placeholder="Repeat it" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
               {accountType === "writer" ? (
                 <>
                   <label style={labelStyle}>Short author bio <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional — readers see this)</span></label>
@@ -440,25 +497,12 @@ export default function LoginGate({
               <label style={{ ...labelStyle, marginTop: 0 }}>Username or email</label>
               <input className="auth-input" style={field} placeholder="ada  ·  you@example.com" autoComplete="username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
               <label style={labelStyle}>Password</label>
-              <input className="auth-input" style={field} type={pwType} placeholder="Your password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <div style={{ position: "relative", marginTop: "0.35rem" }}>
+                <input className="auth-input" style={{ ...field, marginTop: 0, paddingRight: 44 }} type={showPw ? "text" : "password"} placeholder="Your password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <button type="button" onClick={() => setShowPw((v) => !v)} aria-label={showPw ? "Hide password" : "Show password"} style={eyeBtn}><Eye off={showPw} /></button>
+              </div>
             </>
           )}
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              marginTop: "0.9rem",
-              color: "var(--muted)",
-              fontFamily: "var(--sans)",
-              fontSize: "0.85rem",
-              cursor: "pointer",
-            }}
-          >
-            <input type="checkbox" checked={showPw} onChange={(e) => setShowPw(e.target.checked)} style={{ accentColor: "var(--gold)", width: 15, height: 15 }} />
-            Show password
-          </label>
 
           {tab === "signup" ? (
             <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", marginTop: "0.8rem", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", cursor: "pointer", lineHeight: 1.5 }}>

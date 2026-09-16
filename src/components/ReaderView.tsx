@@ -54,6 +54,12 @@ const READER_ENHANCE_CSS = `
 }
 .rd-orn { text-align: center; font-size: 1rem; letter-spacing: 0.4em; opacity: 0.45; color: #C4A35A; margin: 2.6rem 0 0.2rem; }
 
+/* Professional-book arrangement: each chapter starts a fresh page (paged mode)
+   and the ornament + heading never split or strand at a page bottom. In scroll
+   mode the break rules are simply ignored. */
+.rd-chapter { break-before: column; -webkit-column-break-before: always; break-inside: avoid; }
+.rd-scope > .rd-chapter:first-child { break-before: auto; }
+
 /* Comment chips: quiet by default, revealed on hover of the paragraph (or
    always shown when a passage already has comments). Only substantial
    paragraphs get one — short dialogue lines stay clean. */
@@ -73,18 +79,21 @@ const READER_ENHANCE_CSS = `
   opacity: 0.75; white-space: nowrap;
 }
 .rd-toc-btn:hover { opacity: 1; }
+/* Overlay + panel sit BELOW the top bar so Back/Contents stay clickable while
+   the Contents drawer is open (the overlay used to cover the bar and swallow the
+   Back click). */
 .rd-toc-overlay {
-  position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,0.4);
+  position: fixed; top: 54px; left: 0; right: 0; bottom: 0; z-index: 40; background: rgba(0,0,0,0.4);
   opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
 }
 .rd-toc-overlay.open { opacity: 1; pointer-events: auto; }
 .rd-toc-panel {
-  position: fixed; top: 0; bottom: 0; left: 0; width: min(320px, 82vw); z-index: 41;
-  padding: 1.4rem 1.2rem; overflow-y: auto; transform: translateX(-100%);
-  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  position: fixed; top: 54px; bottom: 0; left: 0; width: min(320px, 82vw); z-index: 41;
+  padding: 1.2rem 1.2rem 1.4rem; overflow-y: auto; transform: translateX(-100%); visibility: hidden;
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), visibility 0.28s;
   box-shadow: 12px 0 40px -12px rgba(0,0,0,0.5);
 }
-.rd-toc-panel.open { transform: translateX(0); }
+.rd-toc-panel.open { transform: translateX(0); visibility: visible; }
 .rd-toc-h { font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.55; margin: 0 0 0.9rem; }
 .rd-toc-item {
   display: flex; gap: 0.7rem; width: 100%; text-align: left; background: transparent;
@@ -302,6 +311,7 @@ export default function ReaderView({
   const [paged, setPaged] = useState(true);
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(1);
+  const [step, setStep] = useState(0);
   const vpRef = useRef<HTMLDivElement>(null);
   const flowRef = useRef<HTMLDivElement>(null);
   const stepRef = useRef(0);
@@ -316,23 +326,13 @@ export default function ReaderView({
     flow.style.width = `${w}px`;
     flow.style.columnWidth = `${w}px`;
     flow.style.columnGap = `${GAP}px`;
-    // Derive the true column pitch from where the laid-out children actually sit
-    // (robust to the multicol box's own padding, which throws off width+gap math).
-    const kids = flow.children;
-    const starts: number[] = [];
-    for (let i = 0; i < kids.length; i++) {
-      const x = Math.round((kids[i] as HTMLElement).offsetLeft);
-      if (!starts.includes(x)) starts.push(x);
-    }
-    starts.sort((a, b) => a - b);
-    let pitch = w + GAP; // fallback
-    let min = Infinity;
-    for (let i = 1; i < starts.length; i++) {
-      const d = (starts[i] ?? 0) - (starts[i - 1] ?? 0);
-      if (d > 8 && d < min) min = d;
-    }
-    if (min !== Infinity) pitch = min;
+    // Column pitch (start-to-start) is deterministic: the rendered column content
+    // is (w − 2·PAD) wide and columns are GAP apart, so pitch = w − 2·PAD + GAP.
+    // (Measuring it from child offsets is unreliable — centered/max-width blocks
+    // like the epigraph don't start at the column edge and skew the estimate.)
+    const pitch = Math.max(1, w - 2 * PAD + GAP);
     stepRef.current = pitch;
+    setStep(pitch);
     const total = flow.scrollWidth;
     const n = Math.max(1, Math.round(total / pitch));
     setPages(n);
@@ -359,11 +359,11 @@ export default function ReaderView({
     return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); ro?.disconnect(); };
   }, [usePaged, fontSize, content, measure]);
 
-  // Apply the page transform + progress + end-of-book challenge.
-  useLayoutEffect(() => {
-    const flow = flowRef.current;
-    if (!flow || !usePaged) return;
-    flow.style.transform = `translateX(${-page * stepRef.current}px)`;
+  // Progress + end-of-book challenge. The page transform itself is applied
+  // declaratively in the flow's style (below) so the CSS transition animates the
+  // turn — setting it here in a layout effect would skip the animation.
+  useEffect(() => {
+    if (!usePaged) return;
     setProgress(pages > 1 ? Math.round((page / (pages - 1)) * 100) : 100);
     if (page >= pages - 1 && pages > 1 && userEmail && !sample && !finishShown.current) {
       finishShown.current = true;
@@ -471,7 +471,7 @@ export default function ReaderView({
           const isHeading = /^chapter\b/i.test(p) && p.length <= 60;
           if (isHeading) {
             return (
-              <div key={i}>
+              <div key={i} className="rd-chapter">
                 <div className="rd-orn" aria-hidden="true">❦ ❦ ❦</div>
                 <h2 id={`rd-ch-${i}`} style={{ fontFamily: "var(--serif)", textAlign: "center", fontSize: `${Math.min(1.6, fontSize * 1.25)}rem`, lineHeight: 1.3, margin: "0.4rem 0 1.4rem", scrollMarginTop: "70px" }}>{p}</h2>
               </div>
@@ -536,12 +536,12 @@ export default function ReaderView({
   // switch between the book-style pager and continuous scroll.
   const topBar = (
     <>
-      <div style={{ position: "sticky", top: 0, height: 4, background: pal.bar, zIndex: 5, flexShrink: 0 }}>
+      <div style={{ position: "sticky", top: 0, height: 4, background: pal.bar, zIndex: 60, flexShrink: 0 }}>
         <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#C4A35A,#B45309)", transition: "width 0.3s ease" }} />
       </div>
       <div
         style={{
-          position: "sticky", top: 4, zIndex: 5, flexShrink: 0, display: "flex", alignItems: "center", gap: "1rem",
+          position: "sticky", top: 4, zIndex: 60, flexShrink: 0, display: "flex", alignItems: "center", gap: "1rem",
           padding: "0.7rem clamp(1rem,4vw,2rem)",
           background: theme === "dark" ? "rgba(28,25,23,0.85)" : "rgba(245,241,232,0.9)",
           backdropFilter: "blur(12px)", borderBottom: `1px solid ${pal.bar}`,
@@ -613,7 +613,7 @@ export default function ReaderView({
           <article
             ref={flowRef}
             className="rd-scope"
-            style={{ height: "100%", columnFill: "auto", padding: `1.6rem ${PAD}px`, willChange: "transform", transition: "transform 0.42s cubic-bezier(0.4,0,0.2,1)" }}
+            style={{ height: "100%", columnFill: "auto", padding: `1.6rem ${PAD}px`, transform: `translateX(${-page * step}px)`, willChange: "transform", transition: "transform 0.42s cubic-bezier(0.4,0,0.2,1)" }}
           >
             {bodyContent}
           </article>
@@ -696,7 +696,7 @@ export default function ReaderView({
             const isHeading = /^chapter\b/i.test(p) && p.length <= 60;
             if (isHeading) {
               return (
-                <div key={i}>
+                <div key={i} className="rd-chapter">
                   <div className="rd-orn" aria-hidden="true">❦ ❦ ❦</div>
                   <h2 id={`rd-ch-${i}`} style={{ fontFamily: "var(--serif)", textAlign: "center", fontSize: `${Math.min(1.6, fontSize * 1.25)}rem`, lineHeight: 1.3, margin: "0.4rem 0 1.4rem", scrollMarginTop: "70px" }}>
                     {p}
