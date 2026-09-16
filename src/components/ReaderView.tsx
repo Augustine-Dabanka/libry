@@ -346,6 +346,8 @@ export default function ReaderView({
   const [checkin, setCheckin] = useState<number | null>(null);
   const [checkinsOff, setCheckinsOff] = useState(false);
   const checkinShown = useRef<Set<number>>(new Set());
+  type CheckinQ = { question: string; options: string[]; answer: number; picked: number | null };
+  const [checkinQ, setCheckinQ] = useState<null | "loading" | CheckinQ>(null);
   const vpRef = useRef<HTMLDivElement>(null);
   const flowRef = useRef<HTMLDivElement>(null);
   const stepRef = useRef(0);
@@ -454,6 +456,28 @@ export default function ReaderView({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [usePaged, nextPage, prevPage, openPara, tocOpen, checkin]);
+
+  // When a check-in opens, try to fetch an AI comprehension question about what
+  // was just read. If none is available (no API key / not migrated / too short),
+  // the overlay falls back to the gentle reflection prompt.
+  useEffect(() => {
+    if (checkin == null) { setCheckinQ(null); return; }
+    setCheckinQ("loading");
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`/api/book/${bookId}/question?at=${checkin}`);
+        const j = await r.json();
+        if (cancelled) return;
+        if (j?.available && Array.isArray(j.options) && j.options.length === 3 && typeof j.answer === "number") {
+          setCheckinQ({ question: String(j.question), options: j.options.map(String), answer: j.answer, picked: null });
+        } else setCheckinQ(null);
+      } catch {
+        if (!cancelled) setCheckinQ(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [checkin, bookId]);
 
   // Swipe navigation.
   const touchX = useRef<number | null>(null);
@@ -634,12 +658,34 @@ export default function ReaderView({
         <div style={{ position: "fixed", inset: 0, zIndex: 70, display: "grid", placeItems: "center", padding: "1.4rem", background: "rgba(10,8,6,0.55)", backdropFilter: "blur(3px)" }} role="dialog" aria-modal="true" aria-label="Reading check-in">
           <div style={{ maxWidth: 380, width: "100%", background: pal.bg, color: pal.fg, border: `1px solid ${pal.bar}`, borderRadius: 18, padding: "1.7rem 1.5rem", textAlign: "center", boxShadow: "0 30px 80px rgba(0,0,0,0.5)" }}>
             <div style={{ fontSize: "1.4rem", color: "#C4A35A" }} aria-hidden="true">✦</div>
-            <div style={{ fontFamily: "var(--serif)", fontSize: "1.35rem", margin: "0.35rem 0 0.3rem" }}>You&apos;re {progress}% in</div>
-            <p style={{ color: pal.muted, fontFamily: "var(--sans)", fontSize: "0.92rem", margin: "0.3rem auto 1.3rem", lineHeight: 1.6, maxWidth: 300 }}>
-              {REFLECTIONS[pickIndex(`${bookId}-${checkin}`, REFLECTIONS.length)]}
-            </p>
+            <div className="rd-kicker" style={{ marginBottom: "0.2rem" }}>Quick check · you&apos;re {progress}% in</div>
+            {typeof checkinQ === "object" && checkinQ ? (
+              <>
+                <p style={{ fontFamily: "var(--serif)", fontSize: "1.06rem", margin: "0.3rem auto 1rem", lineHeight: 1.5, maxWidth: 320 }}>{checkinQ.question}</p>
+                <div style={{ display: "grid", gap: "0.5rem", textAlign: "left", marginBottom: "1.1rem" }}>
+                  {checkinQ.options.map((opt, i) => {
+                    const answered = checkinQ.picked != null;
+                    const isAnswer = i === checkinQ.answer;
+                    const bg = answered && isAnswer ? "rgba(95,160,104,0.18)" : answered && checkinQ.picked === i ? "rgba(196,85,63,0.18)" : "transparent";
+                    const bd = answered && isAnswer ? "#5FA068" : answered && checkinQ.picked === i ? "#C4553F" : pal.bar;
+                    return (
+                      <button key={i} type="button" disabled={answered} onClick={() => setCheckinQ({ ...checkinQ, picked: i })}
+                        style={{ display: "flex", gap: "0.6rem", alignItems: "center", padding: "0.6rem 0.8rem", borderRadius: 10, border: `1px solid ${bd}`, background: bg, color: pal.fg, fontFamily: "var(--sans)", fontSize: "0.88rem", cursor: answered ? "default" : "pointer", textAlign: "left", lineHeight: 1.35 }}>
+                        <span style={{ opacity: 0.55, fontWeight: 700, flexShrink: 0 }}>{String.fromCharCode(65 + i)}</span>
+                        <span style={{ flex: 1 }}>{opt}</span>
+                        {answered && isAnswer ? <span style={{ color: "#7DBE86", fontSize: "0.78rem", fontWeight: 700, flexShrink: 0 }}>✓</span> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <p style={{ color: pal.muted, fontFamily: "var(--sans)", fontSize: "0.92rem", margin: "0.5rem auto 1.3rem", lineHeight: 1.6, maxWidth: 300 }}>
+                {REFLECTIONS[pickIndex(`${bookId}-${checkin}`, REFLECTIONS.length)]}
+              </p>
+            )}
             <button type="button" className="btn btn-gold" onClick={() => setCheckin(null)} style={{ width: "100%", justifyContent: "center" }}>
-              Keep reading →
+              {typeof checkinQ === "object" && checkinQ && checkinQ.picked == null ? "Skip · keep reading →" : "Keep reading →"}
             </button>
             <button type="button" onClick={() => { setCheckinsOff(true); setCheckin(null); }} style={{ marginTop: "0.85rem", background: "transparent", border: "none", color: pal.muted, fontFamily: "var(--sans)", fontSize: "0.82rem", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>
               Don&apos;t show these
