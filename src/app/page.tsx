@@ -99,7 +99,7 @@ export default async function Landing() {
             <div className={s.fcard}>
               <div className={s.ic}>🤝</div>
               <h3>You own your readers</h3>
-              <p>Followers and reader relationships you keep — never a marketplace that quietly owns your audience.</p>
+              <p>Keep your followers — and actually see them, in a private subscriber list on your dashboard. Never a marketplace that quietly owns your audience.</p>
             </div>
             <div className={s.fcard}>
               <div className={s.ic}>🌙</div>
@@ -131,7 +131,7 @@ export default async function Landing() {
             <div className={s.fcard}>
               <div className={s.ic}>📖</div>
               <h3>Read it, then keep it</h3>
-              <p>A calm, page-turning reader — flip through pages, pick your theme and type size, keep your place on any device, and download your own EPUB copy to read offline.</p>
+              <p>A calm, page-turning reader — themes, type size, and your place kept on any device. A reading companion you can name helps with tricky words and synonyms, and you can download your own EPUB to read offline.</p>
             </div>
           </div>
         </div>
@@ -142,7 +142,7 @@ export default async function Landing() {
           <div className={s.secHead}>
             <span className={s.eyebrow}>Interactive</span>
             <h2>Choose-your-path storybooks.</h2>
-            <p>Every choice bends the tale — branching endings, paragraph reactions, and a comments tray that reads like your group chat.</p>
+            <p>Every choice bends the tale — branching endings, and a paragraph comment tray with likes, replies and author pins that reads like your group chat.</p>
           </div>
           <div className={s.cards}>
             <div className={s.fcard}>
@@ -152,8 +152,8 @@ export default async function Landing() {
             </div>
             <div className={s.fcard}>
               <div className={s.ic}>💬</div>
-              <h3>React in the margins</h3>
-              <p>Drop reactions on any paragraph and argue about the twist with other readers.</p>
+              <h3>Talk in the margins</h3>
+              <p>Comment on any passage, like or reply to other readers, and watch the author join in — they wear a Creator badge and can pin the best thread.</p>
             </div>
             <div className={s.fcard}>
               <div className={s.ic}>🔖</div>
@@ -215,7 +215,7 @@ export default async function Landing() {
             <div className={s.step}>
               <b>2</b>
               <span>
-                <strong>Set</strong> — free or premium, pick a type, add a cover.
+                <strong>Set</strong> — free or premium, pick a type, and upload your own cover (or paste a URL).
               </span>
             </div>
             <div className={s.step}>
