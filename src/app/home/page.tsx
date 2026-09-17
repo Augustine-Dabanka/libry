@@ -1,29 +1,21 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
-import BookCard from "@/components/BookCard";
+import BookCarousel from "@/components/BookCarousel";
 import HeroArt from "@/components/HeroArt";
 import StreakCard from "@/components/StreakCard";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 import { rankBooks, type BookSignals } from "@/lib/ranking";
 
+// Shelves are horizontal carousels now (compact cards, snap-scroll) so several
+// categories fit on one mobile screen. The .section wrapper keeps the gutter.
 function Shelf({ title, books, href = "/catalog" }: { title: string; books: Book[]; href?: string }) {
   if (books.length === 0) return null;
   return (
-    <section className="section" style={{ paddingTop: "1.5rem", paddingBottom: 0 }}>
-      <div className="section-header">
-        <h2>{title}</h2>
-        <a href={href} style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>
-          View all →
-        </a>
-      </div>
-      <div className="book-grid">
-        {books.map((b) => (
-          <BookCard key={b.id} book={b} />
-        ))}
-      </div>
-    </section>
+    <div className="section" style={{ paddingTop: "1rem", paddingBottom: 0 }}>
+      <BookCarousel title={title} books={books} href={href} />
+    </div>
   );
 }
 

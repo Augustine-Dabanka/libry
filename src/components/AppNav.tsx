@@ -13,6 +13,7 @@ export default async function AppNav() {
   let name = "";
   let avatarUrl: string | null = null;
   let wishCount = 0;
+  let notifCount = 0;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -23,6 +24,8 @@ export default async function AppNav() {
     avatarUrl = profile?.avatar_url ?? null;
     const wl = await supabase.from("wishlist").select("book_id", { count: "exact", head: true }).eq("user_id", user.id);
     wishCount = wl.count ?? 0;
+    const nt = await supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("read", false);
+    if (!nt.error) notifCount = nt.count ?? 0;
   }
   const initials =
     name
@@ -44,5 +47,5 @@ export default async function AppNav() {
     }
   }
 
-  return <NavClient signedIn={!!user} name={name} avatarUrl={avatarUrl} initials={initials} email={user?.email ?? ""} wishCount={wishCount} genres={genres} />;
+  return <NavClient signedIn={!!user} name={name} avatarUrl={avatarUrl} initials={initials} email={user?.email ?? ""} wishCount={wishCount} notifCount={notifCount} genres={genres} />;
 }

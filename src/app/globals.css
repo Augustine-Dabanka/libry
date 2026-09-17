@@ -611,6 +611,34 @@ body.has-rail { padding-left: var(--rail-w); }
   .railnav, .rail-label, .rail-flyout, .rail-usermenu, .rail-item::after { transition: none !important; }
 }
 
+/* ========== BOOK CAROUSEL (Wattpad-style horizontal rows) ========== */
+.carousel-section { margin-bottom: 1.6rem; }
+.carousel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.7rem; }
+.book-carousel {
+  display: flex; flex-direction: row; gap: 0.9rem;
+  overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  padding: 0.2rem 0.2rem 0.7rem;
+}
+.book-carousel::-webkit-scrollbar { display: none; }
+.cc-card { flex: 0 0 auto; width: clamp(132px, 42vw, 158px); scroll-snap-align: start; text-decoration: none; display: block; }
+.cc-cover {
+  position: relative; aspect-ratio: 2 / 3; border-radius: 10px; overflow: hidden;
+  border: 1px solid rgba(197, 160, 89, 0.28);
+  background: linear-gradient(160deg, rgba(197, 160, 89, 0.07), rgba(0, 0, 0, 0.22));
+}
+.cc-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cc-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.8rem; text-align: center; }
+.cc-mark { font-family: var(--sans); font-size: 0.58rem; letter-spacing: 0.26em; color: var(--gold-hi); font-weight: 600; }
+.cc-fallback-title { font-family: var(--serif); font-size: 0.95rem; color: var(--ivory); line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.cc-badge {
+  position: absolute; left: 6px; top: 6px; font-family: var(--sans); font-size: 0.6rem; font-weight: 700;
+  background: rgba(28, 25, 23, 0.82); color: var(--ivory); border-radius: 6px; padding: 0.12rem 0.4rem; backdrop-filter: blur(4px);
+}
+.cc-title { font-family: var(--serif); font-size: 0.92rem; color: var(--ivory); margin-top: 0.5rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cc-author { font-family: var(--sans); font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-price { font-family: var(--sans); font-size: 0.78rem; color: var(--gold); font-weight: 600; margin-top: 0.15rem; }
+
 /* ========== CREATOR DASHBOARD TABS ========== */
 .ct-tabbar {
   display: flex; gap: 0.25rem; overflow-x: auto; scrollbar-width: none;

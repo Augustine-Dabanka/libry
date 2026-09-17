@@ -8,7 +8,7 @@ import StreakCard from "@/components/StreakCard";
 import { cartCount, onCartChange, openCart } from "@/lib/cart";
 
 /* ── line icons (22px, stroke = currentColor) ─────────────────────────────── */
-type IconName = "home" | "browse" | "spark" | "compass" | "library" | "medal" | "pen" | "heart" | "cart" | "theme" | "cog" | "community";
+type IconName = "home" | "browse" | "spark" | "compass" | "library" | "medal" | "pen" | "heart" | "cart" | "theme" | "cog" | "community" | "bell";
 function Icon({ name }: { name: IconName }) {
   const p: React.SVGProps<SVGSVGElement> = { width: 21, height: 21, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
   switch (name) {
@@ -24,6 +24,7 @@ function Icon({ name }: { name: IconName }) {
     case "theme": return (<svg {...p}><circle cx="12" cy="12" r="4.2" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" /></svg>);
     case "cog": return (<svg {...p}><circle cx="12" cy="12" r="3" /><path d="M12 3v2.2M12 18.8V21M4.2 7l1.9 1.1M17.9 15.9 19.8 17M4.2 17l1.9-1.1M17.9 8.1 19.8 7" /></svg>);
     case "community": return (<svg {...p}><circle cx="9" cy="9" r="3" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 6.2a3 3 0 0 1 0 5.6M17.5 19a5.5 5.5 0 0 0-3-4.9" /></svg>);
+    case "bell": return (<svg {...p}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></svg>);
   }
 }
 
@@ -31,8 +32,7 @@ type RailItem = { href: string; label: string; icon: IconName; match?: (path: st
 
 const PRIMARY: RailItem[] = [
   { href: "/home", label: "Home", icon: "home" },
-  { href: "/catalog", label: "Browse", icon: "browse", match: (p, q) => p === "/catalog" && !q.includes("type=Interactive") },
-  { href: "/catalog?type=Interactive", label: "Interactive", icon: "spark", match: (p, q) => p === "/catalog" && q.includes("type=Interactive") },
+  { href: "/catalog", label: "Browse", icon: "browse", match: (p) => p === "/catalog" },
   { href: "/discover", label: "Discover", icon: "compass" },
   { href: "/community", label: "Community", icon: "community" },
   { href: "/my-library", label: "My Library", icon: "library" },
@@ -47,6 +47,7 @@ export default function NavClient({
   initials,
   email,
   wishCount = 0,
+  notifCount = 0,
   genres = [],
 }: {
   signedIn: boolean;
@@ -55,6 +56,7 @@ export default function NavClient({
   initials: string;
   email?: string;
   wishCount?: number;
+  notifCount?: number;
   genres?: string[];
 }) {
   const pathname = usePathname() || "/";
@@ -164,6 +166,7 @@ export default function NavClient({
                     <div className="rf-col">
                       <h6>Genres</h6>
                       <div className="rf-genres">
+                        <a href="/catalog?type=Interactive">✦ Interactive</a>
                         {genreList.map((g) => (
                           <a key={g} href={`/catalog?genre=${encodeURIComponent(g)}`}>{g}</a>
                         ))}
@@ -171,7 +174,6 @@ export default function NavClient({
                     </div>
                     <div className="rf-col">
                       <h6>Formats</h6>
-                      <a href="/catalog?type=Interactive">✦ Interactive</a>
                       <a href="/catalog?free=1">Free to read</a>
                       <a href="/catalog?paid=1">Premium</a>
                       <a href="/unlimited">Libry Unlimited</a>
@@ -192,6 +194,16 @@ export default function NavClient({
         <div className="rail-bottom">
           {signedIn ? (
             <div className="rail-streak"><StreakCard compact /></div>
+          ) : null}
+
+          {signedIn ? (
+            <a href="/notifications" className="rail-item" title="Notifications">
+              <span className="rail-ico">
+                <Icon name="bell" />
+                {notifCount > 0 ? <span className="rail-dot">{notifCount}</span> : null}
+              </span>
+              <span className="rail-label">Notifications</span>
+            </a>
           ) : null}
 
           <a href="/my-library?tab=wishlist" className="rail-item" title="Wishlist">
@@ -266,6 +278,12 @@ export default function NavClient({
             ◑
           </button>
 
+          {signedIn ? (
+            <a href="/notifications" className="icon-link" title="Notifications" aria-label="Notifications">
+              &#128276;{notifCount > 0 ? <span className="badge-count">{notifCount}</span> : null}
+            </a>
+          ) : null}
+
           <button type="button" className="icon-link" title="Cart" aria-label="Cart" onClick={openCart} style={{ background: "transparent", border: "none", cursor: "pointer", font: "inherit" }}>
             &#128722; <span className="badge-count">{cartN}</span>
           </button>
@@ -298,7 +316,6 @@ export default function NavClient({
         <div className="mm-scroll">
           <a className="mm-link" href="/home">Home</a>
           <a className="mm-link" href="/catalog">Browse all</a>
-          <a className="mm-link" href="/catalog?type=Interactive">✦ Interactive stories</a>
 
           <div className="mm-group">
             <button
@@ -311,6 +328,7 @@ export default function NavClient({
               <span className="mm-caret">▾</span>
             </button>
             <div className={`mm-sub${mSection === "genres" ? " open" : ""}`}>
+              <a href="/catalog?type=Interactive">✦ Interactive</a>
               {genreList.map((g) => (
                 <a key={g} href={`/catalog?genre=${encodeURIComponent(g)}`}>{g}</a>
               ))}
@@ -339,6 +357,9 @@ export default function NavClient({
           <div className="mm-divider" />
 
           <a className="mm-link" href="/community">Community</a>
+          <a className="mm-link" href="/notifications">
+            Notifications{notifCount > 0 ? <span className="mm-count">{notifCount}</span> : null}
+          </a>
           <a className="mm-link" href="/my-library">My Library</a>
           <a className="mm-link" href="/my-library?tab=wishlist">
             Wishlist{wishN > 0 ? <span className="mm-count">{wishN}</span> : null}
