@@ -19,12 +19,13 @@ export default function BookCard({ book }: { book: Book }) {
             border: "1px solid rgba(197,160,89,0.45)",
             borderRadius: 10,
             background: "linear-gradient(160deg, rgba(197,160,89,0.07), rgba(0,0,0,0.22))",
-            padding: "1.4rem 1rem 2rem",
+            padding: "1.2rem 1rem",
             textAlign: "center",
-            minHeight: 200,
+            aspectRatio: "2 / 3",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             gap: "0.85rem",
           }}
         >
