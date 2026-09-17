@@ -125,6 +125,22 @@ export default async function CreatorDashboard() {
     }
   }
 
+  // --- Subscribers: who follows this creator (private to the creator). ---
+  type Subscriber = { name: string; username: string | null; avatar: string | null; since: string };
+  let subscribers: Subscriber[] = [];
+  {
+    const fol = await supabase.from("author_follows").select("follower_id, created_at").eq("author", authorName).order("created_at", { ascending: false });
+    if (!fol.error && fol.data?.length) {
+      const ids = [...new Set((fol.data as { follower_id: string }[]).map((r) => r.follower_id))];
+      const { data: profs } = await supabase.from("profiles").select("id, full_name, username, avatar_url").in("id", ids);
+      const byId = new Map((profs ?? []).map((p: { id: string; full_name?: string | null; username?: string | null; avatar_url?: string | null }) => [p.id, p]));
+      subscribers = (fol.data as { follower_id: string; created_at: string }[]).map((r) => {
+        const p = byId.get(r.follower_id);
+        return { name: p?.full_name || p?.username || "Reader", username: p?.username ?? null, avatar: p?.avatar_url ?? null, since: r.created_at };
+      });
+    }
+  }
+
   // --- Stats (no payment backend yet → revenue/sales are zero, shown honestly) ---
   const rated = books.filter((b) => (b.rating ?? 0) > 0);
   const avgRating = rated.length ? (rated.reduce((s, b) => s + (b.rating ?? 0), 0) / rated.length) : 0;
@@ -302,10 +318,42 @@ export default async function CreatorDashboard() {
                 <>
                   <h3 style={{ marginBottom: "1.2rem" }}>Audience Insights</h3>
                   <div className="stats-grid" style={{ marginBottom: "2.5rem" }}>
+                    {stat("Subscribers", String(subscribers.length), "People following you")}
                     {stat("Total Readers", String(totalReaders), "Unique readers of your books")}
                     {stat("Countries Reached", String(countriesReached), "Where your readers are")}
                     {stat("Top Country", topCountry, "Your biggest audience")}
                   </div>
+
+                  {/* Subscribers — visible only here, on the creator's own dashboard. */}
+                  <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "2.5rem" }}>
+                    <h3 style={{ marginBottom: "0.3rem" }}>Your subscribers</h3>
+                    <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", marginBottom: "1.2rem" }}>
+                      The readers following you — only you can see this list.
+                    </p>
+                    {subscribers.length === 0 ? (
+                      <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>
+                        No subscribers yet. Readers who follow you from your author page or a book will show up here.
+                      </p>
+                    ) : (
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "0.7rem" }}>
+                        {subscribers.map((s, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.7rem", padding: "0.6rem 0.7rem", background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 10 }}>
+                            {s.avatar ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={s.avatar} alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                            ) : (
+                              <span style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--gold)", color: "#20180a", display: "grid", placeItems: "center", fontFamily: "var(--sans)", fontWeight: 800, flexShrink: 0 }}>{(s.name[0] || "?").toUpperCase()}</span>
+                            )}
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontFamily: "var(--sans)", fontWeight: 600, fontSize: "0.9rem", color: "var(--ivory)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</div>
+                              {s.username ? <div style={{ fontFamily: "var(--sans)", fontSize: "0.78rem", color: "var(--muted)" }}>@{s.username}</div> : null}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <ReferralLink refCode={refCode} count={referralCount} />
                 </>
               );

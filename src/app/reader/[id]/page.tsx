@@ -117,6 +117,7 @@ export default async function ReaderPage({
       userEmail={user?.email ?? null}
       userId={user?.id ?? null}
       userName={userName}
+      creatorId={(book as { user_id?: string | null }).user_id ?? null}
       sample={showSample && (truncated || locked)}
       signedIn={!!user}
       locked={locked}

@@ -138,6 +138,7 @@ export default function ReaderView({
   userEmail,
   userId = null,
   userName = null,
+  creatorId = null,
   sample = false,
   signedIn = false,
   locked = false,
@@ -150,6 +151,7 @@ export default function ReaderView({
   userEmail: string | null;
   userId?: string | null;
   userName?: string | null;
+  creatorId?: string | null;
   sample?: boolean;
   signedIn?: boolean;
   locked?: boolean;
@@ -250,14 +252,46 @@ export default function ReaderView({
     let cancelled = false;
     (async () => {
       const supabase = createClient();
-      const { data, error } = await supabase
+      type Res = { data: Record<string, unknown>[] | null; error: { message: string } | null };
+      let res: Res = await supabase
         .from("paragraph_comments")
-        .select("id, para_index, user_id, user_name, body, created_at")
+        .select("id, para_index, parent_id, user_id, user_name, body, created_at, pinned")
         .eq("book_id", Number(bookId))
         .order("created_at", { ascending: true });
-      if (cancelled || error || !data) return;
+      // Pre-migration fallback: parent_id/pinned columns may not exist yet.
+      if (res.error && /(parent_id|pinned)/i.test(res.error.message)) {
+        res = await supabase
+          .from("paragraph_comments")
+          .select("id, para_index, user_id, user_name, body, created_at")
+          .eq("book_id", Number(bookId))
+          .order("created_at", { ascending: true });
+      }
+      if (cancelled || res.error || !res.data) return;
+      const rows = (res.data as unknown as ParaComment[]).map((c) => ({ ...c, parent_id: c.parent_id ?? null, pinned: c.pinned ?? false }));
+
+      // Reaction tallies + this reader's own reaction, merged onto each comment
+      // (guarded — no comment_reactions table yet just means zero reactions).
+      const ids = rows.map((c) => c.id);
+      const likes = new Map<number, number>();
+      const dislikes = new Map<number, number>();
+      const mine = new Map<number, number>();
+      if (ids.length) {
+        try {
+          const rx = await supabase.from("comment_reactions").select("comment_id, user_id, value").in("comment_id", ids);
+          if (!rx.error && rx.data) {
+            for (const r of rx.data as { comment_id: number; user_id: string; value: number }[]) {
+              (r.value === 1 ? likes : dislikes).set(r.comment_id, ((r.value === 1 ? likes : dislikes).get(r.comment_id) ?? 0) + 1);
+              if (userId && r.user_id === userId) mine.set(r.comment_id, r.value);
+            }
+          }
+        } catch { /* reactions not migrated — leave at zero */ }
+      }
+      if (cancelled) return;
       const map = new Map<number, ParaComment[]>();
-      for (const c of data as ParaComment[]) {
+      for (const c of rows) {
+        c.likes = likes.get(c.id) ?? 0;
+        c.dislikes = dislikes.get(c.id) ?? 0;
+        c.my_reaction = mine.get(c.id) ?? 0;
         const arr = map.get(c.para_index) ?? [];
         arr.push(c);
         map.set(c.para_index, arr);
@@ -285,21 +319,37 @@ export default function ReaderView({
     return () => clearInterval(id);
   }, [userEmail, sample]);
 
-  async function addComment(body: string) {
+  async function addComment(body: string, parentId: number | null = null) {
     if (openPara == null || !userId) return;
     setCommentBusy(true);
     const supabase = createClient();
-    const { data, error } = await supabase
-      .from("paragraph_comments")
-      .insert({ book_id: Number(bookId), para_index: openPara, user_id: userId, user_name: userName, body })
-      .select("id, para_index, user_id, user_name, body, created_at")
-      .single();
+    const payload: Record<string, unknown> = { book_id: Number(bookId), para_index: openPara, user_id: userId, user_name: userName, body };
+    if (parentId != null) payload.parent_id = parentId;
+    let res = await supabase.from("paragraph_comments").insert(payload).select("id, para_index, parent_id, user_id, user_name, body, created_at, pinned").single();
+    // If parent_id isn't migrated yet, fall back to a flat comment.
+    if (res.error && /parent_id/i.test(res.error.message)) {
+      delete payload.parent_id;
+      res = await supabase.from("paragraph_comments").insert(payload).select("id, para_index, user_id, user_name, body, created_at").single();
+    }
     setCommentBusy(false);
-    if (error || !data) return;
+    if (res.error || !res.data) return;
+    const raw = res.data as Partial<ParaComment>;
+    const created: ParaComment = {
+      id: raw.id!,
+      para_index: raw.para_index ?? openPara,
+      parent_id: raw.parent_id ?? parentId ?? null,
+      user_id: raw.user_id ?? userId,
+      user_name: raw.user_name ?? userName,
+      body: raw.body ?? body,
+      created_at: raw.created_at ?? new Date().toISOString(),
+      pinned: raw.pinned ?? false,
+      likes: 0,
+      dislikes: 0,
+      my_reaction: 0,
+    };
     setCommentsByPara((prev) => {
       const next = new Map(prev);
-      const arr = [...(next.get(openPara) ?? []), data as ParaComment];
-      next.set(openPara, arr);
+      next.set(openPara, [...(next.get(openPara) ?? []), created]);
       return next;
     });
   }
@@ -311,9 +361,50 @@ export default function ReaderView({
     if (error) return;
     setCommentsByPara((prev) => {
       const next = new Map(prev);
-      next.set(openPara, (next.get(openPara) ?? []).filter((c) => c.id !== id));
+      // Drop the comment and any replies to it.
+      next.set(openPara, (next.get(openPara) ?? []).filter((c) => c.id !== id && c.parent_id !== id));
       return next;
     });
+  }
+
+  // Toggle a like (+1) / dislike (-1). Tapping the active one clears it.
+  async function reactComment(id: number, value: number) {
+    if (openPara == null || !userId) return;
+    const para = openPara;
+    let prevReaction = 0;
+    setCommentsByPara((prev) => {
+      const next = new Map(prev);
+      next.set(para, (next.get(para) ?? []).map((c) => {
+        if (c.id !== id) return c;
+        prevReaction = c.my_reaction ?? 0;
+        const nextReaction = prevReaction === value ? 0 : value;
+        const likes = (c.likes ?? 0) + (nextReaction === 1 ? 1 : 0) - (prevReaction === 1 ? 1 : 0);
+        const dislikes = (c.dislikes ?? 0) + (nextReaction === -1 ? 1 : 0) - (prevReaction === -1 ? 1 : 0);
+        return { ...c, my_reaction: nextReaction, likes, dislikes };
+      }));
+      return next;
+    });
+    try {
+      const supabase = createClient();
+      const clearing = prevReaction === value;
+      if (clearing) await supabase.from("comment_reactions").delete().eq("comment_id", id).eq("user_id", userId);
+      else await supabase.from("comment_reactions").upsert({ comment_id: id, user_id: userId, value }, { onConflict: "comment_id,user_id" });
+    } catch { /* not migrated — the optimistic UI still reflects the tap this session */ }
+  }
+
+  // Creator-only: pin / unpin a comment on their own book (RPC enforces it).
+  async function pinComment(id: number, pinned: boolean) {
+    if (openPara == null) return;
+    const para = openPara;
+    setCommentsByPara((prev) => {
+      const next = new Map(prev);
+      next.set(para, (next.get(para) ?? []).map((c) => (c.id === id ? { ...c, pinned } : c)));
+      return next;
+    });
+    try {
+      const supabase = createClient();
+      await supabase.rpc("set_comment_pin", { p_comment: id, p_pinned: pinned });
+    } catch { /* not migrated */ }
   }
 
   function onScroll() {
@@ -693,10 +784,13 @@ export default function ReaderView({
           comments={openPara != null ? commentsByPara.get(openPara) ?? [] : []}
           canComment={!!userId}
           currentUserId={userId}
+          creatorId={creatorId}
           busy={commentBusy}
           onClose={() => setOpenPara(null)}
           onAdd={addComment}
           onDelete={deleteComment}
+          onReact={reactComment}
+          onPin={pinComment}
         />
       ) : null}
       {!locked ? <ReaderCompanion dark={theme === "dark"} /> : null}
@@ -893,10 +987,13 @@ export default function ReaderView({
           comments={openPara != null ? commentsByPara.get(openPara) ?? [] : []}
           canComment={!!userId}
           currentUserId={userId}
+          creatorId={creatorId}
           busy={commentBusy}
           onClose={() => setOpenPara(null)}
           onAdd={addComment}
           onDelete={deleteComment}
+          onReact={reactComment}
+          onPin={pinComment}
         />
       ) : null}
     </div>
