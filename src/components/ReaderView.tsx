@@ -9,6 +9,7 @@ import { todayISO } from "@/lib/streak";
 import ShareButton from "@/components/ShareButton";
 import FinishChallenge from "@/components/FinishChallenge";
 import CommentTray, { type ParaComment } from "@/components/CommentTray";
+import ReaderCompanion from "@/components/ReaderCompanion";
 
 type Theme = "dark" | "sepia";
 
@@ -27,18 +28,6 @@ const EPIGRAPHS: { text: string; who: string }[] = [
   { text: "Reading is to the mind what exercise is to the body.", who: "Joseph Addison" },
   { text: "Read the best books first, or you may not have a chance to read them at all.", who: "Henry David Thoreau" },
   { text: "A good book is the precious life-blood of a master spirit.", who: "John Milton" },
-];
-
-// Gentle mid-read "reflection beats" — an engagement nudge every few pages, not a
-// test. Always skippable. (Real per-book comprehension questions can layer on
-// later once the author-vs-AI source is decided.)
-const REFLECTIONS: string[] = [
-  "Still with the story? Take a breath — then carry on.",
-  "You're building a real reading habit. Keep the thread.",
-  "A natural place to pause… or press on. Your call.",
-  "Notice what's pulling you through this one.",
-  "Lingering is the whole point here. No rush.",
-  "Nicely done. The next part is waiting.",
 ];
 
 function pickIndex(seed: string, mod: number): number {
@@ -115,6 +104,21 @@ const READER_ENHANCE_CSS = `
 }
 .rd-toc-item:hover { background: rgba(196,163,90,0.14); }
 .rd-toc-item .n { font-family: var(--sans); font-size: 0.78rem; opacity: 0.5; min-width: 1.6em; }
+
+/* Reader top bar must fit every control on a phone — the Share chip was being
+   pushed off the right edge on narrow screens. Below 560px we tighten the gaps,
+   drop the "Back"/"Contents" word labels (icons remain), and let the controls
+   keep their full set without overflowing. */
+@media (max-width: 560px) {
+  .rd-topbar { gap: 0.55rem !important; padding-left: 0.7rem !important; padding-right: 0.7rem !important; }
+  .rd-ctrls { gap: 0.28rem !important; }
+  .rd-back-label, .rd-toc-label { display: none; }
+  .rd-toc-btn { padding: 0.3rem 0.5rem; }
+  .rd-topbar-title { font-size: 0.9rem !important; }
+}
+@media (max-width: 380px) {
+  .rd-topbar-title { display: none; }
+}
 `;
 
 export default function ReaderView({
@@ -343,11 +347,6 @@ export default function ReaderView({
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(1);
   const [step, setStep] = useState(0);
-  const [checkin, setCheckin] = useState<number | null>(null);
-  const [checkinsOff, setCheckinsOff] = useState(false);
-  const checkinShown = useRef<Set<number>>(new Set());
-  type CheckinQ = { question: string; options: string[]; answer: number; picked: number | null };
-  const [checkinQ, setCheckinQ] = useState<null | "loading" | CheckinQ>(null);
   const vpRef = useRef<HTMLDivElement>(null);
   const flowRef = useRef<HTMLDivElement>(null);
   const stepRef = useRef(0);
@@ -406,16 +405,7 @@ export default function ReaderView({
       finishShown.current = true;
       setShowFinish(true);
     }
-    // Gentle mid-read check-in at 25 / 50 / 75% only — at most three times a book,
-    // each shown once. (Anything more often is just annoying.)
-    if (!checkinsOff && !sample && pages > 3 && page < pages - 1) {
-      const due = [25, 50, 75].filter((m) => pct >= m && !checkinShown.current.has(m));
-      if (due.length) {
-        due.forEach((m) => checkinShown.current.add(m));
-        setCheckin(due[0]!);
-      }
-    }
-  }, [page, pages, usePaged, userEmail, sample, checkinsOff]);
+  }, [page, pages, usePaged, userEmail, sample]);
 
   // Persist page progress (debounced) and restore it once after first measure.
   useEffect(() => {
@@ -449,35 +439,13 @@ export default function ReaderView({
   useEffect(() => {
     if (!usePaged) return;
     const onKey = (e: KeyboardEvent) => {
-      if (openPara != null || tocOpen || checkin != null) return;
+      if (openPara != null || tocOpen) return;
       if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); nextPage(); }
       else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); prevPage(); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [usePaged, nextPage, prevPage, openPara, tocOpen, checkin]);
-
-  // When a check-in opens, try to fetch an AI comprehension question about what
-  // was just read. If none is available (no API key / not migrated / too short),
-  // the overlay falls back to the gentle reflection prompt.
-  useEffect(() => {
-    if (checkin == null) { setCheckinQ(null); return; }
-    setCheckinQ("loading");
-    let cancelled = false;
-    (async () => {
-      try {
-        const r = await fetch(`/api/book/${bookId}/question?at=${checkin}`);
-        const j = await r.json();
-        if (cancelled) return;
-        if (j?.available && Array.isArray(j.options) && j.options.length === 3 && typeof j.answer === "number") {
-          setCheckinQ({ question: String(j.question), options: j.options.map(String), answer: j.answer, picked: null });
-        } else setCheckinQ(null);
-      } catch {
-        if (!cancelled) setCheckinQ(null);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [checkin, bookId]);
+  }, [usePaged, nextPage, prevPage, openPara, tocOpen]);
 
   // Swipe navigation.
   const touchX = useRef<number | null>(null);
@@ -608,6 +576,7 @@ export default function ReaderView({
         <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#C4A35A,#B45309)", transition: "width 0.3s ease" }} />
       </div>
       <div
+        className="rd-topbar"
         style={{
           position: "sticky", top: 4, zIndex: 60, flexShrink: 0, display: "flex", alignItems: "center", gap: "1rem",
           padding: "0.7rem clamp(1rem,4vw,2rem)",
@@ -615,12 +584,12 @@ export default function ReaderView({
           backdropFilter: "blur(12px)", borderBottom: `1px solid ${pal.bar}`,
         }}
       >
-        <button type="button" onClick={goBackToBook} style={{ background: "transparent", border: "none", color: pal.muted, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>← Back</button>
+        <button type="button" className="rd-back" onClick={goBackToBook} style={{ background: "transparent", border: "none", color: pal.muted, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>← <span className="rd-back-label">Back</span></button>
         {chapters.length > 1 ? (
-          <button type="button" className="rd-toc-btn" onClick={() => setTocOpen(true)} style={{ color: pal.muted }} aria-label="Table of contents" aria-expanded={tocOpen}>☰ Contents</button>
+          <button type="button" className="rd-toc-btn" onClick={() => setTocOpen(true)} style={{ color: pal.muted }} aria-label="Table of contents" aria-expanded={tocOpen}>☰ <span className="rd-toc-label">Contents</span></button>
         ) : null}
-        <span style={{ flex: 1, textAlign: "center", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.98rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
-        <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+        <span className="rd-topbar-title" style={{ flex: 1, minWidth: 0, textAlign: "center", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.98rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
+        <div className="rd-ctrls" style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexShrink: 0 }}>
           {!usePaged ? (
             <span aria-label={`${progress} percent read`} style={{ fontFamily: "var(--sans)", fontSize: "0.72rem", color: pal.muted, minWidth: 34, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{progress}%</span>
           ) : null}
@@ -654,45 +623,6 @@ export default function ReaderView({
           </nav>
         </>
       ) : null}
-      {checkin != null ? (
-        <div style={{ position: "fixed", inset: 0, zIndex: 70, display: "grid", placeItems: "center", padding: "1.4rem", background: "rgba(10,8,6,0.55)", backdropFilter: "blur(3px)" }} role="dialog" aria-modal="true" aria-label="Reading check-in">
-          <div style={{ maxWidth: 380, width: "100%", background: pal.bg, color: pal.fg, border: `1px solid ${pal.bar}`, borderRadius: 18, padding: "1.7rem 1.5rem", textAlign: "center", boxShadow: "0 30px 80px rgba(0,0,0,0.5)" }}>
-            <div style={{ fontSize: "1.4rem", color: "#C4A35A" }} aria-hidden="true">✦</div>
-            <div className="rd-kicker" style={{ marginBottom: "0.2rem" }}>Quick check · you&apos;re {progress}% in</div>
-            {typeof checkinQ === "object" && checkinQ ? (
-              <>
-                <p style={{ fontFamily: "var(--serif)", fontSize: "1.06rem", margin: "0.3rem auto 1rem", lineHeight: 1.5, maxWidth: 320 }}>{checkinQ.question}</p>
-                <div style={{ display: "grid", gap: "0.5rem", textAlign: "left", marginBottom: "1.1rem" }}>
-                  {checkinQ.options.map((opt, i) => {
-                    const answered = checkinQ.picked != null;
-                    const isAnswer = i === checkinQ.answer;
-                    const bg = answered && isAnswer ? "rgba(95,160,104,0.18)" : answered && checkinQ.picked === i ? "rgba(196,85,63,0.18)" : "transparent";
-                    const bd = answered && isAnswer ? "#5FA068" : answered && checkinQ.picked === i ? "#C4553F" : pal.bar;
-                    return (
-                      <button key={i} type="button" disabled={answered} onClick={() => setCheckinQ({ ...checkinQ, picked: i })}
-                        style={{ display: "flex", gap: "0.6rem", alignItems: "center", padding: "0.6rem 0.8rem", borderRadius: 10, border: `1px solid ${bd}`, background: bg, color: pal.fg, fontFamily: "var(--sans)", fontSize: "0.88rem", cursor: answered ? "default" : "pointer", textAlign: "left", lineHeight: 1.35 }}>
-                        <span style={{ opacity: 0.55, fontWeight: 700, flexShrink: 0 }}>{String.fromCharCode(65 + i)}</span>
-                        <span style={{ flex: 1 }}>{opt}</span>
-                        {answered && isAnswer ? <span style={{ color: "#7DBE86", fontSize: "0.78rem", fontWeight: 700, flexShrink: 0 }}>✓</span> : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            ) : (
-              <p style={{ color: pal.muted, fontFamily: "var(--sans)", fontSize: "0.92rem", margin: "0.5rem auto 1.3rem", lineHeight: 1.6, maxWidth: 300 }}>
-                {REFLECTIONS[pickIndex(`${bookId}-${checkin}`, REFLECTIONS.length)]}
-              </p>
-            )}
-            <button type="button" className="btn btn-gold" onClick={() => setCheckin(null)} style={{ width: "100%", justifyContent: "center" }}>
-              {typeof checkinQ === "object" && checkinQ && checkinQ.picked == null ? "Skip · keep reading →" : "Keep reading →"}
-            </button>
-            <button type="button" onClick={() => { setCheckinsOff(true); setCheckin(null); }} style={{ marginTop: "0.85rem", background: "transparent", border: "none", color: pal.muted, fontFamily: "var(--sans)", fontSize: "0.82rem", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>
-              Don&apos;t show these
-            </button>
-          </div>
-        </div>
-      ) : null}
 
       {showFinish ? <FinishChallenge bookId={Number(bookId)} title={title} onClose={() => setShowFinish(false)} /> : null}
       {!isHtml ? (
@@ -708,6 +638,7 @@ export default function ReaderView({
           onDelete={deleteComment}
         />
       ) : null}
+      {!locked ? <ReaderCompanion userId={userId} dark={theme === "dark"} /> : null}
     </>
   );
 
