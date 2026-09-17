@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AGE_RATINGS, AGE_LABEL, GENRES } from "@/lib/content";
@@ -16,6 +16,7 @@ type BookEdit = {
   type: string | null;
   age_rating: string | null;
   category?: string | null;
+  cover_url?: string | null;
 };
 
 const field: React.CSSProperties = {
@@ -47,8 +48,36 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
   const [category, setCategory] = useState(book.category ?? "");
   const [price, setPrice] = useState(String(book.price ?? 0));
   const [age, setAge] = useState(book.age_rating ?? "Everyday");
+  const [cover, setCover] = useState(book.cover_url ?? "");
+  const [coverBusy, setCoverBusy] = useState(false);
+  const [coverErr, setCoverErr] = useState<string | null>(null);
+  const coverFileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // Upload a chosen cover image from the creator's device to the book-media
+  // bucket and use its public URL. (A pasted URL is supported too, below.)
+  async function onCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setCoverErr(null);
+    if (!file.type.startsWith("image/")) { setCoverErr("Please choose an image file."); return; }
+    if (file.size > 5 * 1024 * 1024) { setCoverErr("That image is over 5 MB — please pick a smaller one."); return; }
+    setCoverBusy(true);
+    try {
+      const supabase = createClient();
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = `covers/${book.id}-${Date.now()}.${ext}`;
+      const up = await supabase.storage.from("book-media").upload(path, file, { contentType: file.type, upsert: true });
+      if (up.error) { setCoverErr(up.error.message); setCoverBusy(false); return; }
+      const pub = supabase.storage.from("book-media").getPublicUrl(path).data.publicUrl;
+      setCover(pub);
+    } catch (e2) {
+      setCoverErr(e2 instanceof Error ? e2.message : "Upload failed.");
+    }
+    setCoverBusy(false);
+  }
 
   async function save() {
     setErr(null);
@@ -74,9 +103,14 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
       price: priceNum,
       is_free: priceNum <= 0,
       age_rating: age,
+      cover_url: cover.trim() || null,
     };
     let { error } = await supabase.from("books").update(payload).eq("id", book.id);
     // Retry gracefully if a column/constraint isn't migrated yet.
+    if (error && /cover_url/i.test(error.message)) {
+      delete payload.cover_url;
+      ({ error } = await supabase.from("books").update(payload).eq("id", book.id));
+    }
     if (error && /age_rating/i.test(error.message)) {
       delete payload.age_rating;
       ({ error } = await supabase.from("books").update(payload).eq("id", book.id));
@@ -101,6 +135,36 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
 
       <label style={label}>Description</label>
       <textarea style={{ ...field, minHeight: 80, resize: "vertical" }} value={description} onChange={(e) => setDescription(e.target.value)} />
+
+      {/* Cover — upload from device, or paste a URL */}
+      <label style={label}>Book cover</label>
+      <div style={{ display: "flex", gap: "1.1rem", alignItems: "flex-start", flexWrap: "wrap", marginTop: "0.35rem" }}>
+        <div style={{ width: 96, aspectRatio: "2 / 3", borderRadius: 10, overflow: "hidden", flexShrink: 0, border: "1px solid var(--border)", background: "linear-gradient(160deg, rgba(197,160,89,0.12), rgba(0,0,0,0.25))", display: "grid", placeItems: "center" }}>
+          {cover.trim() ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={cover} alt="Cover preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <span style={{ fontFamily: "var(--sans)", fontSize: "0.6rem", letterSpacing: "0.2em", color: "var(--gold-hi)", fontWeight: 700 }}>LIBRY</span>
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <input ref={coverFileRef} type="file" accept="image/*" onChange={onCoverFile} style={{ display: "none" }} />
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            <button type="button" className="btn btn-gold" disabled={coverBusy} onClick={() => coverFileRef.current?.click()}>
+              {coverBusy ? "Uploading…" : cover.trim() ? "Change cover" : "Upload from device"}
+            </button>
+            {cover.trim() ? (
+              <button type="button" className="btn btn-outline" disabled={coverBusy} onClick={() => setCover("")}>Remove</button>
+            ) : null}
+          </div>
+          <label style={{ ...label, marginTop: "0.8rem", fontSize: "0.78rem" }}>…or paste an image URL</label>
+          <input style={field} value={cover} onChange={(e) => setCover(e.target.value)} placeholder="https://…/cover.jpg" />
+          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "0.4rem" }}>
+            Portrait works best (2:3). Leave empty to use the generated Libry cover.
+          </p>
+          {coverErr ? <p style={{ color: "var(--terracotta)", fontSize: "0.82rem", marginTop: "0.4rem" }}>{coverErr}</p> : null}
+        </div>
+      </div>
 
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
         <div style={{ flex: 1, minWidth: 150 }}>

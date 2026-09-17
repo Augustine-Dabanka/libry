@@ -112,7 +112,7 @@ export default async function Catalog({
   const runQuery = (withAge: boolean) => {
     let query = supabase
       .from("books")
-      .select(withAge ? "id, title, author, price, type, is_free, age_rating, rating, category" : "id, title, author, price, type, is_free, rating, category");
+      .select(withAge ? "id, title, author, price, type, is_free, age_rating, rating, category, cover_url" : "id, title, author, price, type, is_free, rating, category, cover_url");
     if (withAge) query = query.eq("is_published", true).in("age_rating", allowed);
     if (typeFilter) query = query.eq("type", typeFilter);
     if (genreFilter) query = query.eq("category", genreFilter);

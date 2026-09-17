@@ -9,7 +9,7 @@ import Stars from "@/components/Stars";
 import ReviewsSection, { type Review } from "@/components/ReviewsSection";
 import ReportButton from "@/components/ReportButton";
 import ShareButton from "@/components/ShareButton";
-import { formatPrice, type Book } from "@/lib/types";
+import { formatPrice, bookCover, type Book } from "@/lib/types";
 import { AGE_LABEL, agePill, isMatureRating } from "@/lib/content";
 import { AUTHOR_BIOS } from "@/lib/authorBios";
 
@@ -25,6 +25,7 @@ type BookDetail = {
   age_rating: string | null;
   category: string | null;
   rating: number | null;
+  cover_url?: string | null;
 };
 
 function coverGradient(title: string): string {
@@ -42,14 +43,14 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 
   const primary = await supabase
     .from("books")
-    .select("id, title, author, description, content, price, type, status, age_rating, category, rating")
+    .select("id, title, author, description, content, price, type, status, age_rating, category, rating, cover_url")
     .eq("id", id)
     .maybeSingle();
   let data = primary.data;
   if (primary.error) {
     const alt = await supabase
       .from("books")
-      .select("id, title, author, description, content, price, type, status, category, rating")
+      .select("id, title, author, description, content, price, type, status, category, rating, cover_url")
       .eq("id", id)
       .maybeSingle();
     data = alt.data ? { ...alt.data, age_rating: null } : null;
@@ -156,13 +157,13 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   // "Readers also read" — same category, else same type, else anything published.
   let related: Book[] = [];
   {
-    let q = supabase.from("books").select("id, title, author, price, type, rating, category").eq("is_published", true).neq("id", book.id).limit(6);
+    let q = supabase.from("books").select("id, title, author, price, type, rating, category, cover_url").eq("is_published", true).neq("id", book.id).limit(6);
     if (book.category) q = q.eq("category", book.category);
     else if (book.type) q = q.eq("type", book.type);
     const rl = await q;
     related = (rl.data ?? []) as Book[];
     if (related.length === 0) {
-      const rl2 = await supabase.from("books").select("id, title, author, price, type, rating, category").eq("is_published", true).neq("id", book.id).limit(6);
+      const rl2 = await supabase.from("books").select("id, title, author, price, type, rating, category, cover_url").eq("is_published", true).neq("id", book.id).limit(6);
       related = (rl2.data ?? []) as Book[];
     }
   }
@@ -203,11 +204,18 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
           <BackButton />
         </div>
         <div className="book-hero">
-          <div className="book-cover" style={{ background: coverGradient(book.title) }}>
-            <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", color: "rgba(255,255,255,0.96)", fontSize: "1.3rem", lineHeight: 1.2 }}>
-              {book.title}
-            </span>
-          </div>
+          {bookCover(book) ? (
+            <div className="book-cover" style={{ padding: 0, overflow: "hidden" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={bookCover(book)!} alt={`Cover of ${book.title}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+          ) : (
+            <div className="book-cover" style={{ background: coverGradient(book.title) }}>
+              <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", color: "rgba(255,255,255,0.96)", fontSize: "1.3rem", lineHeight: 1.2 }}>
+                {book.title}
+              </span>
+            </div>
+          )}
 
           <div>
             <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)" }}>{book.title}</h1>

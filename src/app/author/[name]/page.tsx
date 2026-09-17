@@ -17,7 +17,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ name: s
   // Published titles by this author.
   const res = await supabase
     .from("books")
-    .select("id, title, author, price, type, rating, category")
+    .select("id, title, author, price, type, rating, category, cover_url")
     .eq("is_published", true)
     .eq("author", author)
     .order("id", { ascending: false });

@@ -51,7 +51,7 @@ export default async function Home() {
     .limit(24);
   let books: Book[];
   if (primaryBooks.error) {
-    const alt = await supabase.from("books").select("id, title, author, price, type, rating, category").limit(24);
+    const alt = await supabase.from("books").select("id, title, author, price, type, rating, category, cover_url").limit(24);
     books = (alt.data ?? []) as Book[];
   } else {
     books = (primaryBooks.data ?? []) as Book[];
@@ -90,9 +90,9 @@ export default async function Home() {
     // Candidate pool (published, age-filtered) with category for affinity.
     type PoolBook = Book & { category?: string | null };
     let pool: PoolBook[] = [];
-    const rp = await supabase.from("books").select("id, title, author, price, type, rating, category").eq("is_published", true).in("age_rating", allowed).limit(80);
+    const rp = await supabase.from("books").select("id, title, author, price, type, rating, category, cover_url").eq("is_published", true).in("age_rating", allowed).limit(80);
     if (rp.error) {
-      const rp2 = await supabase.from("books").select("id, title, author, price, type, rating, category").eq("is_published", true).limit(80);
+      const rp2 = await supabase.from("books").select("id, title, author, price, type, rating, category, cover_url").eq("is_published", true).limit(80);
       pool = (rp2.data ?? []) as PoolBook[];
     } else {
       pool = (rp.data ?? []) as PoolBook[];
@@ -120,7 +120,7 @@ export default async function Home() {
   {
     const tr = await supabase
       .from("books")
-      .select("id, title, author, price, type, rating, category")
+      .select("id, title, author, price, type, rating, category, cover_url")
       .eq("is_published", true)
       .gt("rating", 0)
       .order("rating", { ascending: false })
@@ -137,7 +137,7 @@ export default async function Home() {
       if (authors.length) {
         const fn = await supabase
           .from("books")
-          .select("id, title, author, price, type, rating, category")
+          .select("id, title, author, price, type, rating, category, cover_url")
           .eq("is_published", true)
           .in("author", authors)
           .order("id", { ascending: false })
@@ -161,7 +161,7 @@ export default async function Home() {
       const seed = await supabase.from("books").select("id, title, category, type").eq("id", readIds[0]).maybeSingle();
       if (seed.data) {
         becauseTitle = seed.data.title as string;
-        let q = supabase.from("books").select("id, title, author, price, type, rating, category").eq("is_published", true).neq("id", readIds[0]).limit(12);
+        let q = supabase.from("books").select("id, title, author, price, type, rating, category, cover_url").eq("is_published", true).neq("id", readIds[0]).limit(12);
         if (seed.data.category) q = q.eq("category", seed.data.category as string);
         else if (seed.data.type) q = q.eq("type", seed.data.type as string);
         const rec = await q;
