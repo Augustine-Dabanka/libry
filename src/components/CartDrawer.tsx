@@ -2,19 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { type CartItem, getCart, removeFromCart, clearCart, onCartChange } from "@/lib/cart";
-import { checkoutCart } from "@/app/actions/purchases";
+import { checkoutCart, paystackReady } from "@/app/actions/purchases";
 import { formatPrice } from "@/lib/types";
 
 const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
 const PAYSTACK_CURRENCY = process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY || "USD";
+// Currency units charged per $1 of list price (1 for USD; the GHS-per-USD rate
+// for a Ghana account). Kept in sync with the server-side check.
+const PAYSTACK_RATE = Number(process.env.NEXT_PUBLIC_PAYSTACK_USD_RATE || "1") || 1;
 
-// Paystack is off until the merchant account is verified. The current test
-// integration is a Ghana account that only accepts GHS, so live USD checkout
-// fails with "currency not supported". Until verification (and multi-currency
-// enablement), checkout is simulated — no real charge, books still added to the
-// library. Flip this to true once the account is verified to re-enable Paystack.
-const PAYSTACK_ENABLED = false;
-const PAYSTACK_LIVE = PAYSTACK_ENABLED && !!PAYSTACK_KEY;
+// Real Paystack checkout runs only when the SERVER confirms it's fully
+// configured (secret key set + enabled) — so we never open the card iframe when
+// the payment couldn't be verified afterward. Otherwise checkout is simulated
+// (no charge, books still added), which keeps the pre-launch store usable.
 
 // Load Paystack's inline script once, on demand.
 function loadPaystack(): Promise<unknown> {
@@ -38,6 +38,11 @@ export default function CartDrawer({ email }: { email?: string }) {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [live, setLive] = useState(false);
+
+  useEffect(() => {
+    paystackReady().then(setLive).catch(() => setLive(false));
+  }, []);
 
   useEffect(() => {
     setItems(getCart());
@@ -68,22 +73,22 @@ export default function CartDrawer({ email }: { email?: string }) {
       return;
     }
     clearCart();
-    setDone(PAYSTACK_LIVE ? "Payment complete — enjoy your books." : "Added to your library — enjoy.");
+    setDone(live ? "Payment complete — enjoy your books." : "Added to your library — enjoy.");
   }
 
   async function checkout() {
     setErr(null);
     setBusy(true);
 
-    // Live/test Paystack only when enabled + configured; otherwise simulate.
-    if (PAYSTACK_LIVE && email) {
+    // Real Paystack only when the server confirms it's configured; else simulate.
+    if (live && email && PAYSTACK_KEY) {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const Paystack: any = await loadPaystack();
         const handler = Paystack.setup({
           key: PAYSTACK_KEY,
           email,
-          amount: Math.round(total * 100), // minor units (kobo/cents/pesewas)
+          amount: Math.round(total * PAYSTACK_RATE * 100), // minor units (cents/pesewas)
           currency: PAYSTACK_CURRENCY,
           ref: `libry-${Date.now()}`,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -257,14 +262,14 @@ export default function CartDrawer({ email }: { email?: string }) {
               onMouseEnter={(e) => { if (!busy) e.currentTarget.style.filter = "brightness(1.05)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.filter = "none"; }}
             >
-              {busy ? "Processing…" : PAYSTACK_LIVE ? `Pay ${formatPrice(total)}` : `Checkout — ${formatPrice(total)}`}
+              {busy ? "Processing…" : live ? `Pay ${formatPrice(total)}` : `Checkout — ${formatPrice(total)}`}
             </button>
 
             {err ? (
               <p style={{ color: "var(--terracotta)", fontSize: "0.8rem", textAlign: "center", margin: 0 }}>{err}</p>
             ) : (
               <p style={{ color: "var(--muted)", fontSize: "0.76rem", textAlign: "center", margin: 0, lineHeight: 1.5 }}>
-                {PAYSTACK_LIVE ? "🔒 Secured by Paystack" : "🔒 Free while we finish secure payments — no card needed."}
+                {live ? "🔒 Secured by Paystack" : "🔒 Free while we finish secure payments — no card needed."}
               </p>
             )}
           </footer>
