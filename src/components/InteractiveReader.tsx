@@ -81,7 +81,7 @@ export default function InteractiveReader({
         <span style={{ color: PAL.muted, fontFamily: "var(--sans)", fontSize: "0.78rem", flexShrink: 0 }}>{atEnd ? "The End" : `${idx + 1} / ${total}`}</span>
       </div>
 
-      <article style={{ maxWidth: 680, margin: "0 auto", padding: "2.5rem clamp(1.1rem,4vw,2rem) 6rem" }}>
+      <article data-rc-book style={{ maxWidth: 680, margin: "0 auto", padding: "2.5rem clamp(1.1rem,4vw,2rem) 6rem" }}>
         {atEnd ? (
           <>
             <div style={{ textAlign: "center", fontFamily: "var(--sans)", fontSize: "0.78rem", letterSpacing: "0.14em", textTransform: "uppercase", color: PAL.gold, marginBottom: "0.5rem" }}>Your ending</div>

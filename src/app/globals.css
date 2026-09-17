@@ -555,6 +555,7 @@ body.has-rail { padding-left: var(--rail-w); }
 .rail-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .rail-avatar.lg { width: 40px; height: 40px; font-size: 0.95rem; }
 .rail-streak { padding: 0.15rem 0.5rem 0.35rem; min-height: 30px; overflow: hidden; }
+.rail-streak:empty { display: none; }
 
 /* Tooltip when collapsed (only when the rail is NOT expanded). */
 .rail-item::after {

@@ -95,7 +95,7 @@ export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
       if (!text || /\s/.test(text) || text.length < 4 || !/^[a-zA-Z'-]+$/.test(text)) return;
       const node = sel.anchorNode;
       const el = node && (node.nodeType === 3 ? node.parentElement : (node as Element));
-      if (!el || !el.closest(".rd-scope")) return; // only inside the book body
+      if (!el || !el.closest(".rd-scope, [data-rc-book]")) return; // only inside the book body
       let rect: DOMRect | null = null;
       try {
         rect = sel.getRangeAt(0).getBoundingClientRect();
