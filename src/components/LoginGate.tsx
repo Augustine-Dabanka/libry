@@ -613,9 +613,14 @@ export default function LoginGate({
                     </>
                   )}
 
-                  <button className="btn btn-gold" type="submit" style={{ width: "100%", justifyContent: "center", marginTop: "1.1rem" }}>
-                    {view === "LOGIN" ? "Sign in" : "Create account"}
-                  </button>
+                  <div style={{ display: "flex", gap: "0.5rem", marginTop: "1.1rem" }}>
+                    <button className="btn btn-gold" type="submit" style={{ flex: 1, justifyContent: "center" }}>
+                      {view === "LOGIN" ? "Sign in" : "Create account"}
+                    </button>
+                    <button type="button" onClick={() => switchView("QR")} title="Sign in with a QR code" aria-label="Sign in with a QR code" className="btn" style={{ flexShrink: 0, width: 48, padding: 0, justifyContent: "center", background: "transparent", color: "var(--ivory)", border: "1px solid var(--border)" }}>
+                      <QrCode size={19} />
+                    </button>
+                  </div>
                 </form>
               )}
             </motion.div>
@@ -642,9 +647,6 @@ export default function LoginGate({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <DiscordButton next={next || "/home"} role={view === "REGISTER" ? accountType : undefined} />
               </div>
-              <button type="button" onClick={() => switchView("QR")} title="Sign in with a QR code" aria-label="Sign in with a QR code" className="btn" style={{ flexShrink: 0, width: 46, padding: 0, justifyContent: "center", background: "transparent", color: "var(--ivory)", border: "1px solid var(--border)" }}>
-                <QrCode size={19} />
-              </button>
             </div>
           </motion.div>
         ) : null}

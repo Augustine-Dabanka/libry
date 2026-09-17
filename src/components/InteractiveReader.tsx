@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { type IStory, resolveEnding } from "@/lib/interactive";
+import ReaderCompanion from "@/components/ReaderCompanion";
 
 const PAL = { bg: "#1C1917", fg: "#EDE7DE", muted: "#A8A29E", bar: "rgba(250,247,242,0.12)", gold: "#C5A059" };
 
@@ -76,8 +77,8 @@ export default function InteractiveReader({
       </div>
       <div style={{ position: "sticky", top: 4, zIndex: 5, display: "flex", alignItems: "center", gap: "1rem", padding: "0.7rem clamp(1rem,4vw,2rem)", background: "rgba(28,25,23,0.85)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${PAL.bar}` }}>
         <button type="button" onClick={goBackToBook} style={{ background: "transparent", border: "none", color: PAL.muted, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>← Back</button>
-        <span style={{ flex: 1, textAlign: "center", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.98rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
-        <span style={{ color: PAL.muted, fontFamily: "var(--sans)", fontSize: "0.78rem" }}>{atEnd ? "The End" : `${idx + 1} / ${total}`}</span>
+        <button type="button" onClick={goBackToBook} title="Back to the book page" aria-label={`${title} — back to the book page`} style={{ flex: 1, minWidth: 0, textAlign: "center", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.98rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", background: "transparent", border: "none", color: "inherit", cursor: "pointer", padding: 0 }}>{title}</button>
+        <span style={{ color: PAL.muted, fontFamily: "var(--sans)", fontSize: "0.78rem", flexShrink: 0 }}>{atEnd ? "The End" : `${idx + 1} / ${total}`}</span>
       </div>
 
       <article style={{ maxWidth: 680, margin: "0 auto", padding: "2.5rem clamp(1.1rem,4vw,2rem) 6rem" }}>
@@ -135,6 +136,7 @@ export default function InteractiveReader({
           </>
         ) : null}
       </article>
+      <ReaderCompanion dark />
     </div>
   );
 }

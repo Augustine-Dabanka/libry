@@ -610,6 +610,23 @@ body.has-rail { padding-left: var(--rail-w); }
   .railnav, .rail-label, .rail-flyout, .rail-usermenu, .rail-item::after { transition: none !important; }
 }
 
+/* ========== CREATOR DASHBOARD TABS ========== */
+.ct-tabbar {
+  display: flex; gap: 0.25rem; overflow-x: auto; scrollbar-width: none;
+  border-bottom: 1px solid var(--border); margin-bottom: 2rem; padding-bottom: 1px;
+}
+.ct-tabbar::-webkit-scrollbar { display: none; }
+.ct-tab {
+  display: inline-flex; align-items: center; gap: 0.45rem; flex-shrink: 0;
+  background: transparent; border: none; cursor: pointer;
+  padding: 0.7rem 0.95rem; margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted); font-family: var(--sans); font-weight: 600; font-size: 0.92rem;
+  white-space: nowrap; transition: color 0.15s ease, border-color 0.15s ease;
+}
+.ct-tab:hover { color: var(--ivory); }
+.ct-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
 /* ========== HERO ========== */
 .hero {
   display: flex;

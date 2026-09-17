@@ -8,6 +8,8 @@ import ReferralLink from "@/components/ReferralLink";
 import RevenueChart from "@/components/RevenueChart";
 import CreatorProfileForm from "@/components/CreatorProfileForm";
 import BecomeCreator from "@/components/BecomeCreator";
+import CreatorTabs, { type CreatorTab } from "@/components/CreatorTabs";
+import { isCreatorActive, creatorStatusMeta } from "@/lib/creatorStatus";
 import { formatPrice } from "@/lib/types";
 
 type MyBook = {
@@ -41,6 +43,25 @@ export default async function CreatorDashboard() {
   // Readers can't publish. If the column isn't migrated, default to allowing
   // (so nothing breaks before the migration is run).
   const isCreator = primaryProfile.error ? true : !!profile?.is_creator;
+
+  // Creator standing (ban engine). Queried separately + guarded so the page
+  // still works before migration 0021 is run (defaults to "active").
+  let creatorStatus = "active";
+  let statusReason: string | null = null;
+  let statusUntil: string | null = null;
+  let payoutFrozen = false;
+  {
+    const st = await supabase.from("profiles").select("creator_status, creator_status_reason, creator_status_until, payout_frozen").eq("id", user.id).maybeSingle();
+    if (!st.error && st.data) {
+      const d = st.data as { creator_status?: string; creator_status_reason?: string | null; creator_status_until?: string | null; payout_frozen?: boolean };
+      creatorStatus = d.creator_status ?? "active";
+      statusReason = d.creator_status_reason ?? null;
+      statusUntil = d.creator_status_until ?? null;
+      payoutFrozen = !!d.payout_frozen;
+    }
+  }
+  const active = isCreatorActive(creatorStatus);
+  const statusMeta = creatorStatusMeta(creatorStatus, statusUntil, statusReason);
 
   const rc = await supabase.rpc("my_referral_count");
   const referralCount = typeof rc.data === "number" ? rc.data : 0;
@@ -140,149 +161,187 @@ export default async function CreatorDashboard() {
           <BecomeCreator />
         ) : (
           <>
+            {/* Account-standing banner (only when suspended/banned) */}
+            {!active ? (
+              <div style={{ marginBottom: "2rem", padding: "1.1rem 1.3rem", borderRadius: 14, border: `1px solid ${statusMeta.tone === "bad" ? "rgba(196,85,63,0.5)" : "rgba(217,164,65,0.5)"}`, background: statusMeta.tone === "bad" ? "rgba(196,85,63,0.10)" : "rgba(217,164,65,0.10)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.4rem" }}>
+                  <span style={{ fontSize: "1.1rem" }}>{statusMeta.tone === "bad" ? "⛔" : "⏸️"}</span>
+                  <strong style={{ fontFamily: "var(--sans)", color: "var(--ivory)" }}>{statusMeta.heading}</strong>
+                </div>
+                <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.6, margin: 0 }}>{statusMeta.blurb}</p>
+              </div>
+            ) : null}
 
-        {/* Stat cards */}
-        <div className="stats-grid">
-          {stat("Projected earnings", formatPrice(netEarnings), "Your 70% at list price")}
-          {stat("Books sold", String(salesCount), "Copies acquired")}
-          {stat("Next payout", formatPrice(netEarnings), "When payouts open")}
-          {stat("Avg Rating", avgRating ? avgRating.toFixed(1) : "—", "Across your titles")}
-        </div>
-
-        {/* Revenue overview */}
-        <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "2.5rem" }}>
-          <h3 style={{ marginBottom: "1.2rem" }}>Revenue Overview</h3>
-          <RevenueChart daily={revenue7} />
-        </div>
-
-        {/* How you get paid */}
-        <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "2.5rem" }}>
-          <h3 style={{ marginBottom: "0.3rem" }}>How you get paid</h3>
-          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginBottom: "1.2rem" }}>
-            You keep the majority of every sale — openly, on this dashboard.
-          </p>
-          {/* 70 / 30 split bar */}
-          <div style={{ display: "flex", height: 40, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem" }}>
-            <div style={{ flex: 70, background: "var(--gold)", color: "#12100E", display: "flex", alignItems: "center", justifyContent: "center" }}>You keep 70%</div>
-            <div style={{ flex: 30, background: "var(--charcoal)", color: "var(--ivory-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>Libry 30%</div>
-          </div>
-          <ul style={{ margin: "1.2rem 0 0", paddingLeft: "1.1rem", color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.7 }}>
-            <li>Every purchase of your book credits <strong style={{ color: "var(--ivory)" }}>70% of the price</strong> to you — the &ldquo;Projected earnings&rdquo; figure above.</li>
-            <li>Libry keeps 30% to run the platform (hosting, payments, discovery).</li>
-            <li>Payments are simulating while we finish setup, so these are projected at current prices. <strong style={{ color: "var(--ivory)" }}>Real payouts begin via LemonSqueezy</strong> once the merchant account is verified.</li>
-            <li>You keep your readers — followers, reviews, and the relationship — always.</li>
-          </ul>
-        </div>
-
-        {/* Author profile — powers "About the Author" on your books */}
-        <CreatorProfileForm userId={user.id} initialPenName={profile?.pen_name || profile?.full_name || ""} initialBio={profile?.bio || ""} />
-
-        {/* Create — write chapter by chapter, or import a manuscript */}
-        <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "2.5rem" }}>
-          <h3 style={{ marginBottom: "0.3rem" }}>Create a new story</h3>
-          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginBottom: "1.3rem" }}>
-            Write it chapter by chapter in the editor, or import a finished manuscript and we&apos;ll lay it out for you.
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem", alignItems: "start" }}>
-            {/* Option A — Chapter editor */}
-            <div style={{ background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.2rem 1.2rem 1.3rem" }}>
-              <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.3rem" }}>✍️ Write in the Chapter Editor</div>
-              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", marginBottom: "1rem" }}>
-                Start a blank draft and build it chapter by chapter, with images and branching choices.
-              </p>
-              <NewStoryButton userId={user.id} authorName={authorName} />
-            </div>
-            {/* Option B — Manuscript upload */}
-            <div style={{ background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.2rem" }}>
-              <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.3rem" }}>📄 Upload a manuscript</div>
-              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", marginBottom: "1rem" }}>
-                Drop in a PDF, Word doc, or text file — we&apos;ll import it as a draft you can edit.
-              </p>
-              <QuickUpload userId={user.id} authorName={authorName} />
-            </div>
-          </div>
-        </div>
-
-        {/* Your Books table */}
-        <h3 style={{ marginBottom: "1.2rem" }}>Your Books ({books.length})</h3>
-        {books.length > 0 ? (
-          <div style={{ overflowX: "auto", marginBottom: "3rem" }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Title</th><th>Type</th><th>Sales</th><th>Revenue</th><th>Rating</th><th>Status</th><th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {books.map((b) => (
-                  <tr key={b.id}>
-                    <td><a href={`/book/${b.id}`} style={{ color: "var(--ivory)", fontFamily: "var(--serif)" }}>{b.title}</a></td>
-                    <td>{b.type || "—"}</td>
-                    <td>{salesByBook.get(Number(b.id))?.sales ?? 0}</td>
-                    <td>{formatPrice(salesByBook.get(Number(b.id))?.revenue ?? 0)}</td>
-                    <td>{(b.rating ?? 0) > 0 ? (b.rating ?? 0).toFixed(1) : "—"}</td>
-                    <td>
-                      <span className="badge" style={b.is_published
-                        ? { background: "rgba(78,122,82,0.2)", color: "#7DBE86" }
-                        : { background: "rgba(168,162,158,0.2)", color: "var(--muted)" }}>
-                        {b.is_published ? "Live" : "Draft"}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", flexWrap: "wrap" }}>
-                        <PublishToggle bookId={Number(b.id)} published={!!b.is_published} />
-                        {b.is_published ? (
-                          <a className="btn btn-outline" href={`/b/${b.id}`} target="_blank" rel="noopener noreferrer" style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>Share ↗</a>
-                        ) : null}
-                        <a className="btn btn-outline" href={`/creator/edit/${b.id}`} style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>Edit</a>
-                        <DeleteBookButton bookId={Number(b.id)} title={b.title} />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p style={{ color: "var(--muted)", marginBottom: "3rem" }}>
-            You haven&apos;t created anything yet. Upload a manuscript or start a blank draft above to begin your first title.
-          </p>
-        )}
-
-        {/* Audience insights */}
-        <h3 style={{ marginBottom: "1.2rem" }}>Audience Insights</h3>
-        <div className="stats-grid" style={{ marginBottom: "2.5rem" }}>
-          {stat("Total Readers", String(totalReaders), "Unique readers of your books")}
-          {stat("Countries Reached", String(countriesReached), "Where your readers are")}
-          {stat("Top Country", topCountry, "Your biggest audience")}
-        </div>
-
-        {/* Invite readers */}
-        <ReferralLink refCode={refCode} count={referralCount} />
-
-        {/* Shared with you */}
-        {sharedBooks.length > 0 ? (
-          <>
-            <h3 style={{ margin: "1rem 0 1.2rem" }}>Shared with you ({sharedBooks.length})</h3>
-            <div className="book-grid">
-              {sharedBooks.map((b) => (
-                <div key={b.id} className="book-card" style={{ padding: "1.3rem", cursor: "default" }}>
-                  <a href={`/book/${b.id}`} style={{ textDecoration: "none" }}>
-                    <h3 style={{ marginBottom: "0.4rem" }}>{b.title}</h3>
-                  </a>
-                  <div className="book-meta">
-                    <span className="price">{formatPrice(b.price)}</span>
-                    {b.type ? <span className="badge">{b.type}</span> : null}
+            {(() => {
+              const overview = (
+                <>
+                  <div className="stats-grid">
+                    {stat("Projected earnings", formatPrice(netEarnings), "Your 70% at list price")}
+                    {stat("Books sold", String(salesCount), "Copies acquired")}
+                    {stat("Next payout", payoutFrozen ? "On hold" : formatPrice(netEarnings), payoutFrozen ? "Payouts frozen" : "When payouts open")}
+                    {stat("Avg Rating", avgRating ? avgRating.toFixed(1) : "—", "Across your titles")}
                   </div>
-                  <div style={{ display: "flex", gap: "0.6rem", marginTop: "0.9rem", flexWrap: "wrap" }}>
-                    <span className="badge" style={{ background: "rgba(124,124,180,0.2)", color: "#B7B7E6" }}>Co-author</span>
-                    <a className="btn btn-outline" href={`/creator/edit/${b.id}`} style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>Edit</a>
+                  <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "2.5rem" }}>
+                    <h3 style={{ marginBottom: "1.2rem" }}>Revenue Overview</h3>
+                    <RevenueChart daily={revenue7} />
+                  </div>
+                  <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.5rem 1.6rem", marginBottom: "0.5rem" }}>
+                    <h3 style={{ marginBottom: "0.3rem" }}>How you get paid</h3>
+                    <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginBottom: "1.2rem" }}>
+                      You keep the majority of every sale — openly, on this dashboard.
+                    </p>
+                    <div style={{ display: "flex", height: 40, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem" }}>
+                      <div style={{ flex: 70, background: "var(--gold)", color: "#12100E", display: "flex", alignItems: "center", justifyContent: "center" }}>You keep 70%</div>
+                      <div style={{ flex: 30, background: "var(--charcoal)", color: "var(--ivory-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>Libry 30%</div>
+                    </div>
+                    <ul style={{ margin: "1.2rem 0 0", paddingLeft: "1.1rem", color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.7 }}>
+                      <li>Every purchase of your book credits <strong style={{ color: "var(--ivory)" }}>70% of the price</strong> to you — the &ldquo;Projected earnings&rdquo; figure above.</li>
+                      <li>Libry keeps 30% to run the platform (hosting, payments, discovery).</li>
+                      <li>Payments are simulating while we finish setup, so these are projected at current prices. <strong style={{ color: "var(--ivory)" }}>Real payouts begin via Paystack</strong> once the merchant account is verified.</li>
+                      <li>You keep your readers — followers, reviews, and the relationship — always.</li>
+                    </ul>
+                  </div>
+                </>
+              );
+
+              const booksNode = (
+                <>
+                  <h3 style={{ marginBottom: "1.2rem" }}>Your Books ({books.length})</h3>
+                  {books.length > 0 ? (
+                    <div style={{ overflowX: "auto", marginBottom: "3rem" }}>
+                      <table className="data-table">
+                        <thead>
+                          <tr><th>Title</th><th>Type</th><th>Sales</th><th>Revenue</th><th>Rating</th><th>Status</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                          {books.map((b) => (
+                            <tr key={b.id}>
+                              <td><a href={`/book/${b.id}`} style={{ color: "var(--ivory)", fontFamily: "var(--serif)" }}>{b.title}</a></td>
+                              <td>{b.type || "—"}</td>
+                              <td>{salesByBook.get(Number(b.id))?.sales ?? 0}</td>
+                              <td>{formatPrice(salesByBook.get(Number(b.id))?.revenue ?? 0)}</td>
+                              <td>{(b.rating ?? 0) > 0 ? (b.rating ?? 0).toFixed(1) : "—"}</td>
+                              <td>
+                                <span className="badge" style={b.is_published ? { background: "rgba(78,122,82,0.2)", color: "#7DBE86" } : { background: "rgba(168,162,158,0.2)", color: "var(--muted)" }}>
+                                  {b.is_published ? "Live" : "Draft"}
+                                </span>
+                              </td>
+                              <td>
+                                {active ? (
+                                  <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", flexWrap: "wrap" }}>
+                                    <PublishToggle bookId={Number(b.id)} published={!!b.is_published} />
+                                    {b.is_published ? (
+                                      <a className="btn btn-outline" href={`/b/${b.id}`} target="_blank" rel="noopener noreferrer" style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>Share ↗</a>
+                                    ) : null}
+                                    <a className="btn btn-outline" href={`/creator/edit/${b.id}`} style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>Edit</a>
+                                    <DeleteBookButton bookId={Number(b.id)} title={b.title} />
+                                  </div>
+                                ) : (
+                                  <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem" }}>🔒 Publishing paused</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p style={{ color: "var(--muted)", marginBottom: "3rem" }}>
+                      You haven&apos;t created anything yet. Head to <strong style={{ color: "var(--ivory)" }}>Create</strong> to start your first title.
+                    </p>
+                  )}
+                  {sharedBooks.length > 0 ? (
+                    <>
+                      <h3 style={{ margin: "1rem 0 1.2rem" }}>Shared with you ({sharedBooks.length})</h3>
+                      <div className="book-grid">
+                        {sharedBooks.map((b) => (
+                          <div key={b.id} className="book-card" style={{ padding: "1.3rem", cursor: "default" }}>
+                            <a href={`/book/${b.id}`} style={{ textDecoration: "none" }}><h3 style={{ marginBottom: "0.4rem" }}>{b.title}</h3></a>
+                            <div className="book-meta">
+                              <span className="price">{formatPrice(b.price)}</span>
+                              {b.type ? <span className="badge">{b.type}</span> : null}
+                            </div>
+                            <div style={{ display: "flex", gap: "0.6rem", marginTop: "0.9rem", flexWrap: "wrap" }}>
+                              <span className="badge" style={{ background: "rgba(124,124,180,0.2)", color: "#B7B7E6" }}>Co-author</span>
+                              <a className="btn btn-outline" href={`/creator/edit/${b.id}`} style={{ padding: "0.3rem 0.9rem", fontSize: "0.8rem" }}>Edit</a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
+                </>
+              );
+
+              const createNode = active ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem", alignItems: "start" }}>
+                  <div style={{ background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.2rem 1.2rem 1.3rem" }}>
+                    <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.3rem" }}>✍️ Write in the Chapter Editor</div>
+                    <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", marginBottom: "1rem" }}>
+                      Start a blank draft and build it chapter by chapter, with images and branching choices.
+                    </p>
+                    <NewStoryButton userId={user.id} authorName={authorName} />
+                  </div>
+                  <div style={{ background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.2rem" }}>
+                    <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.3rem" }}>📄 Upload a manuscript</div>
+                    <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", marginBottom: "1rem" }}>
+                      Drop in a PDF, Word doc, or text file — we&apos;ll import it as a draft you can edit.
+                    </p>
+                    <QuickUpload userId={user.id} authorName={authorName} />
                   </div>
                 </div>
-              ))}
-            </div>
-          </>
-        ) : null}
+              ) : (
+                <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "2rem 1.6rem", textAlign: "center" }}>
+                  <div style={{ fontSize: "1.6rem", marginBottom: "0.5rem" }}>🔒</div>
+                  <h3 style={{ marginBottom: "0.4rem" }}>Publishing is paused</h3>
+                  <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", maxWidth: 440, margin: "0 auto", lineHeight: 1.6 }}>{statusMeta.blurb}</p>
+                </div>
+              );
+
+              const audienceNode = (
+                <>
+                  <h3 style={{ marginBottom: "1.2rem" }}>Audience Insights</h3>
+                  <div className="stats-grid" style={{ marginBottom: "2.5rem" }}>
+                    {stat("Total Readers", String(totalReaders), "Unique readers of your books")}
+                    {stat("Countries Reached", String(countriesReached), "Where your readers are")}
+                    {stat("Top Country", topCountry, "Your biggest audience")}
+                  </div>
+                  <ReferralLink refCode={refCode} count={referralCount} />
+                </>
+              );
+
+              const profileNode = (
+                <CreatorProfileForm userId={user.id} initialPenName={profile?.pen_name || profile?.full_name || ""} initialBio={profile?.bio || ""} />
+              );
+
+              const accountNode = (
+                <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.6rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.8rem" }}>
+                    <span className="badge" style={{ background: statusMeta.tone === "ok" ? "rgba(78,122,82,0.2)" : statusMeta.tone === "warn" ? "rgba(217,164,65,0.2)" : "rgba(196,85,63,0.2)", color: statusMeta.tone === "ok" ? "#7DBE86" : statusMeta.tone === "warn" ? "#D9A441" : "#E0836B", fontWeight: 700 }}>{statusMeta.label}</span>
+                    <strong style={{ fontFamily: "var(--sans)", color: "var(--ivory)" }}>{statusMeta.heading}</strong>
+                  </div>
+                  <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.6, marginBottom: "1.3rem" }}>{statusMeta.blurb}</p>
+                  <div style={{ display: "grid", gap: "0.7rem", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Reading &amp; library</span><span style={{ color: "#7DBE86" }}>Always available</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Publishing new work</span><span style={{ color: active ? "#7DBE86" : "var(--muted)" }}>{active ? "Available" : "Paused"}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Payouts</span><span style={{ color: active && !payoutFrozen ? "#7DBE86" : "var(--muted)" }}>{active && !payoutFrozen ? "Enabled (once verified)" : "Frozen"}</span></div>
+                  </div>
+                  <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", marginTop: "1.3rem", lineHeight: 1.6 }}>
+                    Standing is governed by our <a href="/terms" style={{ color: "var(--gold)" }}>Terms</a>. If you believe this is a mistake, contact support and we&apos;ll review.
+                  </p>
+                </div>
+              );
+
+              const tabs: CreatorTab[] = [
+                { id: "overview", label: "Overview", icon: "📊", node: overview },
+                { id: "books", label: "Your Books", icon: "📚", node: booksNode },
+                { id: "create", label: "Create", icon: "✍️", node: createNode },
+                { id: "audience", label: "Audience", icon: "🌍", node: audienceNode },
+                { id: "profile", label: "Profile", icon: "👤", node: profileNode },
+                { id: "account", label: "Account", icon: "🛡️", node: accountNode },
+              ];
+              return <CreatorTabs tabs={tabs} />;
+            })()}
           </>
         )}
       </section>

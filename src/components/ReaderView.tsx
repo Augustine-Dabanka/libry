@@ -119,6 +119,15 @@ const READER_ENHANCE_CSS = `
 @media (max-width: 380px) {
   .rd-topbar-title { display: none; }
 }
+
+/* Reading-options dropdown rows */
+.rd-menu-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 0.5rem 0.55rem; border-radius: 8px;
+  font-family: var(--sans); font-size: 0.88rem;
+}
+.rd-menu-row + .rd-menu-row { border-top: 1px solid rgba(128,128,128,0.18); }
+.rd-menu-row > span:first-child { opacity: 0.75; }
 `;
 
 export default function ReaderView({
@@ -149,6 +158,7 @@ export default function ReaderView({
   const router = useRouter();
   const [theme, setTheme] = useState<Theme>("dark");
   const [fontSize, setFontSize] = useState(1.14);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Back to the book. If we arrived from the book page, pop it off history
   // (router.back) so a second Back doesn't bounce back into the reader; else go
@@ -447,6 +457,19 @@ export default function ReaderView({
     return () => window.removeEventListener("keydown", onKey);
   }, [usePaged, nextPage, prevPage, openPara, tocOpen]);
 
+  // Close the reading-settings dropdown on outside click / Escape.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onDown(e: MouseEvent) {
+      const t = e.target as Element | null;
+      if (t && !t.closest(".rd-menu-wrap")) setMenuOpen(false);
+    }
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setMenuOpen(false); }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [menuOpen]);
+
   // Swipe navigation.
   const touchX = useRef<number | null>(null);
   function onTouchStart(e: React.TouchEvent) { touchX.current = e.changedTouches[0]?.clientX ?? null; }
@@ -588,20 +611,42 @@ export default function ReaderView({
         {chapters.length > 1 ? (
           <button type="button" className="rd-toc-btn" onClick={() => setTocOpen(true)} style={{ color: pal.muted }} aria-label="Table of contents" aria-expanded={tocOpen}>☰ <span className="rd-toc-label">Contents</span></button>
         ) : null}
-        <span className="rd-topbar-title" style={{ flex: 1, minWidth: 0, textAlign: "center", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.98rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
+        <button type="button" className="rd-topbar-title" onClick={goBackToBook} title="Back to the book page" aria-label={`${title} — back to the book page`} style={{ flex: 1, minWidth: 0, textAlign: "center", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.98rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", background: "transparent", border: "none", color: "inherit", cursor: "pointer", padding: 0 }}>{title}</button>
         <div className="rd-ctrls" style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexShrink: 0 }}>
           {!usePaged ? (
             <span aria-label={`${progress} percent read`} style={{ fontFamily: "var(--sans)", fontSize: "0.72rem", color: pal.muted, minWidth: 34, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{progress}%</span>
           ) : null}
-          {canPage ? (
-            <button onClick={() => setPaged((v) => !v)} style={ctrl(pal)} aria-label={paged ? "Switch to scrolling" : "Switch to pages"} title={paged ? "Scrolling view" : "Book (paged) view"}>
-              {paged ? "≣" : "▤"}
+          {/* All the reading controls live in one tidy dropdown now. */}
+          <div className="rd-menu-wrap" style={{ position: "relative" }}>
+            <button type="button" onClick={() => setMenuOpen((v) => !v)} style={ctrl(pal)} aria-haspopup="true" aria-expanded={menuOpen} aria-label="Reading options" title="Reading options">
+              Aa <span style={{ fontSize: "0.6rem" }}>▾</span>
             </button>
-          ) : null}
-          <button onClick={() => setFontSize((s) => Math.max(0.9, s - 0.08))} style={ctrl(pal)} aria-label="Smaller text">A−</button>
-          <button onClick={() => setFontSize((s) => Math.min(1.6, s + 0.08))} style={ctrl(pal)} aria-label="Larger text">A+</button>
-          <button onClick={() => setTheme((t) => (t === "dark" ? "sepia" : "dark"))} style={ctrl(pal)} aria-label="Toggle reading theme">{theme === "dark" ? "☀" : "☾"}</button>
-          <ShareButton path={`/book/${bookId}`} title={title} variant="chip" />
+            {menuOpen ? (
+              <div className="rd-menu" style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, minWidth: 220, background: pal.bg, color: pal.fg, border: `1px solid ${pal.bar}`, borderRadius: 12, padding: "0.5rem", boxShadow: "0 20px 50px rgba(0,0,0,0.45)", zIndex: 80 }} role="menu">
+                <div className="rd-menu-row">
+                  <span>Text size</span>
+                  <span style={{ display: "inline-flex", gap: "0.3rem" }}>
+                    <button type="button" onClick={() => setFontSize((s) => Math.max(0.9, s - 0.08))} style={ctrl(pal)} aria-label="Smaller text">A−</button>
+                    <button type="button" onClick={() => setFontSize((s) => Math.min(1.6, s + 0.08))} style={ctrl(pal)} aria-label="Larger text">A+</button>
+                  </span>
+                </div>
+                <div className="rd-menu-row">
+                  <span>Reading theme</span>
+                  <button type="button" onClick={() => setTheme((t) => (t === "dark" ? "sepia" : "dark"))} style={ctrl(pal)} aria-label="Toggle reading theme">{theme === "dark" ? "☀ Sepia" : "☾ Dark"}</button>
+                </div>
+                {canPage ? (
+                  <div className="rd-menu-row">
+                    <span>Layout</span>
+                    <button type="button" onClick={() => setPaged((v) => !v)} style={ctrl(pal)} aria-label={paged ? "Switch to scrolling" : "Switch to pages"}>{paged ? "≣ Scroll" : "▤ Pages"}</button>
+                  </div>
+                ) : null}
+                <div className="rd-menu-row">
+                  <span>Share</span>
+                  <ShareButton path={`/book/${bookId}`} title={title} variant="chip" />
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </>
