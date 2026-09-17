@@ -8,7 +8,7 @@ import StreakCard from "@/components/StreakCard";
 import { cartCount, onCartChange, openCart } from "@/lib/cart";
 
 /* ── line icons (22px, stroke = currentColor) ─────────────────────────────── */
-type IconName = "home" | "browse" | "spark" | "compass" | "library" | "medal" | "pen" | "heart" | "cart" | "theme" | "cog";
+type IconName = "home" | "browse" | "spark" | "compass" | "library" | "medal" | "pen" | "heart" | "cart" | "theme" | "cog" | "community";
 function Icon({ name }: { name: IconName }) {
   const p: React.SVGProps<SVGSVGElement> = { width: 21, height: 21, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
   switch (name) {
@@ -23,6 +23,7 @@ function Icon({ name }: { name: IconName }) {
     case "cart": return (<svg {...p}><path d="M4 5h2l1.6 10.5a1 1 0 0 0 1 .85h8.2a1 1 0 0 0 1-.8L20 8H7" /><circle cx="9.5" cy="20" r="1.1" /><circle cx="17.5" cy="20" r="1.1" /></svg>);
     case "theme": return (<svg {...p}><circle cx="12" cy="12" r="4.2" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" /></svg>);
     case "cog": return (<svg {...p}><circle cx="12" cy="12" r="3" /><path d="M12 3v2.2M12 18.8V21M4.2 7l1.9 1.1M17.9 15.9 19.8 17M4.2 17l1.9-1.1M17.9 8.1 19.8 7" /></svg>);
+    case "community": return (<svg {...p}><circle cx="9" cy="9" r="3" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 6.2a3 3 0 0 1 0 5.6M17.5 19a5.5 5.5 0 0 0-3-4.9" /></svg>);
   }
 }
 
@@ -33,6 +34,7 @@ const PRIMARY: RailItem[] = [
   { href: "/catalog", label: "Browse", icon: "browse", match: (p, q) => p === "/catalog" && !q.includes("type=Interactive") },
   { href: "/catalog?type=Interactive", label: "Interactive", icon: "spark", match: (p, q) => p === "/catalog" && q.includes("type=Interactive") },
   { href: "/discover", label: "Discover", icon: "compass" },
+  { href: "/community", label: "Community", icon: "community" },
   { href: "/my-library", label: "My Library", icon: "library" },
   { href: "/achievements", label: "Achievements", icon: "medal" },
   { href: "/creator", label: "Write", icon: "pen" },
@@ -336,6 +338,7 @@ export default function NavClient({
 
           <div className="mm-divider" />
 
+          <a className="mm-link" href="/community">Community</a>
           <a className="mm-link" href="/my-library">My Library</a>
           <a className="mm-link" href="/my-library?tab=wishlist">
             Wishlist{wishN > 0 ? <span className="mm-count">{wishN}</span> : null}
