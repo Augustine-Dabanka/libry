@@ -2,6 +2,8 @@
 // have no Libry account, so "About the Author" reads from this map instead of
 // showing "no bio yet". Keyed by the exact author name stored on the book.
 export const AUTHOR_BIOS: Record<string, string> = {
+  "Libry Originals":
+    "Libry Originals is our in-house studio — the imprint behind Libry's own short fiction and interactive, choose-your-path stories. Written and shaped by the Libry team, these are calm, character-first reads made to be lingered in: no cliffhanger traps, no coins, just stories worth your evening. New Originals arrive regularly, and many branch on the choices you make.",
   "Jane Austen":
     "Jane Austen (1775–1817) was an English novelist whose sharp, witty comedies of manners — including Pride and Prejudice, Emma and Sense and Sensibility — remain among the most beloved works in the English language.",
   "Mary Shelley":

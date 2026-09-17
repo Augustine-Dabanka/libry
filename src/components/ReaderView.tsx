@@ -588,6 +588,22 @@ export default function ReaderView({
           )}
         </div>
       ) : null}
+
+      {/* A real, clickable ending on EVERY full read — its own final page in
+          paged mode — that sends the reader back to the book (Read / Download). */}
+      {!sample && (isHtml || paragraphs.length > 0) ? (
+        <div className="rd-chapter" style={{ marginTop: "3rem", paddingTop: "1rem", textAlign: "center", fontFamily: "var(--sans)" }}>
+          <div className="rd-orn" aria-hidden="true">❦ ❦ ❦</div>
+          <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "1.7rem", color: pal.fg, margin: "0.6rem 0 0.4rem" }}>The End</div>
+          <p style={{ color: pal.muted, fontSize: "0.95rem", maxWidth: 420, margin: "0 auto 1.5rem", lineHeight: 1.6 }}>
+            You&apos;ve reached the end of <span style={{ fontStyle: "italic" }}>{title}</span>.
+          </p>
+          <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
+            <button type="button" onClick={goBackToBook} className="btn btn-gold">← Back to the book</button>
+            <a href={`/api/book/${bookId}/epub`} className="btn btn-outline">↓ Download EPUB</a>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 
