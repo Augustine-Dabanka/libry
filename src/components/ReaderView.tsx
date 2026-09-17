@@ -638,7 +638,7 @@ export default function ReaderView({
           onDelete={deleteComment}
         />
       ) : null}
-      {!locked ? <ReaderCompanion userId={userId} dark={theme === "dark"} /> : null}
+      {!locked ? <ReaderCompanion dark={theme === "dark"} /> : null}
     </>
   );
 

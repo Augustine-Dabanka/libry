@@ -49,7 +49,7 @@ async function lookupWord(raw: string): Promise<WordInfo> {
   return info;
 }
 
-export default function ReaderCompanion({ userId, dark = true }: { userId?: string | null; dark?: boolean }) {
+export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
   const [comp, setComp] = useState<Companion>(DEFAULT);
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([]);

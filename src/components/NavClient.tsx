@@ -7,8 +7,6 @@ import LogoutSurvey from "@/components/LogoutSurvey";
 import StreakCard from "@/components/StreakCard";
 import { cartCount, onCartChange, openCart } from "@/lib/cart";
 
-type Dd = null | "browse" | "user";
-
 /* ── line icons (22px, stroke = currentColor) ─────────────────────────────── */
 type IconName = "home" | "browse" | "spark" | "compass" | "library" | "medal" | "pen" | "heart" | "cart" | "theme" | "cog";
 function Icon({ name }: { name: IconName }) {
@@ -58,7 +56,6 @@ export default function NavClient({
   genres?: string[];
 }) {
   const pathname = usePathname() || "/";
-  const [dd, setDd] = useState<Dd>(null); // used by the mobile top bar dropdowns
   const [railMenu, setRailMenu] = useState<null | "browse" | "user">(null);
   const [mobile, setMobile] = useState(false);
   const [mSection, setMSection] = useState<null | "genres" | "discover">(null);
@@ -92,10 +89,10 @@ export default function NavClient({
   useEffect(() => {
     function onDown(e: MouseEvent) {
       const t = e.target as Element | null;
-      if (t && !t.closest("[data-dd-root]")) { setDd(null); setRailMenu(null); }
+      if (t && !t.closest("[data-dd-root]")) setRailMenu(null);
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") { setDd(null); setRailMenu(null); }
+      if (e.key === "Escape") setRailMenu(null);
     }
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
@@ -104,8 +101,6 @@ export default function NavClient({
       document.removeEventListener("keydown", onKey);
     };
   }, []);
-
-  const toggle = (which: Exclude<Dd, null>) => setDd((cur) => (cur === which ? null : which));
 
   function toggleTheme() {
     const root = document.documentElement;
