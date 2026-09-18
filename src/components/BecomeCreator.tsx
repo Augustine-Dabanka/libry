@@ -39,7 +39,7 @@ export default function BecomeCreator({ variant = "full" }: { variant?: "full" |
       <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.6rem", marginBottom: "0.5rem" }}>Become a creator</h2>
       <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.95rem", marginBottom: "1.4rem", lineHeight: 1.6 }}>
         You&apos;re signed in as a reader. Switch on a creator account to publish prose, comics and interactive stories —
-        and keep <strong style={{ color: "var(--ivory)" }}>70%</strong> of every sale. It&apos;s free, and you keep your reading account.
+        and keep <strong style={{ color: "var(--ivory)" }}>65%</strong> of every sale. It&apos;s free, and you keep your reading account.
       </p>
       <button type="button" className="btn btn-gold" onClick={upgrade} disabled={pending} style={{ fontSize: "1rem", padding: "0.8rem 1.6rem" }}>
         {pending ? "Setting you up…" : "Become a creator →"}

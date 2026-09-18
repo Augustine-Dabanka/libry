@@ -63,7 +63,7 @@ export default function FinancePanel({
     <div style={{ display: "grid", gap: "1.5rem" }}>
       {/* Balance tiles */}
       <div className="stats-grid">
-        <div className="stat-card"><div className="label">Total earned (net 70%)</div><div className="value">{formatPrice(net)}</div><div className="change" style={{ color: "var(--muted)" }}>Your share of all sales</div></div>
+        <div className="stat-card"><div className="label">Total earned (net 65%)</div><div className="value">{formatPrice(net)}</div><div className="change" style={{ color: "var(--muted)" }}>Your share of all sales</div></div>
         <div className="stat-card"><div className="label">Available</div><div className="value" style={{ color: "var(--gold)" }}>{formatPrice(available)}</div><div className="change" style={{ color: "var(--muted)" }}>Ready to withdraw</div></div>
         <div className="stat-card"><div className="label">Pending</div><div className="value">{formatPrice(pending)}</div><div className="change" style={{ color: "var(--muted)" }}>Requested, not yet paid</div></div>
         <div className="stat-card"><div className="label">Paid out</div><div className="value">{formatPrice(paid)}</div><div className="change" style={{ color: "var(--muted)" }}>Lifetime</div></div>

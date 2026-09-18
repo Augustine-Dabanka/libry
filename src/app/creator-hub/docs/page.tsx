@@ -19,7 +19,7 @@ function Content({ tab }: { tab: string }) {
           <li>Add a cover; illustrated stories can drop images inline in the editor.</li>
         </ul>
         <h4>Earning</h4>
-        <p>Everyone can publish. Earning unlocks at <strong>6 books sold</strong> and <strong>15 successful referrals</strong> — track both in your dashboard&apos;s Monetization panel. You keep 70%.</p>
+        <p>Everyone can publish. Earning unlocks at <strong>6 books sold</strong> and <strong>15 successful referrals</strong> — track both in your dashboard&apos;s Monetization panel. You keep 65%.</p>
         <h4>Promotion</h4>
         <p>Use the <strong>Promote</strong> modal to sponsor a slot in the home-page <strong>Featured Stories</strong> carousel. Promotion is separate from organic ranking.</p>
       </>

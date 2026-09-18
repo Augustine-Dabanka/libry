@@ -36,7 +36,7 @@ export default async function WaitlistPage({
 
         <p style={{ fontFamily: "var(--sans)", fontSize: "1.1rem", lineHeight: 1.7, color: "var(--ivory-muted)", maxWidth: 560, marginBottom: "2rem" }}>
           Libry is a calm, beautiful home for reading — full of interactive stories and classics you can lose an evening
-          in. Creators keep <strong style={{ color: "var(--ivory)" }}>70%</strong>, own their readers, and publish in
+          in. Creators keep <strong style={{ color: "var(--ivory)" }}>65%</strong>, own their readers, and publish in
           minutes. Join the list and you&apos;ll be first through the door.
         </p>
 
@@ -46,7 +46,7 @@ export default async function WaitlistPage({
         <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", marginTop: "2.5rem", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>
           <span>📚 Full-length classics, free</span>
           <span>🌿 Choose-your-path stories</span>
-          <span>💛 70% to creators</span>
+          <span>💛 65% to creators</span>
         </div>
       </section>
     </main>

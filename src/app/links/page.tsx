@@ -15,7 +15,7 @@ const LINKS = [
   { emoji: "📚", title: "Read free", sub: "Classics & interactive stories, no card", href: "/catalog" },
   { emoji: "🌿", title: "Interactive stories", sub: "Choose-your-path tales", href: "/catalog?type=Interactive" },
   { emoji: "✦", title: "Libry Unlimited", sub: "One price, the whole library — coming soon", href: "/unlimited" },
-  { emoji: "✍️", title: "Become a creator", sub: "Publish in minutes · keep 70%", href: "/creator" },
+  { emoji: "✍️", title: "Become a creator", sub: "Publish in minutes · keep 65%", href: "/creator" },
 ];
 
 export default function LinksPage() {

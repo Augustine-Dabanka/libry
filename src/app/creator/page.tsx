@@ -70,7 +70,7 @@ export default async function CreatorDashboard() {
   const bs = await supabase.rpc("my_books_sold");
   const booksSold = typeof bs.data === "number" ? bs.data : 0;
 
-  // Real earnings from purchases of this creator's books (creators keep 70%).
+  // Real earnings from purchases of this creator's books (creators keep 65%).
   const earn = await supabase.rpc("my_earnings");
   const earnRow = (Array.isArray(earn.data) ? earn.data[0] : earn.data) as { gross?: number; net?: number; sales?: number } | null;
   const netEarnings = Number(earnRow?.net ?? 0);
@@ -226,7 +226,7 @@ export default async function CreatorDashboard() {
               const overview = (
                 <>
                   <div className="stats-grid">
-                    {stat("Projected earnings", formatPrice(netEarnings), "Your 70% at list price")}
+                    {stat("Projected earnings", formatPrice(netEarnings), "Your 65% at list price")}
                     {stat("Books sold", String(salesCount), "Copies acquired")}
                     {stat("Next payout", payoutFrozen ? "On hold" : formatPrice(netEarnings), payoutFrozen ? "Payouts frozen" : "When payouts open")}
                     {stat("Avg Rating", avgRating ? avgRating.toFixed(1) : "—", "Across your titles")}
@@ -241,12 +241,12 @@ export default async function CreatorDashboard() {
                       You keep the majority of every sale — openly, on this dashboard.
                     </p>
                     <div style={{ display: "flex", height: 40, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem" }}>
-                      <div style={{ flex: 70, background: "var(--gold)", color: "#12100E", display: "flex", alignItems: "center", justifyContent: "center" }}>You keep 70%</div>
-                      <div style={{ flex: 30, background: "var(--charcoal)", color: "var(--ivory-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>Libry 30%</div>
+                      <div style={{ flex: 65, background: "var(--gold)", color: "#12100E", display: "flex", alignItems: "center", justifyContent: "center" }}>You keep 65%</div>
+                      <div style={{ flex: 35, background: "var(--charcoal)", color: "var(--ivory-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>Libry 35%</div>
                     </div>
                     <ul style={{ margin: "1.2rem 0 0", paddingLeft: "1.1rem", color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.7 }}>
-                      <li>Every purchase of your book credits <strong style={{ color: "var(--ivory)" }}>70% of the price</strong> to you — the &ldquo;Projected earnings&rdquo; figure above.</li>
-                      <li>Libry keeps 30% to run the platform (hosting, payments, discovery).</li>
+                      <li>Every purchase of your book credits <strong style={{ color: "var(--ivory)" }}>65% of the price</strong> to you — the &ldquo;Projected earnings&rdquo; figure above.</li>
+                      <li>Libry keeps 35% to run the platform — a 30% platform cut plus a 5% platform &amp; infrastructure fee (hosting, payments, discovery).</li>
                       <li>Payments are simulating while we finish setup, so these are projected at current prices. <strong style={{ color: "var(--ivory)" }}>Real payouts begin via Paystack</strong> once the merchant account is verified.</li>
                       <li>You keep your readers — followers, reviews, and the relationship — always.</li>
                     </ul>

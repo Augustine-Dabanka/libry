@@ -63,7 +63,7 @@ export default function NavClient({
   const [railMenu, setRailMenu] = useState<null | "browse" | "user">(null);
   const [mobUser, setMobUser] = useState(false);
   const [mobile, setMobile] = useState(false);
-  const [mSection, setMSection] = useState<null | "genres" | "discover">(null);
+  const [mSection, setMSection] = useState<null | "genres" | "discover" | "community">(null);
   const [cartN, setCartN] = useState(0);
   const [wishN, setWishN] = useState(wishCount);
   const [search, setSearch] = useState("");
@@ -290,12 +290,6 @@ export default function NavClient({
             <button type="button" className="nav-icon-btn" title="Toggle theme" aria-label="Toggle light or dark" onClick={toggleTheme}>◑</button>
           ) : null}
 
-          {signedIn ? (
-            <a href="/notifications" className="icon-link" title="Notifications" aria-label="Notifications">
-              &#128276;{notifCount > 0 ? <span className="badge-count">{notifCount}</span> : null}
-            </a>
-          ) : null}
-
           <button type="button" className="icon-link" title="Cart" aria-label="Cart" onClick={openCart} style={{ background: "transparent", border: "none", cursor: "pointer", font: "inherit" }}>
             &#128722; <span className="badge-count">{cartN}</span>
           </button>
@@ -385,10 +379,24 @@ export default function NavClient({
 
           <div className="mm-divider" />
 
-          <a className="mm-link" href="/community">Community</a>
-          <a className="mm-link" href="/notifications">
-            Notifications{notifCount > 0 ? <span className="mm-count">{notifCount}</span> : null}
-          </a>
+          <div className="mm-group">
+            <button
+              type="button"
+              className={`mm-acc${mSection === "community" ? " open" : ""}`}
+              aria-expanded={mSection === "community"}
+              onClick={() => setMSection((s) => (s === "community" ? null : "community"))}
+            >
+              <span>Community{notifCount > 0 ? <span className="mm-count">{notifCount}</span> : null}</span>
+              <span className="mm-caret">▾</span>
+            </button>
+            <div className={`mm-sub${mSection === "community" ? " open" : ""}`}>
+              <a href="/community">Feed</a>
+              <a href="/notifications">
+                Notifications{notifCount > 0 ? <span className="mm-count">{notifCount}</span> : null}
+              </a>
+            </div>
+          </div>
+
           <a className="mm-link" href="/my-library">My Library</a>
           <a className="mm-link" href="/my-library?tab=wishlist">
             Wishlist{wishN > 0 ? <span className="mm-count">{wishN}</span> : null}

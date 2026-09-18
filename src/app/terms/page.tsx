@@ -40,7 +40,7 @@ export default function TermsPage() {
       <ul>
         <li><strong>You keep ownership</strong> of the work you publish. You grant Craft &amp; Anchor a worldwide, non-exclusive licence to host, display, distribute, and sell it on Libry while it is published, and to make copies as needed to operate the service.</li>
         <li>You are responsible for your content and confirm you have the rights to publish it.</li>
-        <li>Revenue share is <strong>70% to the creator</strong> of net sale proceeds, paid out per our payout schedule and subject to the enforcement rules below and to <strong>[MINIMUM PAYOUT / SCHEDULE]</strong>.</li>
+        <li>Revenue share is <strong>65% to the creator</strong> of net sale proceeds; Craft &amp; Anchor retains 35% — a 30% platform commission plus a 5% platform &amp; infrastructure fee (payment processing, hosting, and discovery). Payouts are made per our payout schedule and subject to the enforcement rules below and to <strong>[MINIMUM PAYOUT / SCHEDULE]</strong>.</li>
       </ul>
 
       <h2>6. Creator conduct &amp; enforcement</h2>

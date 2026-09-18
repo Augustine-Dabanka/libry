@@ -108,7 +108,7 @@ export default function NewBookForm({
     >
       <h3 style={{ marginBottom: "0.4rem" }}>Start a new story</h3>
       <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>
-        Saved as a draft — publish it from “Your Books” when it&apos;s ready. You keep 70%.
+        Saved as a draft — publish it from “Your Books” when it&apos;s ready. You keep 65%.
       </p>
 
       <label style={label}>Title</label>

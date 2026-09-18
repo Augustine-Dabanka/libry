@@ -41,7 +41,7 @@ export default async function UnlimitedPage({ searchParams }: { searchParams: Pr
               <span style={{ color: "var(--muted)", fontFamily: "var(--sans)" }}>/ month</span>
             </div>
             <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginTop: "0.5rem" }}>
-              Cancel anytime. Founding members lock this price for life. Writers still keep their 70%.
+              Cancel anytime. Founding members lock this price for life. Writers still keep their 65%.
             </p>
           </div>
           <div style={{ flex: 1, minWidth: 260 }}>
@@ -54,7 +54,7 @@ export default async function UnlimitedPage({ searchParams }: { searchParams: Pr
           {perk("📚", "The whole library", "Unlimited access to every premium title and interactive story — read as much as you like.")}
           {perk("🌿", "New stories weekly", "Fresh classics and Libry Originals added all the time, always included.")}
           {perk("🔖", "Read anywhere", "Your place syncs across devices, and the reader stays calm and distraction-free.")}
-          {perk("💛", "Writers still paid", "Subscriptions share back to the authors you actually read — 70% stays theirs.")}
+          {perk("💛", "Writers still paid", "Subscriptions share back to the authors you actually read — 65% stays theirs.")}
         </div>
 
         <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>

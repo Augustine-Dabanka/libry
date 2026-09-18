@@ -85,9 +85,20 @@ export default async function EditBook({
   return (
     <>
       <section className="section">
+        <a
+          href="/creator?tab=books"
+          style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", fontWeight: 600, marginBottom: "0.9rem" }}
+        >
+          ← Back to dashboard
+        </a>
         <div className="section-header">
           <h2>Edit story</h2>
         </div>
+        {book && allowed ? (
+          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.86rem", margin: "-0.4rem 0 1.2rem" }}>
+            You keep <strong style={{ color: "var(--ivory)" }}>65%</strong> of every sale · Libry keeps 35% (30% platform + 5% infra fee).
+          </p>
+        ) : null}
         {!book ? (
           <p style={{ color: "var(--muted)" }}>Story not found.</p>
         ) : !allowed ? (

@@ -130,7 +130,7 @@ export default function About() {
             {feature("🌿", "Choose your path", "Interactive stories branch on your choices — the same tale can end three different ways.")}
             {feature("✍️", "Publish in minutes", "Write chapter by chapter or import a manuscript. Your work goes live the moment you hit publish.")}
             {feature("🏅", "Level up", "Earn XP, streaks, and badges as you read — reading you can actually feel yourself getting better at.")}
-            {feature("💛", "Support creators", "Creators keep 70% of every sale. Buying a book here means the author actually gets paid.")}
+            {feature("💛", "Support creators", "Creators keep 65% of every sale. Buying a book here means the author actually gets paid.")}
             {feature("👥", "Read together", "Share a library with someone you love, and follow the same stories side by side.")}
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function About() {
           }}
         >
           {[
-            { big: "70%", small: "kept by creators on every sale" },
+            { big: "65%", small: "kept by creators on every sale" },
             { big: "3", small: "endings in every interactive tale" },
             { big: "0", small: "ads, ever — reading comes first" },
           ].map((s) => (

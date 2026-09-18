@@ -49,7 +49,7 @@ export default async function Landing() {
             </h1>
             <p className={s.sub}>
               A calm, curated bookstore with interactive, choose-your-path stories —
-              where readers come first and writers keep 70%.
+              where readers come first and writers keep 65%.
             </p>
             <div className={s.heroCta} style={{ marginTop: "1.7rem" }}>
               <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding">
@@ -60,7 +60,7 @@ export default async function Landing() {
               </a>
             </div>
             <div className={s.heroNote}>
-              <span className={s.dot} /> Free to start · 70% to creators · no card required
+              <span className={s.dot} /> Free to start · 65% to creators · no card required
             </div>
           </div>
 
@@ -73,7 +73,7 @@ export default async function Landing() {
       <div className={s.trust}>
         <div className={`${s.wrap} ${s.trustIn}`}>
           <div className={s.trustItem}>
-            <b>70%</b> to creators
+            <b>65%</b> to creators
           </div>
           <div className={s.trustItem}>
             <b>17</b> books to read free
@@ -94,7 +94,7 @@ export default async function Landing() {
             <div className={s.fcard}>
               <div className={s.ic}>💛</div>
               <h3>Writers get paid, openly</h3>
-              <p>70% of every sale, shown on a live dashboard, open to everyone from day one — not an invite-only trickle.</p>
+              <p>65% of every sale, shown on a live dashboard, open to everyone from day one — not an invite-only trickle.</p>
             </div>
             <div className={s.fcard}>
               <div className={s.ic}>🤝</div>
@@ -201,7 +201,7 @@ export default async function Landing() {
           <div>
             <span className={s.eyebrow}>For creators</span>
             <div className={s.big}>
-              70%<small>Yours on every sale</small>
+              65%<small>Yours on every sale</small>
             </div>
             <p className={s.sub} style={{ marginTop: "1.2rem", maxWidth: "40ch" }}>
               Publish in minutes, keep the majority, and see who&apos;s actually reading you.
@@ -226,7 +226,7 @@ export default async function Landing() {
             <div className={s.step}>
               <b>3</b>
               <span>
-                <strong>Publish</strong> — it goes live in the catalog instantly. Keep 70%, always.
+                <strong>Publish</strong> — it goes live in the catalog instantly. Keep 65%, always.
               </span>
             </div>
           </div>

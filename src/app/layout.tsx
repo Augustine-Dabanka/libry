@@ -8,7 +8,7 @@ import CookieBanner from "@/components/CookieBanner";
 export const metadata: Metadata = {
   title: "Libry — Stories worth lingering in",
   description:
-    "Curated books and interactive, choose-your-path storybooks. Free classics, honest reviews, and 70% to the creators you love.",
+    "Curated books and interactive, choose-your-path storybooks. Free classics, honest reviews, and 65% to the creators you love.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

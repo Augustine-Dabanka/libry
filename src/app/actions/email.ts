@@ -20,7 +20,7 @@ export async function sendWaitlistWelcome(
     heading: "You're on the list ✨",
     body:
       `${spot} Thanks for joining the ${what} waitlist.<br/><br/>` +
-      `We're building a calm, curated bookstore where readers come first and writers keep 70%. ` +
+      `We're building a calm, curated bookstore where readers come first and writers keep 65%. ` +
       `Want in sooner? Every friend who joins with your referral link moves you up.`,
     cta: { label: "Share your link", href: "https://libry-sigma.vercel.app/waitlist" },
   });
