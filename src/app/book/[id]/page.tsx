@@ -147,7 +147,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   let reviews: Review[] = [];
   const rv = await supabase
     .from("reviews")
-    .select("user_name, rating, body, created_at, user_id")
+    .select("id, user_name, rating, body, created_at, user_id")
     .eq("book_id", book.id)
     .order("created_at", { ascending: false });
   if (!rv.error) reviews = (rv.data ?? []) as Review[];
@@ -348,7 +348,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         ) : null}
 
         {/* Reviews */}
-        <ReviewsSection bookId={Number(book.id)} reviews={reviews} canReview={!!user} myReview={myReview} />
+        <ReviewsSection bookId={Number(book.id)} reviews={reviews} canReview={!!user} myReview={myReview} signedIn={!!user} />
 
         {/* Trust & safety */}
         <div style={{ marginTop: "2.5rem", paddingTop: "1.4rem", borderTop: "1px solid var(--border)" }}>
