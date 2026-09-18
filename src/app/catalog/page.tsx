@@ -115,7 +115,12 @@ export default async function Catalog({
       .select(withAge ? "id, title, author, price, type, is_free, age_rating, rating, category, cover_url" : "id, title, author, price, type, is_free, rating, category, cover_url");
     if (withAge) query = query.eq("is_published", true).in("age_rating", allowed);
     if (typeFilter) query = query.eq("type", typeFilter);
-    if (genreFilter) query = query.eq("category", genreFilter);
+    if (genreFilter) {
+      query = query.eq("category", genreFilter);
+      // Interactive is its own genre — keep interactive books out of the
+      // regular genre pages (Romance, Fantasy, …) so genres don't cross-mix.
+      if (typeFilter !== "Interactive") query = query.neq("type", "Interactive");
+    }
     if (freeOnly) query = query.or("price.eq.0,is_free.eq.true");
     if (paidOnly) query = query.gt("price", 0);
     if (safe) query = query.or(`title.ilike.%${safe}%,author.ilike.%${safe}%`);

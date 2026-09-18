@@ -30,3 +30,16 @@ export async function submitReview(bookId: number, rating: number, body: string)
   revalidatePath(`/book/${bookId}`);
   return { ok: true };
 }
+
+// Delete the caller's own review on a book.
+export async function deleteReview(bookId: number) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in first." };
+  const { error } = await supabase.from("reviews").delete().eq("book_id", bookId).eq("user_id", user.id);
+  if (error) return { error: error.message };
+  revalidatePath(`/book/${bookId}`);
+  return { ok: true };
+}

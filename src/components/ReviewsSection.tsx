@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { submitReview } from "@/app/actions/reviews";
+import { submitReview, deleteReview } from "@/app/actions/reviews";
 import Stars from "@/components/Stars";
 
 export type Review = { user_name: string | null; rating: number; body: string | null; created_at?: string | null; user_id?: string };
+
+function rvBtn(color = "var(--muted)"): React.CSSProperties {
+  return { background: "transparent", border: "1px solid var(--border)", borderRadius: 8, padding: "0.3rem 0.6rem", cursor: "pointer", color, fontFamily: "var(--sans)", fontSize: "0.78rem", fontWeight: 600 };
+}
 
 export default function ReviewsSection({
   bookId,
@@ -24,7 +28,35 @@ export default function ReviewsSection({
   const [body, setBody] = useState(myReview?.body || "");
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
   const [pending, start] = useTransition();
+  const formRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function startEdit() {
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => textareaRef.current?.focus(), 350);
+  }
+
+  async function copyReview(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {}
+  }
+
+  function del() {
+    start(async () => {
+      const res = await deleteReview(bookId);
+      if (res?.error) { setErr(res.error); return; }
+      setConfirmDel(false);
+      setBody("");
+      setRating(0);
+      router.refresh();
+    });
+  }
 
   function submit() {
     setErr(null);
@@ -46,7 +78,7 @@ export default function ReviewsSection({
       </h2>
 
       {canReview ? (
-        <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.3rem 1.4rem", marginBottom: "1.6rem" }}>
+        <div ref={formRef} style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.3rem 1.4rem", marginBottom: "1.6rem" }}>
           <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.6rem" }}>{myReview ? "Update your review" : "Write a review"}</div>
           <div style={{ display: "flex", gap: "0.2rem", marginBottom: "0.8rem" }}>
             {[1, 2, 3, 4, 5].map((i) => (
@@ -64,6 +96,7 @@ export default function ReviewsSection({
             ))}
           </div>
           <textarea
+            ref={textareaRef}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="What did you think? (optional)"
@@ -97,6 +130,23 @@ export default function ReviewsSection({
                 <Stars value={r.rating} size={14} />
               </div>
               {r.body ? <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.92rem", marginTop: "0.5rem", lineHeight: 1.6 }}>{r.body}</p> : null}
+              {myReview && r.user_id === myReview.user_id ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginTop: "0.7rem", flexWrap: "wrap" }}>
+                  {confirmDel ? (
+                    <>
+                      <span style={{ fontFamily: "var(--sans)", fontSize: "0.82rem", color: "var(--muted)" }}>Delete your review?</span>
+                      <button type="button" onClick={del} disabled={pending} style={rvBtn("var(--terracotta)")}>{pending ? "…" : "Yes, delete"}</button>
+                      <button type="button" onClick={() => setConfirmDel(false)} style={rvBtn()}>Cancel</button>
+                    </>
+                  ) : (
+                    <>
+                      <button type="button" onClick={startEdit} style={rvBtn()}>✎ Edit</button>
+                      <button type="button" onClick={() => copyReview(r.body || "")} disabled={!r.body} style={rvBtn()}>⧉ {copied ? "Copied" : "Copy"}</button>
+                      <button type="button" onClick={() => setConfirmDel(true)} style={rvBtn("var(--terracotta)")}>🗑 Delete</button>
+                    </>
+                  )}
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
