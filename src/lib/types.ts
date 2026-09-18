@@ -18,6 +18,14 @@ export function bookCover(b: { cover_url?: string | null; cover?: string | null 
   return c && /^https?:\/\//i.test(c) ? c : null;
 }
 
+// A generated SVG cover URL for anything without a real image — stable per
+// title, so books and products always have an attractive default cover.
+export function genCover(title?: string | null, subtitle?: string | null): string {
+  const p = new URLSearchParams({ t: (title || "Untitled").slice(0, 90) });
+  if (subtitle) p.set("a", subtitle.slice(0, 60));
+  return `/api/cover?${p.toString()}`;
+}
+
 export function formatPrice(price: number | null): string {
   if (!price || price <= 0) return "Free";
   return `$${Number(price).toFixed(2)}`;

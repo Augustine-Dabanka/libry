@@ -10,7 +10,7 @@ import ReviewsSection, { type Review } from "@/components/ReviewsSection";
 import ReportButton from "@/components/ReportButton";
 import ShareButton from "@/components/ShareButton";
 import ContinueOnPhone from "@/components/ContinueOnPhone";
-import { formatPrice, bookCover, type Book } from "@/lib/types";
+import { formatPrice, bookCover, genCover, type Book } from "@/lib/types";
 import { AGE_LABEL, agePill, isMatureRating } from "@/lib/content";
 import { AUTHOR_BIOS } from "@/lib/authorBios";
 
@@ -29,11 +29,6 @@ type BookDetail = {
   cover_url?: string | null;
 };
 
-function coverGradient(title: string): string {
-  let h = 0;
-  for (let i = 0; i < title.length; i++) h = (h * 31 + title.charCodeAt(i)) % 360;
-  return `linear-gradient(150deg, hsl(${h} 30% 28%), hsl(${(h + 40) % 360} 35% 16%))`;
-}
 
 export default async function BookPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -205,18 +200,10 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
           <BackButton />
         </div>
         <div className="book-hero">
-          {bookCover(book) ? (
-            <div className="book-cover" style={{ padding: 0, overflow: "hidden" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={bookCover(book)!} alt={`Cover of ${book.title}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            </div>
-          ) : (
-            <div className="book-cover" style={{ background: coverGradient(book.title) }}>
-              <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", color: "rgba(255,255,255,0.96)", fontSize: "1.3rem", lineHeight: 1.2 }}>
-                {book.title}
-              </span>
-            </div>
-          )}
+          <div className="book-cover" style={{ padding: 0, overflow: "hidden" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={bookCover(book) || genCover(book.title, book.author)} alt={`Cover of ${book.title}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
 
           <div>
             <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)" }}>{book.title}</h1>

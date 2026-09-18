@@ -6,11 +6,9 @@ import CatalogSort from "@/components/CatalogSort";
 import { allowedRatings, GENRES } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
-// A curated, reader-friendly subset shown as browse chips (the full list lives
-// in GENRES for the editor).
-// Non-Fiction is a Format chip (books.type), so it's intentionally NOT repeated
-// here as a genre — that was the doubled "Non-Fiction" in the filter row.
-const BROWSE_GENRES = ["Romance", "Fantasy", "Sci-Fi", "Mystery", "Thriller", "Horror", "Historical", "Young Adult", "Adventure", "Children", "Poetry", "Biography & Memoir"];
+// Every genre shows as a browse chip. Fiction / Non-Fiction are Format chips
+// (books.type), so they're not repeated here as genres.
+const BROWSE_GENRES: string[] = GENRES.filter((g) => g !== "Fiction" && g !== "Non-Fiction");
 
 type CatBook = Book & { is_free?: boolean | null };
 

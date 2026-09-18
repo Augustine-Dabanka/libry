@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import ProductBuy from "@/components/ProductBuy";
-import { formatPrice } from "@/lib/types";
+import { formatPrice, genCover } from "@/lib/types";
 
 const TYPE_LABEL: Record<string, string> = {
   download: "Download", template: "Template", audio: "Audio", ebook: "E-book",
@@ -48,13 +48,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <div style={{ display: "grid", gridTemplateColumns: "minmax(220px, 300px) 1fr", gap: "2rem", alignItems: "start" }} className="product-grid">
             {/* Cover / preview */}
             <div style={{ position: "sticky", top: "1.5rem" }}>
-              <div style={{ aspectRatio: "2 / 3", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)", background: "linear-gradient(150deg, hsl(35 30% 24%), hsl(20 35% 15%))", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {p.cover_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.cover_url} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                  <span style={{ fontSize: "3rem" }}>{isVideo ? "🎬" : p.type === "audio" ? "🎧" : "🎁"}</span>
-                )}
+              <div style={{ aspectRatio: "2 / 3", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)", background: "linear-gradient(150deg, hsl(35 30% 24%), hsl(20 35% 15%))" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.cover_url && /^https?:\/\//.test(p.cover_url) ? p.cover_url : genCover(p.title, TYPE_LABEL[p.type] || "")} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
             </div>
 

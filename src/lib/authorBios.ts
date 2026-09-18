@@ -44,4 +44,78 @@ export const AUTHOR_BIOS: Record<string, string> = {
     "Jack London (1876–1916) was an American novelist and adventurer best known for The Call of the Wild and White Fang.",
   "John Buchan":
     "John Buchan (1875–1940) was a Scottish novelist and statesman, best remembered for the pioneering thriller The Thirty-Nine Steps.",
+  "Herman Melville":
+    "Herman Melville (1819–1891) was an American novelist and poet whose masterwork, Moby-Dick, is now regarded as one of the great American novels.",
+  "F. Scott Fitzgerald":
+    "F. Scott Fitzgerald (1896–1940) was an American writer whose novel The Great Gatsby captured the glamour and disillusion of the Jazz Age.",
+  "Alexandre Dumas":
+    "Alexandre Dumas (1802–1870) was a French author of sweeping adventure novels, including The Count of Monte Cristo and The Three Musketeers.",
+  "Fyodor Dostoevsky":
+    "Fyodor Dostoevsky (1821–1881) was a Russian novelist whose psychological depth in Crime and Punishment and The Brothers Karamazov reshaped modern fiction.",
+  "Homer":
+    "Homer is the legendary ancient Greek poet credited with the Iliad and the Odyssey, the foundational epics of Western literature.",
+  "Leo Tolstoy":
+    "Leo Tolstoy (1828–1910) was a Russian writer widely considered among the greatest novelists, author of War and Peace and Anna Karenina.",
+  "Miguel de Cervantes":
+    "Miguel de Cervantes (1547–1616) was a Spanish writer whose Don Quixote is often called the first modern novel.",
+  "Beatrix Potter":
+    "Beatrix Potter (1866–1943) was an English author and illustrator best loved for The Tale of Peter Rabbit and her other little books for children.",
+  "The Brothers Grimm":
+    "Jacob and Wilhelm Grimm were German scholars who, in the early 1800s, collected the folk tales — Cinderella, Hansel and Gretel, Rapunzel — that became Grimm's Fairy Tales.",
+  "Aesop":
+    "Aesop was a storyteller of ancient Greece, credited with the fables — brief tales with a moral — that have been retold for over two thousand years.",
+  "James Allen":
+    "James Allen (1864–1912) was a British philosophical writer, best known for the pioneering self-help classic As a Man Thinketh.",
+  "Wallace D. Wattles":
+    "Wallace D. Wattles (1860–1911) was an American author of the New Thought movement, remembered for The Science of Getting Rich.",
+  "Sigmund Freud":
+    "Sigmund Freud (1856–1939) was the Austrian neurologist who founded psychoanalysis and gave us the modern language of the unconscious.",
+  "Bertrand Russell":
+    "Bertrand Russell (1872–1970) was a British philosopher, logician and Nobel laureate who wrote with rare clarity on knowledge and reason.",
+  "Sun Tzu":
+    "Sun Tzu was an ancient Chinese general and strategist, traditionally credited as the author of The Art of War.",
+  "Adam Smith":
+    "Adam Smith (1723–1790) was a Scottish economist and philosopher whose The Wealth of Nations founded modern economics.",
+  "Charles Darwin":
+    "Charles Darwin (1809–1882) was an English naturalist whose On the Origin of Species established evolution by natural selection.",
+  "Albert Einstein":
+    "Albert Einstein (1879–1955) was a theoretical physicist whose theories of relativity transformed our understanding of space, time and gravity.",
+  "Marcus Aurelius":
+    "Marcus Aurelius (121–180) was a Roman emperor and Stoic philosopher whose private notebook survives as Meditations.",
+  "Plato":
+    "Plato (c. 428–348 BC) was an Athenian philosopher, founder of the Academy, and author of dialogues including The Republic.",
+  "Patanjali":
+    "Patanjali was the ancient Indian sage traditionally credited with compiling the Yoga Sutras, the foundational text of classical yoga.",
+  "Kahlil Gibran":
+    "Kahlil Gibran (1883–1931) was a Lebanese-American writer and artist, best known for the lyrical prose-poetry of The Prophet.",
+  "Laozi":
+    "Laozi was the semi-legendary ancient Chinese philosopher credited with the Tao Te Ching and the founding of Taoism.",
+  "Winsor McCay":
+    "Winsor McCay (c. 1866–1934) was an American cartoonist and animator whose comic strip Little Nemo in Slumberland pushed the art form to dazzling new heights.",
+  "Aria Sinclair":
+    "Aria Sinclair writes warm, slow-burn romance for Libry Originals — small towns, second chances, and rivals who never saw it coming.",
+  "Nadia Serrano":
+    "Nadia Serrano is a Libry Originals author of sharp, sparkling contemporary romance about clever people who hate to lose.",
+  "Elena Marsh":
+    "Elena Marsh writes ambitious, workplace-set romance for Libry Originals, where the tension is as high as the stakes.",
+  "Marcus Vale":
+    "Marcus Vale is a Libry Originals author of steamy, high-heat contemporary romance for readers who like it bold.",
+  "Sofia Lang":
+    "Sofia Lang writes after-dark contemporary romance for Libry Originals — intimate, modern, and unafraid.",
+  "Viktor Reynolds":
+    "Viktor Reynolds is a Libry Originals author of dark, atmospheric fantasy romance built on oaths, courts and consequence.",
+  "Thomas Reed":
+    "Thomas Reed writes literary adventure for Libry Originals — maps, mysteries, and the pull of the unknown.",
+  "Kai Reynolds":
+    "Kai Reynolds is a Libry Originals author of neon-lit science fiction about cities, machines, and the people caught between them.",
+  "Maya Chen":
+    "Maya Chen writes lush, character-first fantasy for Libry Originals, where every crown comes with a cost.",
+  "Ines Marchetti":
+    "Ines Marchetti is a Libry Originals author of quiet, tide-soaked mysteries set in small coastal towns.",
+  "Jonathan Reyes":
+    "Jonathan Reyes writes taut, eerie thrillers for Libry Originals — remote places, strange signals, and mounting dread.",
+  "Grace Yeung":
+    "Grace Yeung is a Libry Originals poet writing on cities, longing, and the small hours of the night.",
+  "Samuel Okoro":
+    "Samuel Okoro writes memoir and essay for Libry Originals on belonging, migration, and the long road home.",
 };
