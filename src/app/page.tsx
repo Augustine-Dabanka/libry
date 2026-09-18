@@ -133,6 +133,11 @@ export default async function Landing() {
               <h3>Read it, then keep it</h3>
               <p>A calm, page-turning reader — themes, type size, and your place kept on any device. A reading companion you can name helps with tricky words and synonyms, and you can download your own EPUB to read offline.</p>
             </div>
+            <div className={s.fcard}>
+              <div className={s.ic}>🫶</div>
+              <h3>A calm community</h3>
+              <p>Share what you&apos;re reading, follow the authors you love, and swap thoughts in a newest-first community feed — no algorithm, no doomscroll, just readers and writers.</p>
+            </div>
           </div>
         </div>
       </section>
