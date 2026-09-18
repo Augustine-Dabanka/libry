@@ -183,10 +183,10 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   if (book.author) {
     const ap = await supabase
       .from("profiles")
-      .select("bio, avatar_url, full_name, username, pen_name")
+      .select("bio, avatar_url, creator_avatar_url, full_name, username, pen_name")
       .or(`pen_name.eq.${book.author},full_name.eq.${book.author},username.eq.${book.author}`)
       .maybeSingle();
-    if (!ap.error && ap.data) authorBio = { bio: ap.data.bio ?? null, avatar: ap.data.avatar_url ?? null };
+    if (!ap.error && ap.data) authorBio = { bio: ap.data.bio ?? null, avatar: (ap.data as { creator_avatar_url?: string | null }).creator_avatar_url ?? ap.data.avatar_url ?? null };
   }
 
   const authorHref = book.author ? `/author/${encodeURIComponent(book.author)}` : null;

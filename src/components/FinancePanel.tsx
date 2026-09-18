@@ -59,7 +59,7 @@ export default function FinancePanel({
   }
 
   const card: React.CSSProperties = { background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.4rem 1.5rem" };
-  const field: React.CSSProperties = { width: "100%", padding: "0.6rem 0.7rem", borderRadius: 10, border: "1px solid var(--border)", background: "var(--charcoal)", color: "var(--ivory)", fontFamily: "var(--sans)", fontSize: "0.92rem", marginTop: "0.3rem" };
+  const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", minWidth: 0, padding: "0.6rem 0.7rem", borderRadius: 10, border: "1px solid var(--border)", background: "var(--charcoal)", color: "var(--ivory)", fontFamily: "var(--sans)", fontSize: "0.92rem", marginTop: "0.3rem" };
   const label: React.CSSProperties = { display: "block", fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)", marginTop: "0.8rem" };
 
   return (

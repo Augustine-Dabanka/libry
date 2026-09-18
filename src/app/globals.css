@@ -1469,3 +1469,8 @@ html { scroll-behavior: smooth; }
   .heroart-scene .sc1, .heroart-scene .sc2, .heroart-scene .sc3 { opacity: 0 !important; }
   .heroart-scene .sc4, .heroart-scene .s4-thumb, .heroart-scene .s4-spark { opacity: 1 !important; transform: none !important; }
 }
+
+/* Safety net: never let a stray wide element stretch the page sideways on any
+   device. Wide tables/code keep their own overflow-x:auto containers. */
+html { overflow-x: hidden; }
+body { overflow-x: clip; }

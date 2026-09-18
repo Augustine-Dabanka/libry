@@ -47,9 +47,9 @@ export default function CreatorProfileForm({
     setBusy(true);
     setMsg(null);
     const supabase = createClient();
-    const payload: Record<string, unknown> = { pen_name: penName.trim() || null, bio: bio.trim() || null, avatar_url: avatar.trim() || null, is_creator: true };
+    const payload: Record<string, unknown> = { pen_name: penName.trim() || null, bio: bio.trim() || null, creator_avatar_url: avatar.trim() || null, is_creator: true };
     let { error } = await supabase.from("profiles").update(payload).eq("id", userId);
-    if (error && /pen_name|is_creator|bio|avatar_url/i.test(error.message)) {
+    if (error && /pen_name|is_creator|bio|creator_avatar_url/i.test(error.message)) {
       // Columns not migrated yet — save just the bio if that column exists.
       ({ error } = await supabase.from("profiles").update({ bio: bio.trim() || null }).eq("id", userId));
     }

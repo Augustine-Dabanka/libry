@@ -38,10 +38,10 @@ export default async function AuthorPage({ params }: { params: Promise<{ name: s
   let profileBio: string | null = null;
   let profileAvatar: string | null = null;
   {
-    const pr = await supabase.from("profiles").select("bio, avatar_url, pen_name, full_name").or(`pen_name.eq.${author},full_name.eq.${author}`).limit(1).maybeSingle();
+    const pr = await supabase.from("profiles").select("bio, avatar_url, creator_avatar_url, pen_name, full_name").or(`pen_name.eq.${author},full_name.eq.${author}`).limit(1).maybeSingle();
     if (!pr.error && pr.data) {
       profileBio = (pr.data as { bio?: string | null }).bio ?? null;
-      profileAvatar = (pr.data as { avatar_url?: string | null }).avatar_url ?? null;
+      profileAvatar = (pr.data as { creator_avatar_url?: string | null; avatar_url?: string | null }).creator_avatar_url ?? (pr.data as { avatar_url?: string | null }).avatar_url ?? null;
     }
   }
   const bio = profileBio || AUTHOR_BIOS[author] || null;
