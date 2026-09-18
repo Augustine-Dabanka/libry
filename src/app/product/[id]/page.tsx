@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import ProductBuy from "@/components/ProductBuy";
+import ProductReviews, { type PReview } from "@/components/ProductReviews";
+import Stars from "@/components/Stars";
 import { formatPrice, genCover } from "@/lib/types";
 
 const TYPE_LABEL: Record<string, string> = {
@@ -39,6 +41,12 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const isVideo = p.type === "video" || p.type === "course";
   const price = Number(p.price) || 0;
 
+  // Reviews.
+  const { data: rv } = await supabase.from("product_reviews").select("id, user_name, rating, body, user_id").eq("product_id", pid).order("created_at", { ascending: false });
+  const reviews = (rv ?? []) as PReview[];
+  const myReview = reviews.find((r) => r.user_id === user.id) ?? null;
+  const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+
   return (
     <>
       <AppNav />
@@ -46,8 +54,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <a href="/discover" style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", fontWeight: 600 }}>← Back</a>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: "2rem", marginTop: "1rem" }} className="product-layout">
           <div style={{ display: "grid", gridTemplateColumns: "minmax(220px, 300px) 1fr", gap: "2rem", alignItems: "start" }} className="product-grid">
-            {/* Cover / preview */}
-            <div style={{ position: "sticky", top: "1.5rem" }}>
+            {/* Cover / preview — capped so it never becomes a full-screen slab on mobile */}
+            <div style={{ position: "sticky", top: "1.5rem", width: "100%", maxWidth: 240, marginInline: "auto" }}>
               <div style={{ aspectRatio: "2 / 3", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)", background: "linear-gradient(150deg, hsl(35 30% 24%), hsl(20 35% 15%))" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.cover_url && /^https?:\/\//.test(p.cover_url) ? p.cover_url : genCover(p.title, TYPE_LABEL[p.type] || "")} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -62,8 +70,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.95rem", marginBottom: "0.3rem" }}>by {creatorName}</p>
               {p.category ? <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem" }}>{p.category}</p> : null}
 
-              <div style={{ display: "flex", alignItems: "baseline", gap: "0.6rem", margin: "1rem 0 1.3rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.9rem", margin: "1rem 0 1.3rem", flexWrap: "wrap" }}>
                 <span style={{ fontFamily: "var(--sans)", fontWeight: 800, fontSize: "1.8rem", color: "var(--gold)" }}>{price > 0 ? formatPrice(price) : "Free"}</span>
+                {reviews.length ? (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                    <Stars value={avg} size={15} />
+                    <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem" }}>{avg.toFixed(1)} · {reviews.length}</span>
+                  </span>
+                ) : null}
               </div>
 
               <div style={{ maxWidth: 340, marginBottom: "1.6rem" }}>
@@ -80,6 +94,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               {p.description ? (
                 <div style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.95rem", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{p.description}</div>
               ) : null}
+
+              <ProductReviews productId={p.id} reviews={reviews} myReview={myReview} canReview={owned} signedIn={true} />
             </div>
           </div>
         </div>

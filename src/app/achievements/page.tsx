@@ -9,7 +9,7 @@ type ProgRow = { book_id: number; progress_percentage: number | null };
 // Badge catalogue. `unlock` reads the live tallies and returns whether it's
 // earned — so every badge lights up from real reading data, and the rest read
 // honestly as still locked.
-type Tally = { finished: number; inLibrary: number; inProgress: number; challenges: number; reviews: number; streak: number };
+type Tally = { finished: number; inLibrary: number; inProgress: number; challenges: number; reviews: number; streak: number; products: number };
 const BADGES: { key: string; name: string; need: string; unlock: (t: Tally) => boolean }[] = [
   { key: "first", name: "First Chapter", need: "Finish your first book", unlock: (t) => t.finished >= 1 },
   { key: "started", name: "Off the Shelf", need: "Start reading a book", unlock: (t) => t.inProgress + t.finished >= 1 },
@@ -24,7 +24,10 @@ const BADGES: { key: string; name: string; need: string; unlock: (t: Tally) => b
   { key: "juggler", name: "Juggler", need: "Have 3 books on the go at once", unlock: (t) => t.inProgress >= 3 },
   { key: "reflective", name: "Reflective", need: "Complete a reading challenge", unlock: (t) => t.challenges >= 1 },
   { key: "deep", name: "Deep Reader", need: "Complete 3 reading challenges", unlock: (t) => t.challenges >= 3 },
-  { key: "critic", name: "The Critic", need: "Rate 5 books", unlock: (t) => t.reviews >= 5 },
+  { key: "critic", name: "The Critic", need: "Post 5 reviews", unlock: (t) => t.reviews >= 5 },
+  { key: "firstproduct", name: "First Find", need: "Get a digital product", unlock: (t) => t.products >= 1 },
+  { key: "toolkit", name: "Well Equipped", need: "Own 5 digital products", unlock: (t) => t.products >= 5 },
+  { key: "patron", name: "Patron of the Arts", need: "Own 10 digital products", unlock: (t) => t.products >= 10 },
   { key: "roll", name: "On a Roll", need: "Reach a 3-day streak", unlock: (t) => t.streak >= 3 },
   { key: "week", name: "Weeklong", need: "Reach a 7-day streak", unlock: (t) => t.streak >= 7 },
   { key: "month", name: "Devoted Month", need: "Reach a 30-day streak", unlock: (t) => t.streak >= 30 },
@@ -83,6 +86,14 @@ export default async function Achievements() {
   {
     const r = await supabase.from("reviews").select("id", { count: "exact", head: true }).eq("user_id", user.id);
     if (!r.error) reviewsCount = r.count ?? 0;
+    const pr = await supabase.from("product_reviews").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+    if (!pr.error) reviewsCount += pr.count ?? 0;
+  }
+  // Digital products the reader owns (bought or free-claimed).
+  let productsOwned = 0;
+  {
+    const p = await supabase.from("product_purchases").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+    if (!p.error) productsOwned = p.count ?? 0;
   }
   // Current reading streak — from the hour-based reading_days source (same as the
   // streak card), so badges and the card always agree. Guarded (pre-migration → 0).
@@ -95,7 +106,7 @@ export default async function Achievements() {
     if (!rd.error) streak = computeStreak((rd.data ?? []) as DayRow[], goal).current;
   }
 
-  const tally: Tally = { finished, inLibrary, inProgress, challenges, reviews: reviewsCount, streak };
+  const tally: Tally = { finished, inLibrary, inProgress, challenges, reviews: reviewsCount, streak, products: productsOwned };
   const completion = inLibrary ? Math.round((finished / inLibrary) * 100) : 0;
 
   // XP: 25 per finished book, plus a little for progress.
@@ -120,6 +131,7 @@ export default async function Achievements() {
     { n: level, label: "Reader level" },
     { n: challenges, label: "Challenges done" },
     { n: streak, label: "Day streak" },
+    { n: productsOwned, label: "Products owned" },
   ];
 
   const unlockedKeys = new Set(BADGES.filter((b) => b.unlock(tally)).map((b) => b.key));
