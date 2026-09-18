@@ -3,6 +3,9 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { splitIntoChapters, textToHtml } from "@/lib/chapters";
+
+const escTitle = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const PDF_WORKER = "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.3.289/build/pdf.worker.min.mjs";
 
@@ -67,7 +70,8 @@ export default function QuickUpload({ userId, authorName }: { userId: string; au
       const text = await extractText(file);
       if (!text) throw new Error("Couldn't find any text in that file.");
       setContent(text);
-      setStatus(`Read ${text.length.toLocaleString()} characters. Ready to create your draft.`);
+      const n = type !== "Interactive" ? splitIntoChapters(text).length : 1;
+      setStatus(`Read ${text.length.toLocaleString()} characters${n > 1 ? ` · ${n} chapters detected` : ""}. Ready to create your draft.`);
     } catch (e) {
       setStatus(null);
       setErr(e instanceof Error ? e.message : "Couldn't read that file.");
@@ -93,14 +97,33 @@ export default function QuickUpload({ userId, authorName }: { userId: string; au
       user_id: userId,
       created_by: authorName,
     };
+    // Auto-split a manuscript into chapters (prose types only) so it opens in the
+    // editor as real chapters, and compile HTML the reader can render at once.
+    const chapters = body && type !== "Interactive" ? splitIntoChapters(body) : body ? [{ title: "Chapter One", content: body }] : [];
+    if (chapters.length) {
+      const compiled = chapters
+        .map((c, idx) => `<section class="ch"><h2 class="chapter-title">${escTitle(c.title || `Chapter ${idx + 1}`)}</h2>${textToHtml(c.content)}</section>`)
+        .join("\n");
+      payload.content = compiled;
+      payload.pages = chapters.length;
+    }
+
     let { error } = await supabase.from("books").insert(payload);
-    if (error && /age_rating|is_published/i.test(error.message)) {
+    if (error && /age_rating|is_published|pages/i.test(error.message)) {
       delete payload.age_rating;
       delete payload.is_published;
+      delete payload.pages;
       ({ error } = await supabase.from("books").insert(payload));
     }
+    if (error) { setBusy(false); setErr(error.message); return; }
+
+    // Persist the split chapters so the editor loads them individually.
+    if (chapters.length) {
+      const rows = chapters.map((c, idx) => ({ book_id: payload.id, title: c.title || `Chapter ${idx + 1}`, content: c.content, chapter_number: idx + 1, is_published: true }));
+      await supabase.from("chapters").insert(rows); // best-effort; editor also has book.content
+    }
     setBusy(false);
-    if (error) { setErr(error.message); return; }
+    if (chapters.length > 1) setStatus(`Imported — split into ${chapters.length} chapters.`);
     router.push(`/creator/edit/${payload.id}`);
   }
 

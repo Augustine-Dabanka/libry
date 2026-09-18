@@ -118,10 +118,10 @@ export default function ChapterEditor({ bookId, initial }: { bookId: number; ini
           const isOpen = open === i;
           return (
             <div key={i} style={{ border: "1px solid var(--border)", borderRadius: 12, background: "var(--charcoal)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 0.7rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 0.7rem", flexWrap: "wrap" }}>
                 <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", width: 28, textAlign: "center" }}>{i + 1}</span>
                 <input
-                  style={{ ...field, flex: 1 }}
+                  style={{ ...field, flex: 1, minWidth: 120 }}
                   value={c.title}
                   onChange={(e) => patch(i, { title: e.target.value })}
                   placeholder={`Chapter ${i + 1} title`}

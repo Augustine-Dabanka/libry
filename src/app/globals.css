@@ -1410,3 +1410,9 @@ html { scroll-behavior: smooth; }
   .community-room-grid { grid-template-columns: 1fr !important; }
   .product-grid { grid-template-columns: 1fr !important; }
 }
+
+/* Product detail cover: a small thumbnail on phones, aligned left, scrolls with
+   the page (never a full-width slab). */
+@media (max-width: 780px) {
+  .product-cover { max-width: 140px !important; margin: 0 0 0.4rem 0 !important; }
+}

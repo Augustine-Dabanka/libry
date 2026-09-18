@@ -54,8 +54,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <a href="/discover" style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", fontWeight: 600 }}>← Back</a>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: "2rem", marginTop: "1rem" }} className="product-layout">
           <div style={{ display: "grid", gridTemplateColumns: "minmax(220px, 300px) 1fr", gap: "2rem", alignItems: "start" }} className="product-grid">
-            {/* Cover / preview — capped so it never becomes a full-screen slab on mobile */}
-            <div style={{ position: "sticky", top: "1.5rem", width: "100%", maxWidth: 240, marginInline: "auto" }}>
+            {/* Cover — a small thumbnail that scrolls with the page (not pinned). */}
+            <div className="product-cover" style={{ width: "100%", maxWidth: 200 }}>
               <div style={{ aspectRatio: "2 / 3", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)", background: "linear-gradient(150deg, hsl(35 30% 24%), hsl(20 35% 15%))" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.cover_url && /^https?:\/\//.test(p.cover_url) ? p.cover_url : genCover(p.title, TYPE_LABEL[p.type] || "")} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
