@@ -10,6 +10,7 @@ import ShareButton from "@/components/ShareButton";
 import FinishChallenge from "@/components/FinishChallenge";
 import CommentTray, { type ParaComment } from "@/components/CommentTray";
 import ReaderCompanion from "@/components/ReaderCompanion";
+import ReadingSyncToast from "@/components/ReadingSyncToast";
 
 type Theme = "dark" | "sepia";
 
@@ -561,6 +562,27 @@ export default function ReaderView({
     return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
   }, [menuOpen]);
 
+  // Broadcast this device's live progress so the cross-device toast never nudges
+  // us about our own saves.
+  useEffect(() => {
+    if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("libry:local-progress", { detail: progress }));
+  }, [progress]);
+
+  // Jump to a percentage when the reader picks up another device's position.
+  useEffect(() => {
+    function onJump(e: Event) {
+      const pct = (e as CustomEvent).detail as number;
+      if (typeof pct !== "number") return;
+      if (usePaged) setPage(Math.min(pages - 1, Math.max(0, Math.round((pct / 100) * (pages - 1)))));
+      else {
+        const el = scrollRef.current;
+        if (el) el.scrollTo({ top: (pct / 100) * (el.scrollHeight - el.clientHeight), behavior: "smooth" });
+      }
+    }
+    window.addEventListener("libry:reader-jump", onJump);
+    return () => window.removeEventListener("libry:reader-jump", onJump);
+  }, [usePaged, pages]);
+
   // Swipe navigation.
   const touchX = useRef<number | null>(null);
   function onTouchStart(e: React.TouchEvent) { touchX.current = e.changedTouches[0]?.clientX ?? null; }
@@ -794,6 +816,7 @@ export default function ReaderView({
         />
       ) : null}
       {!locked ? <ReaderCompanion dark={theme === "dark"} /> : null}
+      {userEmail && !sample ? <ReadingSyncToast userEmail={userEmail} bookId={bookId} /> : null}
     </>
   );
 

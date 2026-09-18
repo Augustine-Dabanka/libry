@@ -4,11 +4,12 @@ import BackButton from "@/components/BackButton";
 import AddToCartButton from "@/components/AddToCartButton";
 import WishlistButton from "@/components/WishlistButton";
 import LikeButton from "@/components/LikeButton";
-import BookCard from "@/components/BookCard";
+import BookMini from "@/components/BookMini";
 import Stars from "@/components/Stars";
 import ReviewsSection, { type Review } from "@/components/ReviewsSection";
 import ReportButton from "@/components/ReportButton";
 import ShareButton from "@/components/ShareButton";
+import ContinueOnPhone from "@/components/ContinueOnPhone";
 import { formatPrice, bookCover, type Book } from "@/lib/types";
 import { AGE_LABEL, agePill, isMatureRating } from "@/lib/content";
 import { AUTHOR_BIOS } from "@/lib/authorBios";
@@ -278,6 +279,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
               {user ? <WishlistButton bookId={Number(book.id)} userId={user.id} initial={wishlisted} /> : null}
               <LikeButton bookId={Number(book.id)} userId={user?.id ?? null} initialLiked={liked} initialCount={likeCount} />
               <ShareButton path={`/book/${book.id}`} title={book.title} />
+              {owned ? <ContinueOnPhone path={`/reader/${book.id}`} /> : null}
             </div>
             {hasProgress ? (
               <div style={{ marginTop: "0.4rem", maxWidth: 320 }}>
@@ -339,8 +341,8 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         {related.length > 0 ? (
           <div style={{ marginBottom: "1rem" }}>
             <h2 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>Readers also read</h2>
-            <div className="book-grid">
-              {related.map((b) => <BookCard key={b.id} book={b} />)}
+            <div className="book-grid-mini">
+              {related.map((b) => <BookMini key={b.id} book={b} />)}
             </div>
           </div>
         ) : null}

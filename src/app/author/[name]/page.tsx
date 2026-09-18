@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
-import BookCard from "@/components/BookCard";
+import BookMini from "@/components/BookMini";
 import BackButton from "@/components/BackButton";
 import FollowButton from "@/components/FollowButton";
 import Stars from "@/components/Stars";
@@ -87,8 +87,8 @@ export default async function AuthorPage({ params }: { params: Promise<{ name: s
         ) : null}
 
         {books.length > 0 ? (
-          <div className="book-grid">
-            {books.map((b) => <BookCard key={b.id} book={b} />)}
+          <div className="book-grid-mini">
+            {books.map((b) => <BookMini key={b.id} book={b} />)}
           </div>
         ) : (
           <p style={{ color: "var(--muted)" }}>No published titles from {author} yet.</p>

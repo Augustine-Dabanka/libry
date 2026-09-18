@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
-import BookCard from "@/components/BookCard";
+import BookMini from "@/components/BookMini";
 import BookCarousel from "@/components/BookCarousel";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
@@ -93,9 +93,9 @@ export default async function Discover({
         </div>
 
         {books.length > 0 ? (
-          <div className="book-grid">
+          <div className="book-grid-mini">
             {books.map((b) => (
-              <BookCard key={b.id} book={b} />
+              <BookMini key={b.id} book={b} />
             ))}
           </div>
         ) : (
