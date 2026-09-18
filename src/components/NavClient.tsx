@@ -183,6 +183,27 @@ export default function NavClient({
                 </div>
               );
             }
+            // "Community" carries a flyout with the feed + notifications.
+            if (it.href === "/community") {
+              return (
+                <div key={it.href} className="rail-item-wrap" data-dd-root>
+                  <a href={it.href} className={`rail-item${active ? " active" : ""}`} aria-current={active ? "page" : undefined}>
+                    <span className="rail-ico">
+                      <Icon name={it.icon} />
+                      {notifCount > 0 ? <span className="rail-dot">{notifCount}</span> : null}
+                    </span>
+                    <span className="rail-label">{it.label}</span>
+                  </a>
+                  <div className="rail-flyout" role="menu" style={{ gridTemplateColumns: "1fr", minWidth: 210 }}>
+                    <div className="rf-col">
+                      <h6>Community</h6>
+                      <a href="/community">Feed</a>
+                      <a href="/notifications">Notifications{notifCount > 0 ? ` (${notifCount})` : ""}</a>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
             return (
               <a key={it.href} href={it.href} className={`rail-item${active ? " active" : ""}`} aria-current={active ? "page" : undefined}>
                 <span className="rail-ico"><Icon name={it.icon} /></span>
@@ -195,16 +216,6 @@ export default function NavClient({
         <div className="rail-bottom">
           {signedIn ? (
             <div className="rail-streak"><StreakCard compact /></div>
-          ) : null}
-
-          {signedIn ? (
-            <a href="/notifications" className="rail-item" title="Notifications">
-              <span className="rail-ico">
-                <Icon name="bell" />
-                {notifCount > 0 ? <span className="rail-dot">{notifCount}</span> : null}
-              </span>
-              <span className="rail-label">Notifications</span>
-            </a>
           ) : null}
 
           <a href="/my-library?tab=wishlist" className="rail-item" title="Wishlist">
