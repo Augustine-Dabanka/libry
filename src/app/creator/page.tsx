@@ -12,6 +12,7 @@ import CreatorTabs, { type CreatorTab } from "@/components/CreatorTabs";
 import PromotePanel from "@/components/PromotePanel";
 import FinancePanel from "@/components/FinancePanel";
 import ProductsPanel from "@/components/ProductsPanel";
+import PartnerCard from "@/components/PartnerCard";
 import { type ProductType } from "@/app/actions/products";
 import { isCreatorActive, creatorStatusMeta } from "@/lib/creatorStatus";
 import { formatPrice } from "@/lib/types";
@@ -54,14 +55,17 @@ export default async function CreatorDashboard() {
   let statusReason: string | null = null;
   let statusUntil: string | null = null;
   let payoutFrozen = false;
+  type PartnerStatus = "none" | "pending" | "approved" | "rejected";
+  let partnerStatus: PartnerStatus = "none";
   {
-    const st = await supabase.from("profiles").select("creator_status, creator_status_reason, creator_status_until, payout_frozen").eq("id", user.id).maybeSingle();
+    const st = await supabase.from("profiles").select("creator_status, creator_status_reason, creator_status_until, payout_frozen, partner_status").eq("id", user.id).maybeSingle();
     if (!st.error && st.data) {
-      const d = st.data as { creator_status?: string; creator_status_reason?: string | null; creator_status_until?: string | null; payout_frozen?: boolean };
+      const d = st.data as { creator_status?: string; creator_status_reason?: string | null; creator_status_until?: string | null; payout_frozen?: boolean; partner_status?: string };
       creatorStatus = d.creator_status ?? "active";
       statusReason = d.creator_status_reason ?? null;
       statusUntil = d.creator_status_until ?? null;
       payoutFrozen = !!d.payout_frozen;
+      partnerStatus = (d.partner_status as PartnerStatus) ?? "none";
     }
   }
   const active = isCreatorActive(creatorStatus);
@@ -219,11 +223,19 @@ export default async function CreatorDashboard() {
   return (
     <>
       <section className="section">
-        <div className="dashboard-header">
-          <h1>Creator Dashboard</h1>
-          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)" }}>
-            Welcome back, {authorName}. Here&apos;s how your stories are performing.
-          </p>
+        <div className="dashboard-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
+          <div>
+            <h1>Creator Dashboard</h1>
+            <p style={{ color: "var(--muted)", fontFamily: "var(--sans)" }}>
+              Welcome back, {authorName}. Here&apos;s how your stories are performing.
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+            <a className="btn btn-outline" href="/creator-hub/docs?tab=guidelines" style={{ padding: "0.45rem 1rem", fontSize: "0.85rem" }}>📋 Guidelines</a>
+            {/* Steps back to reading without ending the session — this is not a
+                full sign-out (that lives in the account menu). */}
+            <a className="btn btn-outline" href="/home" style={{ padding: "0.45rem 1rem", fontSize: "0.85rem" }}>← Leave studio</a>
+          </div>
         </div>
 
         {!isCreator ? (
@@ -266,7 +278,7 @@ export default async function CreatorDashboard() {
                     <ul style={{ margin: "1.2rem 0 0", paddingLeft: "1.1rem", color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.7 }}>
                       <li>Every purchase of your book credits <strong style={{ color: "var(--ivory)" }}>65% of the price</strong> to you — the &ldquo;Projected earnings&rdquo; figure above.</li>
                       <li>Libry keeps 35% to run the platform — a 30% platform cut plus a 5% platform &amp; infrastructure fee (hosting, payments, discovery).</li>
-                      <li>Payments are simulating while we finish setup, so these are projected at current prices. <strong style={{ color: "var(--ivory)" }}>Real payouts begin via Paystack</strong> once the merchant account is verified.</li>
+                      <li>Payments are <strong style={{ color: "var(--ivory)" }}>live via Paystack</strong>. Earnings accrue on every sale; withdraw them once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Library Partnership Program</a> (a quick verification of your identity and payout details).</li>
                       <li>You keep your readers — followers, reviews, and the relationship — always.</li>
                     </ul>
                   </div>
@@ -420,10 +432,12 @@ export default async function CreatorDashboard() {
               );
 
               const financeNode = (
-                <FinancePanel net={netEarnings} paid={paidOut} pending={pendingOut} available={availableBalance} account={payoutAccount} history={payouts} />
+                <FinancePanel net={netEarnings} paid={paidOut} pending={pendingOut} available={availableBalance} account={payoutAccount} history={payouts} partner={partnerStatus} />
               );
 
               const accountNode = (
+                <div style={{ display: "grid", gap: "1.4rem" }}>
+                <PartnerCard status={partnerStatus} />
                 <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.6rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.8rem" }}>
                     <span className="badge" style={{ background: statusMeta.tone === "ok" ? "rgba(78,122,82,0.2)" : statusMeta.tone === "warn" ? "rgba(217,164,65,0.2)" : "rgba(196,85,63,0.2)", color: statusMeta.tone === "ok" ? "#7DBE86" : statusMeta.tone === "warn" ? "#D9A441" : "#E0836B", fontWeight: 700 }}>{statusMeta.label}</span>
@@ -433,11 +447,12 @@ export default async function CreatorDashboard() {
                   <div style={{ display: "grid", gap: "0.7rem", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Reading &amp; library</span><span style={{ color: "#7DBE86" }}>Always available</span></div>
                     <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Publishing new work</span><span style={{ color: active ? "#7DBE86" : "var(--muted)" }}>{active ? "Available" : "Paused"}</span></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Payouts</span><span style={{ color: active && !payoutFrozen ? "#7DBE86" : "var(--muted)" }}>{active && !payoutFrozen ? "Enabled (once verified)" : "Frozen"}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Payouts</span><span style={{ color: partnerStatus === "approved" && active && !payoutFrozen ? "#7DBE86" : "var(--muted)" }}>{payoutFrozen || !active ? "Frozen" : partnerStatus === "approved" ? "Enabled" : "Unlocks with Partner status"}</span></div>
                   </div>
                   <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", marginTop: "1.3rem", lineHeight: 1.6 }}>
                     Standing is governed by our <a href="/terms" style={{ color: "var(--gold)" }}>Terms</a>. If you believe this is a mistake, contact support and we&apos;ll review.
                   </p>
+                </div>
                 </div>
               );
 

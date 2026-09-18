@@ -17,6 +17,7 @@ export default function FinancePanel({
   available,
   account,
   history,
+  partner = "none",
 }: {
   net: number;
   paid: number;
@@ -24,6 +25,7 @@ export default function FinancePanel({
   available: number;
   account: Account;
   history: Payout[];
+  partner?: "none" | "pending" | "approved" | "rejected";
 }) {
   const router = useRouter();
   const [method, setMethod] = useState(account?.method === "bank" ? "bank" : "momo");
@@ -37,7 +39,8 @@ export default function FinancePanel({
 
   const hasAccount = !!account?.account_number;
   const hasPending = history.some((h) => h.status === "pending");
-  const canRequest = available >= MIN && hasAccount && !hasPending;
+  const isPartner = partner === "approved";
+  const canRequest = available >= MIN && hasAccount && !hasPending && isPartner;
 
   async function saveAccount() {
     setBusy(true); setErr(null); setMsg(null);
@@ -75,14 +78,19 @@ export default function FinancePanel({
           <div>
             <h3 style={{ marginBottom: "0.2rem" }}>Withdraw your earnings</h3>
             <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", margin: 0 }}>
-              Minimum {formatPrice(MIN)}. Payouts settle in GHS via Paystack and are processed by hand for now.
+              Minimum {formatPrice(MIN)}. Payouts settle in GHS and are sent to your account through Paystack once requested.
             </p>
           </div>
           <button type="button" className="btn btn-gold" disabled={!canRequest || reqBusy} onClick={request} style={{ opacity: !canRequest || reqBusy ? 0.6 : 1, whiteSpace: "nowrap" }}>
             {reqBusy ? "Requesting…" : `Request ${formatPrice(available)}`}
           </button>
         </div>
-        {!hasAccount ? <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem" }}>Add your payout details below first.</p> : null}
+        {!isPartner ? (
+          <p style={{ color: "var(--gold-hi)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem" }}>
+            🤝 Payouts unlock once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Library Partnership Program</a>{partner === "pending" ? " — your application is under review." : "."} You keep earning in the meantime.
+          </p>
+        ) : null}
+        {isPartner && !hasAccount ? <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem" }}>Add your payout details below first.</p> : null}
         {hasPending ? <p style={{ color: "var(--gold-hi)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem" }}>You already have a pending payout — it&apos;ll be marked paid once sent.</p> : null}
       </div>
 
