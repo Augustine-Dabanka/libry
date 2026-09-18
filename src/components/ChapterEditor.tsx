@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import RichDocEditor from "@/components/RichDocEditor";
+import MobileBlockEditor from "@/components/MobileBlockEditor";
 
 export type Chapter = { title: string; content: string };
 
@@ -50,6 +51,9 @@ export default function ChapterEditor({ bookId, initial }: { bookId: number; ini
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [open, setOpen] = useState(0);
+  // Touch-first block editor is the default on phones; rich text on larger screens.
+  const [mode, setMode] = useState<"rich" | "blocks">("rich");
+  useEffect(() => { if (typeof window !== "undefined" && window.innerWidth < 700) setMode("blocks"); }, []);
 
   const patch = (i: number, p: Partial<Chapter>) =>
     setChapters((cs) => cs.map((c, idx) => (idx === i ? { ...c, ...p } : c)));
@@ -105,9 +109,19 @@ export default function ChapterEditor({ bookId, initial }: { bookId: number; ini
 
   return (
     <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.6rem", marginBottom: "2.5rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "0.6rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.6rem" }}>
         <h3 style={{ margin: 0 }}>Chapter Editor</h3>
-        <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem" }}>{chapters.length} chapter{chapters.length === 1 ? "" : "s"}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+          <div style={{ display: "inline-flex", border: "1px solid var(--border)", borderRadius: 999, overflow: "hidden" }}>
+            {(["blocks", "rich"] as const).map((m) => (
+              <button key={m} type="button" onClick={() => setMode(m)}
+                style={{ background: mode === m ? "var(--gold)" : "transparent", color: mode === m ? "#12100E" : "var(--ivory-muted)", border: "none", cursor: "pointer", fontFamily: "var(--sans)", fontSize: "0.78rem", fontWeight: 600, padding: "0.3rem 0.7rem" }}>
+                {m === "blocks" ? "Blocks" : "Rich text"}
+              </button>
+            ))}
+          </div>
+          <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem" }}>{chapters.length} chapter{chapters.length === 1 ? "" : "s"}</span>
+        </div>
       </div>
       <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", margin: "0.3rem 0 1.3rem" }}>
         Write your story chapter by chapter. Saving compiles them into the reader in order.
@@ -134,7 +148,11 @@ export default function ChapterEditor({ bookId, initial }: { bookId: number; ini
               </div>
               {isOpen ? (
                 <div style={{ padding: "0 0.7rem 0.9rem" }}>
-                  <RichDocEditor value={toEditable(c.content)} onChange={(html) => patch(i, { content: html })} />
+                  {mode === "blocks" ? (
+                    <MobileBlockEditor key={`b-${i}`} value={c.content} onChange={(html) => patch(i, { content: html })} />
+                  ) : (
+                    <RichDocEditor value={toEditable(c.content)} onChange={(html) => patch(i, { content: html })} />
+                  )}
                 </div>
               ) : null}
             </div>
