@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import MarkNotificationsRead from "@/components/MarkNotificationsRead";
+import PushToggle from "@/components/PushToggle";
 
 export const metadata = { title: "Notifications — Libry" };
 
@@ -40,6 +41,8 @@ export default async function NotificationsPage() {
           <h1>Notifications</h1>
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)" }}>Replies, likes, and new followers — the quiet kind.</p>
         </div>
+
+        <PushToggle userId={user.id} />
 
         {pending ? (
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", textAlign: "center", padding: "2rem 1rem" }}>
