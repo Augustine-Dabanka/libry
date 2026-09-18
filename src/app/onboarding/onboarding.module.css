@@ -240,8 +240,8 @@
   font-family: inherit;
   font-size: 0.9rem;
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  
+  
 }
 .skip:hover { color: var(--text); }
 

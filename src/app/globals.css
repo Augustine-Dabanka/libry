@@ -468,6 +468,23 @@ img {
 .mm-signout:hover { border-color: var(--terracotta, #b5533f); color: var(--terracotta, #b5533f); }
 .mm-cta { margin-top: 0.4rem; text-align: center; }
 
+/* Mobile account dropdown (top bar) */
+.mob-user-btn { background: transparent; border: none; cursor: pointer; padding: 0; display: grid; place-items: center; }
+.mob-user-btn .user-avatar { width: 32px; height: 32px; font-size: 0.8rem; }
+.mob-user-menu {
+  position: absolute; top: calc(100% + 8px); right: 0; min-width: 210px;
+  background: var(--stone); border: 1px solid var(--border); border-radius: 12px;
+  padding: 0.4rem; box-shadow: var(--shadow); z-index: 1002;
+  opacity: 0; visibility: hidden; transform: translateY(6px);
+  transition: opacity 0.16s ease, transform 0.18s ease, visibility 0.16s;
+}
+.mob-user-menu.open { opacity: 1; visibility: visible; transform: none; }
+.mob-user-menu a, .mob-user-menu button {
+  display: block; width: 100%; text-align: left; padding: 0.6rem 0.7rem; border-radius: 8px;
+  color: var(--ivory-muted); font-family: var(--sans); font-size: 0.9rem; background: transparent; border: none; cursor: pointer;
+}
+.mob-user-menu a:hover, .mob-user-menu button:hover { background: rgba(95, 160, 104, 0.12); color: var(--gold); }
+
 /* ========== VERTICAL RAIL (desktop) — Chrome-style collapsing tab strip ====== */
 :root { --rail-w: 68px; --rail-open: 244px; }
 
@@ -658,6 +675,16 @@ body.has-rail { padding-left: var(--rail-w); }
 }
 .ct-tab:hover { color: var(--ivory); }
 .ct-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.ct-tabselect {
+  display: none; width: 100%; margin-bottom: 2rem;
+  padding: 0.7rem 0.9rem; border-radius: 12px;
+  background: var(--stone); color: var(--ivory); border: 1px solid var(--border);
+  font-family: var(--sans); font-weight: 600; font-size: 0.95rem;
+}
+@media (max-width: 640px) {
+  .ct-tabbar { display: none; }
+  .ct-tabselect { display: block; }
+}
 
 /* ========== HERO ========== */
 .hero {
@@ -1190,7 +1217,7 @@ footer a:hover {
 
 /* Footer business details */
 .footer-legal { font-family: var(--sans); font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-top: 0.6rem; }
-.footer-legal a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
+.footer-legal a { color: var(--muted);   }
 .footer-legal a:hover { color: var(--gold); }
 
 /* Center search + autocomplete */

@@ -24,7 +24,7 @@
 
 .topbar { background: linear-gradient(90deg, rgba(196,163,90,0.15), rgba(180,83,9,0.13)); border-bottom: 1px solid var(--line2); color: var(--goldSoft); font-size: 0.82rem; font-weight: 600; text-align: center; padding: 0.5rem 1rem; }
 .topbar b { color: var(--ink); font-weight: 800; }
-.topbar a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.topbar a { color: var(--ink);   }
 
 .nav { position: sticky; top: 0; z-index: 60; background: rgba(28,25,23,0.82); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line2); }
 .navIn { max-width: 1160px; margin: 0 auto; display: flex; align-items: center; gap: 1.4rem; padding: 0.7rem clamp(1.1rem, 4vw, 2rem); }

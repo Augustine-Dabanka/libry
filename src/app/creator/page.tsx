@@ -10,6 +10,7 @@ import CreatorProfileForm from "@/components/CreatorProfileForm";
 import BecomeCreator from "@/components/BecomeCreator";
 import CreatorTabs, { type CreatorTab } from "@/components/CreatorTabs";
 import PromotePanel from "@/components/PromotePanel";
+import FinancePanel from "@/components/FinancePanel";
 import { isCreatorActive, creatorStatusMeta } from "@/lib/creatorStatus";
 import { formatPrice } from "@/lib/types";
 
@@ -151,6 +152,27 @@ export default async function CreatorDashboard() {
       const bmap = new Map(books.map((b) => [Number(b.id), b.title]));
       activePromos = (pr.data as { id: number; book_id: number; kind: string; ends_at: string }[]).map((r) => ({ ...r, title: bmap.get(Number(r.book_id)) || "Your book" }));
     }
+  }
+
+  // --- Finance: payouts + payout account + available balance (guarded). ---
+  type PayoutRow = { id: number; amount: number; status: string; requested_at: string; paid_at: string | null };
+  type PayAcct = { method: string; provider: string | null; account_name: string | null; account_number: string | null };
+  let payouts: PayoutRow[] = [];
+  let payoutAccount: PayAcct | null = null;
+  let paidOut = 0;
+  let pendingOut = 0;
+  let availableBalance = 0;
+  {
+    const po = await supabase.from("payouts").select("id, amount, status, requested_at, paid_at").eq("creator_id", user.id).order("requested_at", { ascending: false });
+    if (!po.error && po.data) {
+      payouts = (po.data as PayoutRow[]).map((p) => ({ ...p, amount: Number(p.amount) }));
+      paidOut = payouts.filter((p) => p.status === "paid").reduce((s, p) => s + p.amount, 0);
+      pendingOut = payouts.filter((p) => p.status === "pending").reduce((s, p) => s + p.amount, 0);
+    }
+    const pa = await supabase.from("payout_accounts").select("method, provider, account_name, account_number").eq("user_id", user.id).maybeSingle();
+    if (!pa.error && pa.data) payoutAccount = pa.data as PayAcct;
+    const ab = await supabase.rpc("creator_available_balance");
+    availableBalance = typeof ab.data === "number" ? Number(ab.data) : Math.max(0, netEarnings - paidOut - pendingOut);
   }
 
   // --- Stats (no payment backend yet → revenue/sales are zero, shown honestly) ---
@@ -378,6 +400,10 @@ export default async function CreatorDashboard() {
                 <PromotePanel email={user.email ?? undefined} books={books.map((b) => ({ id: Number(b.id), title: b.title }))} active={activePromos} />
               );
 
+              const financeNode = (
+                <FinancePanel net={netEarnings} paid={paidOut} pending={pendingOut} available={availableBalance} account={payoutAccount} history={payouts} />
+              );
+
               const accountNode = (
                 <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.6rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.8rem" }}>
@@ -398,6 +424,7 @@ export default async function CreatorDashboard() {
 
               const tabs: CreatorTab[] = [
                 { id: "overview", label: "Overview", icon: "📊", node: overview },
+                { id: "earnings", label: "Earnings", icon: "💰", node: financeNode },
                 { id: "books", label: "Your Books", icon: "📚", node: booksNode },
                 { id: "create", label: "Create", icon: "✍️", node: createNode },
                 { id: "audience", label: "Audience", icon: "🌍", node: audienceNode },

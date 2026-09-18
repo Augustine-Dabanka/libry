@@ -31,6 +31,7 @@ export default function CreatorTabs({ tabs }: { tabs: CreatorTab[] }) {
 
   return (
     <div>
+      {/* Desktop/tablet: a scrollable tab bar. */}
       <div className="ct-tabbar" role="tablist" aria-label="Creator sections">
         {tabs.map((t) => (
           <button
@@ -45,6 +46,13 @@ export default function CreatorTabs({ tabs }: { tabs: CreatorTab[] }) {
           </button>
         ))}
       </div>
+
+      {/* Mobile: a compact dropdown so the (many) tabs stay tidy. */}
+      <select className="ct-tabselect" aria-label="Creator section" value={active} onChange={(e) => go(e.target.value)}>
+        {tabs.map((t) => (
+          <option key={t.id} value={t.id}>{t.icon} {t.label}</option>
+        ))}
+      </select>
       {tabs.map((t) => (
         <div key={t.id} role="tabpanel" hidden={active !== t.id}>
           {t.node}

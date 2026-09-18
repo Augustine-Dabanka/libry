@@ -23,7 +23,7 @@ export default function ReportButton({ bookId, canReport }: { bookId: number; ca
     });
   }
 
-  const linkStyle: React.CSSProperties = { background: "transparent", border: "none", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", cursor: "pointer", textDecoration: "underline", padding: 0 };
+  const linkStyle: React.CSSProperties = { background: "transparent", border: "none", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", cursor: "pointer", padding: 0 };
 
   if (done) {
     return <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem" }}>Thanks — our team will take a look. ✓</span>;

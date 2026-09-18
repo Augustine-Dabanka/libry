@@ -115,7 +115,7 @@ export default function LogoutSurvey({ style, className }: { style?: React.CSSPr
             <button
               type="button"
               onClick={() => setOpen(false)}
-              style={{ display: "block", margin: "0.9rem auto 0", background: "transparent", border: "none", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}
+              style={{ display: "block", margin: "0.9rem auto 0", background: "transparent", border: "none", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", cursor: "pointer" }}
             >
               Stay signed in
             </button>

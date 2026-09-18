@@ -219,7 +219,7 @@ export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
                 <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask for a meaning or simpler word…" style={{ flex: 1, minWidth: 0, padding: "0.55rem 0.7rem", borderRadius: 10, border: `1px solid ${border}`, background: dark ? "rgba(255,255,255,0.05)" : "#fff", color: fg, fontFamily: "var(--sans)", fontSize: "0.88rem", outline: "none" }} />
                 <button type="submit" disabled={busy || !input.trim()} aria-label="Send" style={{ flexShrink: 0, width: 40, borderRadius: 10, border: "none", background: accent, color: "#0f130f", cursor: input.trim() ? "pointer" : "default", opacity: input.trim() ? 1 : 0.5, fontSize: "1rem" }}>➤</button>
               </form>
-              <button type="button" onClick={() => persist({ ...comp, setup: false })} style={{ background: "transparent", border: "none", color: muted, fontFamily: "var(--sans)", fontSize: "0.72rem", cursor: "pointer", padding: "0 0 0.7rem", textDecoration: "underline", textUnderlineOffset: 2 }}>
+              <button type="button" onClick={() => persist({ ...comp, setup: false })} style={{ background: "transparent", border: "none", color: muted, fontFamily: "var(--sans)", fontSize: "0.72rem", cursor: "pointer", padding: "0 0 0.7rem" }}>
                 Edit companion
               </button>
             </>

@@ -61,6 +61,7 @@ export default function NavClient({
 }) {
   const pathname = usePathname() || "/";
   const [railMenu, setRailMenu] = useState<null | "browse" | "user">(null);
+  const [mobUser, setMobUser] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [mSection, setMSection] = useState<null | "genres" | "discover">(null);
   const [cartN, setCartN] = useState(0);
@@ -93,10 +94,10 @@ export default function NavClient({
   useEffect(() => {
     function onDown(e: MouseEvent) {
       const t = e.target as Element | null;
-      if (t && !t.closest("[data-dd-root]")) setRailMenu(null);
+      if (t && !t.closest("[data-dd-root]")) { setRailMenu(null); setMobUser(false); }
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setRailMenu(null);
+      if (e.key === "Escape") { setRailMenu(null); setMobUser(false); }
     }
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
@@ -274,9 +275,9 @@ export default function NavClient({
         <div className="nav-right">
           {signedIn ? <StreakCard compact /> : null}
 
-          <button type="button" className="nav-icon-btn" title="Toggle theme" aria-label="Toggle light or dark" onClick={toggleTheme}>
-            ◑
-          </button>
+          {!signedIn ? (
+            <button type="button" className="nav-icon-btn" title="Toggle theme" aria-label="Toggle light or dark" onClick={toggleTheme}>◑</button>
+          ) : null}
 
           {signedIn ? (
             <a href="/notifications" className="icon-link" title="Notifications" aria-label="Notifications">
@@ -288,7 +289,24 @@ export default function NavClient({
             &#128722; <span className="badge-count">{cartN}</span>
           </button>
 
-          {!signedIn ? <a href="/login" className="btn-login">Log in</a> : null}
+          {signedIn ? (
+            <div className="mob-user" data-dd-root style={{ position: "relative" }}>
+              <button type="button" className="mob-user-btn" onClick={() => setMobUser((v) => !v)} aria-haspopup="true" aria-expanded={mobUser} aria-label="Account menu">
+                <span className="user-avatar">{avatar}</span>
+              </button>
+              <div className={`mob-user-menu${mobUser ? " open" : ""}`} role="menu">
+                <a href="/home">Home</a>
+                <a href="/my-library">My Library</a>
+                <a href="/achievements">Achievements</a>
+                <a href="/creator">Creator Dashboard</a>
+                <a href="/settings">Settings</a>
+                <button type="button" onClick={toggleTheme} style={menuBtn}>◑ Toggle theme</button>
+                <LogoutSurvey style={menuBtn} />
+              </div>
+            </div>
+          ) : (
+            <a href="/login" className="btn-login">Log in</a>
+          )}
 
           <button
             type="button"
