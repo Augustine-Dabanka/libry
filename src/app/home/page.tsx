@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BookCarousel from "@/components/BookCarousel";
+import ProductMini, { type ProductCard } from "@/components/ProductMini";
 import HeroArt from "@/components/HeroArt";
 import StreakCard from "@/components/StreakCard";
 import { allowedRatings } from "@/lib/content";
@@ -50,6 +51,13 @@ export default async function Home() {
   }
   const freeBooks = books.filter((b) => !b.price || b.price <= 0);
   const premiumBooks = books.filter((b) => (b.price ?? 0) > 0);
+
+  // Digital products from creators (guarded pre-migration).
+  let products: ProductCard[] = [];
+  {
+    const pp = await supabase.from("products").select("id, title, type, price, cover_url, category").eq("is_published", true).order("created_at", { ascending: false }).limit(12);
+    if (!pp.error && pp.data) products = pp.data as ProductCard[];
+  }
 
   // Featured this week — a deterministic weekly rotation (changes every 7 days,
   // no backend job). Rotates a window of 5 through the age-filtered catalog.
@@ -198,6 +206,20 @@ export default async function Home() {
 
       <Shelf title="✦ Featured this week" books={featured} />
       <Shelf title="Trending on Libry" books={trending.length ? trending : books.slice(0, 8)} />
+
+      {products.length > 0 ? (
+        <div className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
+          <div className="section-header">
+            <h2>🎁 Digital products</h2>
+            <a href="/discover" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>View all →</a>
+          </div>
+          <div className="book-grid-mini">
+            {products.map((p) => (
+              <ProductMini key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
+      ) : null}
       {followedNew.length > 0 ? (
         <Shelf title="New from authors you follow" books={followedNew} />
       ) : null}
