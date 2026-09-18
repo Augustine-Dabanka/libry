@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Post = { id: number; user_id: string; author_name: string | null; body: string; created_at: string; likes: number; liked: boolean; comments: number };
+type Post = { id: number; user_id: string; author_name: string | null; body: string; image_url?: string | null; created_at: string; likes: number; liked: boolean; comments: number };
 type Comment = { id: number; post_id: number; user_id: string; author_name: string | null; body: string; created_at: string };
 type Meta = { creator: boolean; avatar: string | null };
 
@@ -16,10 +16,12 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-export default function CommunityFeed({ userId, userName, avatarUrl }: { userId: string; userName: string; avatarUrl: string | null }) {
+export default function CommunityFeed({ userId, userName, avatarUrl, communityId = null, channel = "general", canPost = true }: { userId: string; userName: string; avatarUrl: string | null; communityId?: number | null; channel?: string; canPost?: boolean }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [meta, setMeta] = useState<Map<string, Meta>>(new Map());
   const [draft, setDraft] = useState("");
+  const [image, setImage] = useState<string | null>(null);
+  const [imgBusy, setImgBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [pending, setPending] = useState(false); // migration not run
@@ -30,8 +32,14 @@ export default function CommunityFeed({ userId, userName, avatarUrl }: { userId:
 
   const load = useCallback(async () => {
     const supabase = createClient();
-    const p = await supabase.from("community_posts").select("id, user_id, author_name, body, created_at").order("created_at", { ascending: false }).limit(50);
-    if (p.error) { setPending(true); setLoaded(true); return; }
+    let q = supabase.from("community_posts").select("id, user_id, author_name, body, image_url, created_at").order("created_at", { ascending: false }).limit(50);
+    q = communityId == null ? q.is("community_id", null) : q.eq("community_id", communityId).eq("channel", channel);
+    let p = await q;
+    // Pre-migration fallback (no community_id/image_url columns yet).
+    if (p.error) {
+      p = (await supabase.from("community_posts").select("id, user_id, author_name, body, created_at").order("created_at", { ascending: false }).limit(50)) as typeof p;
+      if (p.error) { setPending(true); setLoaded(true); return; }
+    }
     const rows = (p.data ?? []) as Omit<Post, "likes" | "liked" | "comments">[];
     const ids = rows.map((r) => r.id);
     const likeCount = new Map<number, number>();
@@ -57,20 +65,40 @@ export default function CommunityFeed({ userId, userName, avatarUrl }: { userId:
     setMeta(m);
     setPosts(rows.map((r) => ({ ...r, likes: likeCount.get(r.id) ?? 0, liked: liked.has(r.id), comments: commentCount.get(r.id) ?? 0 })));
     setLoaded(true);
-  }, [userId]);
+  }, [userId, communityId, channel]);
 
   useEffect(() => { load(); }, [load]);
 
+  async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    setImgBusy(true);
+    try {
+      const supabase = createClient();
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = `community/${userId}-${Date.now()}.${ext}`;
+      const up = await supabase.storage.from("book-media").upload(path, file, { contentType: file.type, upsert: true });
+      if (!up.error) setImage(supabase.storage.from("book-media").getPublicUrl(path).data.publicUrl);
+    } catch { /* ignore */ }
+    setImgBusy(false);
+  }
+
   async function submitPost() {
     const body = draft.trim();
-    if (!body) return;
+    if (!body && !image) return;
     setBusy(true);
     const supabase = createClient();
-    const { data, error } = await supabase.from("community_posts").insert({ user_id: userId, author_name: userName, body }).select("id, user_id, author_name, body, created_at").single();
+    const row: Record<string, unknown> = { user_id: userId, author_name: userName, body: body || "" };
+    if (communityId != null) { row.community_id = communityId; row.channel = channel; }
+    if (image) row.image_url = image;
+    let res = await supabase.from("community_posts").insert(row).select("id, user_id, author_name, body, image_url, created_at").single();
+    if (res.error) res = await supabase.from("community_posts").insert({ user_id: userId, author_name: userName, body: body || "" }).select("id, user_id, author_name, body, image_url, created_at").single();
     setBusy(false);
-    if (error || !data) return;
+    if (res.error || !res.data) return;
     setDraft("");
-    setPosts((prev) => [{ ...(data as Omit<Post, "likes" | "liked" | "comments">), likes: 0, liked: false, comments: 0 }, ...prev]);
+    setImage(null);
+    setPosts((prev) => [{ ...(res.data as Omit<Post, "likes" | "liked" | "comments">), likes: 0, liked: false, comments: 0 }, ...prev]);
     setMeta((prev) => { const n = new Map(prev); if (!n.has(userId)) n.set(userId, { creator: false, avatar: avatarUrl }); return n; });
   }
 
@@ -136,15 +164,32 @@ export default function CommunityFeed({ userId, userName, avatarUrl }: { userId:
   return (
     <div>
       {/* composer */}
-      <div style={{ display: "flex", gap: "0.8rem", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1rem 1.1rem", marginBottom: "1.6rem" }}>
-        <Avatar uid={userId} name={userName} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={pending ? "Community is being set up…" : "Share what you're reading or writing…"} maxLength={1000} disabled={pending} style={{ ...ta, minHeight: 66 }} />
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.6rem" }}>
-            <button type="button" onClick={submitPost} disabled={busy || pending || !draft.trim()} className="btn btn-gold" style={{ opacity: busy || pending || !draft.trim() ? 0.6 : 1 }}>{busy ? "Posting…" : "Post"}</button>
+      {canPost ? (
+        <div style={{ display: "flex", gap: "0.8rem", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1rem 1.1rem", marginBottom: "1.6rem" }}>
+          <Avatar uid={userId} name={userName} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={pending ? "Community is being set up…" : "Share something…"} maxLength={1000} disabled={pending} style={{ ...ta, minHeight: 66 }} />
+            {image ? (
+              <div style={{ position: "relative", marginTop: "0.6rem", display: "inline-block" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={image} alt="" style={{ maxHeight: 160, borderRadius: 10, border: "1px solid var(--border)" }} />
+                <button type="button" onClick={() => setImage(null)} aria-label="Remove image" style={{ position: "absolute", top: 6, right: 6, background: "rgba(18,16,14,0.8)", color: "#fff", border: "none", borderRadius: "50%", width: 24, height: 24, cursor: "pointer", lineHeight: 1 }}>×</button>
+              </div>
+            ) : null}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.6rem", gap: "0.6rem" }}>
+              <label style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+                🖼 {imgBusy ? "Uploading…" : "Photo"}
+                <input type="file" accept="image/*" onChange={uploadImage} style={{ display: "none" }} disabled={pending || imgBusy} />
+              </label>
+              <button type="button" onClick={submitPost} disabled={busy || pending || imgBusy || (!draft.trim() && !image)} className="btn btn-gold" style={{ opacity: busy || pending || (!draft.trim() && !image) ? 0.6 : 1 }}>{busy ? "Posting…" : "Post"}</button>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1rem 1.2rem", marginBottom: "1.6rem", textAlign: "center", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>
+          Join this community to post.
+        </div>
+      )}
 
       {pending ? (
         <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", textAlign: "center", padding: "2rem 1rem" }}>
@@ -170,7 +215,11 @@ export default function CommunityFeed({ userId, userName, avatarUrl }: { userId:
                       {m?.creator ? <span style={{ fontFamily: "var(--sans)", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#12100E", background: "var(--gold)", borderRadius: 999, padding: "0.1rem 0.45rem" }}>Creator</span> : null}
                       <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem" }}>· {timeAgo(p.created_at)}</span>
                     </div>
-                    <p style={{ fontFamily: "var(--sans)", fontSize: "0.96rem", color: "var(--ivory-muted)", lineHeight: 1.6, margin: "0.4rem 0 0.7rem", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{p.body}</p>
+                    {p.body ? <p style={{ fontFamily: "var(--sans)", fontSize: "0.96rem", color: "var(--ivory-muted)", lineHeight: 1.6, margin: "0.4rem 0 0.7rem", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{p.body}</p> : null}
+                    {p.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.image_url} alt="" style={{ maxWidth: "100%", borderRadius: 12, border: "1px solid var(--border)", margin: "0.2rem 0 0.7rem", display: "block" }} />
+                    ) : null}
                     <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", fontFamily: "var(--sans)", fontSize: "0.85rem" }}>
                       <button type="button" onClick={() => toggleLike(p)} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", background: "transparent", border: "none", cursor: "pointer", color: p.liked ? "var(--gold)" : "var(--muted)", fontWeight: 600 }}>
                         {p.liked ? "♥" : "♡"} {p.likes > 0 ? p.likes : ""}

@@ -1403,3 +1403,10 @@ html { scroll-behavior: smooth; }
   padding: 0.05rem 0.32rem; margin-left: 0.15rem; vertical-align: super;
 }
 
+
+/* Community room + product page: stack the sidebar under the content on small
+   screens (inline grid templates need !important to be overridden here). */
+@media (max-width: 780px) {
+  .community-room-grid { grid-template-columns: 1fr !important; }
+  .product-grid { grid-template-columns: 1fr !important; }
+}

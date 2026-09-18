@@ -198,6 +198,7 @@ export default function NavClient({
                     <div className="rf-col">
                       <h6>Community</h6>
                       <a href="/community">Feed</a>
+                      <a href="/communities">Communities</a>
                       <a href="/notifications">Notifications{notifCount > 0 ? ` (${notifCount})` : ""}</a>
                     </div>
                   </div>
@@ -391,6 +392,7 @@ export default function NavClient({
             </button>
             <div className={`mm-sub${mSection === "community" ? " open" : ""}`}>
               <a href="/community">Feed</a>
+              <a href="/communities">Communities</a>
               <a href="/notifications">
                 Notifications{notifCount > 0 ? <span className="mm-count">{notifCount}</span> : null}
               </a>
