@@ -1474,3 +1474,14 @@ html { scroll-behavior: smooth; }
    device. Wide tables/code keep their own overflow-x:auto containers. */
 html { overflow-x: hidden; }
 body { overflow-x: clip; }
+
+/* Tiptap editor surface */
+.ProseMirror { min-height: 160px; padding: 0.9rem 1rem; color: var(--ivory); font-family: var(--sans); font-size: 0.95rem; line-height: 1.7; outline: none; }
+.ProseMirror:focus { outline: none; }
+.ProseMirror p { margin: 0 0 0.7rem; }
+.ProseMirror h2 { font-family: var(--serif); font-size: 1.35rem; margin: 1rem 0 0.5rem; }
+.ProseMirror blockquote { border-left: 3px solid var(--gold); padding-left: 0.9rem; font-style: italic; color: var(--ivory-muted); margin: 0.7rem 0; }
+.ProseMirror ul, .ProseMirror ol { padding-left: 1.4rem; margin: 0 0 0.7rem; }
+.ProseMirror img { max-width: 100%; border-radius: 8px; margin: 0.4rem 0; }
+.ProseMirror hr { border: none; border-top: 2px solid var(--border); margin: 1rem 0; }
+.ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--muted); float: left; height: 0; pointer-events: none; }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import RichDocEditor from "@/components/RichDocEditor";
+import TiptapEditor from "@/components/TiptapEditor";
 import MobileBlockEditor from "@/components/MobileBlockEditor";
 
 export type Chapter = { title: string; content: string };
@@ -151,7 +151,7 @@ export default function ChapterEditor({ bookId, initial }: { bookId: number; ini
                   {mode === "blocks" ? (
                     <MobileBlockEditor key={`b-${i}`} value={c.content} onChange={(html) => patch(i, { content: html })} />
                   ) : (
-                    <RichDocEditor value={toEditable(c.content)} onChange={(html) => patch(i, { content: html })} />
+                    <TiptapEditor key={`t-${i}`} value={toEditable(c.content)} onChange={(html) => patch(i, { content: html })} />
                   )}
                 </div>
               ) : null}
