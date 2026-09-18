@@ -49,17 +49,28 @@ function Controls({ q, active, sort, genre }: { q: string; active: string; sort:
   ];
   // Show the curated genres, plus the active one if it isn't in the shortlist.
   const genreChips = [...new Set([...BROWSE_GENRES, ...(genre && !BROWSE_GENRES.includes(genre) ? [genre] : [])])].filter((g) => GENRES.includes(g as (typeof GENRES)[number]) || g === genre);
-  const inputStyle: React.CSSProperties = { background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 999, color: "var(--ivory)", fontFamily: "var(--sans)", padding: "0.6rem 1rem", outline: "none" };
   const chip = (label: string, href: string, on: boolean) => (
     <a key={label} href={href} style={{ textDecoration: "none", padding: "0.4rem 0.95rem", fontSize: "0.85rem", borderRadius: 999, fontFamily: "var(--sans)", fontWeight: 600, background: on ? "var(--gold)" : "rgba(95,160,104,0.12)", color: on ? "#12100E" : "var(--ivory-muted)", border: "1px solid var(--border)", whiteSpace: "nowrap" }}>{label}</a>
   );
   return (
     <section className="section" style={{ paddingTop: "1.2rem", paddingBottom: 0 }}>
-      <form action="/catalog" method="get" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center", marginBottom: "1rem", maxWidth: 660 }}>
-        <input name="q" defaultValue={q} type="text" placeholder="Search titles or authors…" aria-label="Search books" style={{ ...inputStyle, flex: 1, minWidth: 200 }} />
+      <form action="/catalog" method="get" style={{ marginBottom: "1rem", maxWidth: 660 }}>
         <input type="hidden" name="sort" value={sort} />
-        <CatalogSort value={sort} />
-        <button type="submit" className="btn btn-gold" style={{ padding: "0.6rem 1.3rem" }}>Search</button>
+        {/* One joined pill: field + button share a border and never break apart. */}
+        <div style={{ display: "flex", alignItems: "stretch", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 999, overflow: "hidden" }}>
+          <input
+            name="q"
+            defaultValue={q}
+            type="text"
+            placeholder="Search titles or authors…"
+            aria-label="Search books"
+            style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", color: "var(--ivory)", fontFamily: "var(--sans)", fontSize: "0.95rem", padding: "0.65rem 0.5rem 0.65rem 1.1rem", outline: "none" }}
+          />
+          <button type="submit" className="btn btn-gold" style={{ borderRadius: 0, padding: "0.65rem 1.3rem", whiteSpace: "nowrap", flexShrink: 0 }}>Search</button>
+        </div>
+        <div style={{ marginTop: "0.6rem" }}>
+          <CatalogSort value={sort} />
+        </div>
       </form>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.7rem" }}>
         {chips.map((c) => chip(c.label, c.href, active === c.key && !genre))}
