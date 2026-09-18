@@ -82,7 +82,10 @@ export default function AdminPanel({ apps, payouts }: { apps: PartnerApp[]; payo
 
       {/* Payout requests */}
       <section>
-        <h2 style={{ fontSize: "1.2rem", marginBottom: "1rem" }}>Payout requests ({payouts.length})</h2>
+        <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>Payout requests ({payouts.length})</h2>
+        <div style={{ background: "rgba(217,164,65,0.10)", border: "1px solid rgba(217,164,65,0.35)", borderRadius: 10, padding: "0.8rem 1rem", marginBottom: "1rem", fontFamily: "var(--sans)", fontSize: "0.84rem", color: "var(--ivory-muted)", lineHeight: 1.55 }}>
+          <strong style={{ color: "var(--ivory)" }}>How to pay out:</strong> On a Paystack <em>Starter</em> account, automated <strong>Send now</strong> is disabled. Until Transfers is enabled (register a business, then enable it in Paystack), pay the creator directly via MoMo/bank using the details below, then click <strong>Mark paid</strong>. Accepting customer payments is unaffected.
+        </div>
         {payouts.length === 0 ? (
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)" }}>No pending payouts.</p>
         ) : (
