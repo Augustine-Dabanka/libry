@@ -71,3 +71,24 @@ export async function rejectPayout(payoutId: number) {
   if (error) return { error: error.message };
   return { ok: true };
 }
+
+// Auto-send a payout to the creator's account via Paystack Transfers, and mark
+// it paid on success. Falls back to a clear error so staff can send manually.
+export async function sendPayoutNow(payoutId: number) {
+  if (!(await isAdmin())) return { error: "Not authorized." };
+  const sb = admin();
+  const { data: po } = await sb.from("payouts").select("id, creator_id, amount, status").eq("id", payoutId).maybeSingle();
+  if (!po) return { error: "Payout not found." };
+  if (po.status !== "pending") return { error: `This payout is already ${po.status}.` };
+  const { data: acct } = await sb.from("payout_accounts").select("method, provider, account_name, account_number").eq("user_id", po.creator_id).maybeSingle();
+  if (!acct) return { error: "This creator hasn't added payout details." };
+
+  const { sendPaystackTransfer } = await import("@/lib/paystack-transfer");
+  const res = await sendPaystackTransfer(Number(po.amount), acct, `Libry payout #${payoutId}`);
+  if (!res.ok) {
+    await sb.from("payouts").update({ note: res.error ?? "Transfer failed" }).eq("id", payoutId);
+    return { error: res.error };
+  }
+  await sb.from("payouts").update({ status: "paid", paid_at: new Date().toISOString(), reference: res.reference ?? null, note: `Auto-transfer via Paystack (${res.status})` }).eq("id", payoutId);
+  return { ok: true };
+}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { setPartnerStatus, markPayoutPaid, rejectPayout, adminLogout } from "@/app/actions/admin";
+import { setPartnerStatus, markPayoutPaid, rejectPayout, sendPayoutNow, adminLogout } from "@/app/actions/admin";
 import { formatPrice } from "@/lib/types";
 
 export type PartnerApp = {
@@ -96,7 +96,8 @@ export default function AdminPanel({ apps, payouts }: { apps: PartnerApp[]; payo
                     <div style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.3rem" }}>{acct(p.payout)}</div>
                   </div>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                    <button type="button" className="btn btn-gold" disabled={busy === `pp-${p.id}`} onClick={() => run(`pp-${p.id}`, () => markPayoutPaid(p.id))} style={{ padding: "0.4rem 1rem", fontSize: "0.82rem" }}>Mark paid</button>
+                    <button type="button" className="btn btn-gold" disabled={busy === `sp-${p.id}`} onClick={() => run(`sp-${p.id}`, () => sendPayoutNow(p.id))} style={{ padding: "0.4rem 1rem", fontSize: "0.82rem" }}>{busy === `sp-${p.id}` ? "Sending…" : "Send now"}</button>
+                    <button type="button" className="btn btn-outline" disabled={busy === `pp-${p.id}`} onClick={() => run(`pp-${p.id}`, () => markPayoutPaid(p.id))} style={{ padding: "0.4rem 1rem", fontSize: "0.82rem" }}>Mark paid</button>
                     <button type="button" className="btn btn-outline" disabled={busy === `xp-${p.id}`} onClick={() => run(`xp-${p.id}`, () => rejectPayout(p.id))} style={{ padding: "0.4rem 1rem", fontSize: "0.82rem", color: "var(--terracotta)" }}>Reject</button>
                   </div>
                 </div>
