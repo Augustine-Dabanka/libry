@@ -1416,3 +1416,56 @@ html { scroll-behavior: smooth; }
 @media (max-width: 780px) {
   .product-cover { max-width: 140px !important; margin: 0 0 0.4rem 0 !important; }
 }
+
+/* ─────────── Home hero animated story ─────────── */
+.heroart-scene .sc { opacity: 0; }
+.heroart-scene .sc4 { opacity: 1; } /* visible fallback if animations don't run */
+.heroart-scene .sc1 { animation: hs-sc1 24s ease-in-out infinite; }
+.heroart-scene .sc2 { animation: hs-sc2 24s ease-in-out infinite; }
+.heroart-scene .sc3 { animation: hs-sc3 24s ease-in-out infinite; }
+.heroart-scene .sc4 { animation: hs-sc4 24s ease-in-out infinite; }
+@keyframes hs-sc1 { 0%{opacity:0} 2%,30%{opacity:1} 34%,100%{opacity:0} }
+@keyframes hs-sc2 { 0%,32%{opacity:0} 35%,47%{opacity:1} 51%,100%{opacity:0} }
+@keyframes hs-sc3 { 0%,50%{opacity:0} 53%,77%{opacity:1} 81%,100%{opacity:0} }
+@keyframes hs-sc4 { 0%,80%{opacity:0} 83%,98%{opacity:1} 100%{opacity:0} }
+
+.heroart-scene .s1-walk { animation: hs-walk 24s linear infinite; }
+@keyframes hs-walk { 0%{transform:translateX(112px)} 26%{transform:translateX(288px)} 34%,100%{transform:translateX(288px)} }
+.heroart-scene .s1-leg { transform-box: fill-box; transform-origin: top; animation: hs-leg 0.5s ease-in-out infinite; }
+.heroart-scene .s1-leg2 { animation-delay: -0.25s; }
+@keyframes hs-leg { 0%,100%{transform:rotate(16deg)} 50%{transform:rotate(-16deg)} }
+.heroart-scene .s1-sun { animation: hs-sun 24s ease-in-out infinite; }
+@keyframes hs-sun { 0%{transform:translate(-60px,30px);opacity:1} 15%{transform:translate(0,-6px)} 30%{transform:translate(60px,30px);opacity:1} 34%,100%{opacity:0} }
+.heroart-scene .s1-dot-0{animation:hs-dot 24s step-end infinite;animation-delay:0s}
+.heroart-scene .s1-dot-1{animation:hs-dot 24s step-end infinite;animation-delay:.55s}
+.heroart-scene .s1-dot-2{animation:hs-dot 24s step-end infinite;animation-delay:1.10s}
+.heroart-scene .s1-dot-3{animation:hs-dot 24s step-end infinite;animation-delay:1.65s}
+.heroart-scene .s1-dot-4{animation:hs-dot 24s step-end infinite;animation-delay:2.20s}
+.heroart-scene .s1-dot-5{animation:hs-dot 24s step-end infinite;animation-delay:2.75s}
+.heroart-scene .s1-dot-6{animation:hs-dot 24s step-end infinite;animation-delay:3.30s}
+@keyframes hs-dot { 0%{fill:#44403C} 4%,30%{fill:#C4A35A} 34%,100%{fill:#44403C} }
+
+.heroart-scene .s2-bubble { transform-box: fill-box; transform-origin: bottom left; animation: hs-bubble 24s ease-in-out infinite; }
+@keyframes hs-bubble { 0%,35%{opacity:0;transform:scale(0.6)} 39%,47%{opacity:1;transform:scale(1)} 51%,100%{opacity:0} }
+.heroart-scene .s2-app { animation: hs-app 24s ease-in-out infinite; }
+@keyframes hs-app { 0%,40%{opacity:0;transform:translate(150px,284px) scale(0.6)} 44%{opacity:1;transform:translate(150px,284px) scale(1)} 48%{opacity:1;transform:translate(252px,284px) scale(1)} 51%,100%{opacity:0;transform:translate(252px,284px)} }
+
+.heroart-scene .s3-f1 { transform-box: fill-box; transform-origin: center; animation: hs-f 24s ease-in-out infinite; }
+.heroart-scene .s3-f2 { transform-box: fill-box; transform-origin: center; animation: hs-f 24s ease-in-out infinite; animation-delay: 1.6s; }
+.heroart-scene .s3-f3 { transform-box: fill-box; transform-origin: center; animation: hs-f 24s ease-in-out infinite; animation-delay: 3.2s; }
+@keyframes hs-f { 0%,52%{opacity:0;transform:translateX(14px)} 56%,77%{opacity:1;transform:none} 81%,100%{opacity:0} }
+
+.heroart-scene .s4-thumb { transform-box: fill-box; transform-origin: center; animation: hs-thumb 24s ease-in-out infinite; }
+@keyframes hs-thumb { 0%,84%{opacity:0;transform:scale(0.4)} 88%{opacity:1;transform:scale(1.15)} 92%,98%{opacity:1;transform:scale(1)} 100%{opacity:0} }
+.heroart-scene .s4-spark { transform-box: fill-box; transform-origin: center; animation: hs-spark 24s ease-in-out infinite; }
+.heroart-scene .s4-spark2 { animation-delay: -1s; }
+@keyframes hs-spark { 0%,86%{opacity:0;transform:scale(0.3) rotate(0)} 90%{opacity:1;transform:scale(1) rotate(45deg)} 98%,100%{opacity:0} }
+
+@media (prefers-reduced-motion: reduce) {
+  .heroart-scene .sc, .heroart-scene .s1-walk, .heroart-scene .s1-leg, .heroart-scene .s1-sun,
+  .heroart-scene [class^="s1-dot"], .heroart-scene .s2-bubble, .heroart-scene .s2-app,
+  .heroart-scene .s3-f1, .heroart-scene .s3-f2, .heroart-scene .s3-f3,
+  .heroart-scene .s4-thumb, .heroart-scene .s4-spark { animation: none !important; }
+  .heroart-scene .sc1, .heroart-scene .sc2, .heroart-scene .sc3 { opacity: 0 !important; }
+  .heroart-scene .sc4, .heroart-scene .s4-thumb, .heroart-scene .s4-spark { opacity: 1 !important; transform: none !important; }
+}
