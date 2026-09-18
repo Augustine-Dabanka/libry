@@ -10,7 +10,7 @@ export default function HeroArt() {
         <rect x="8" y="8" width="384" height="444" rx="16" fill="#22201E" stroke="rgba(250,247,242,0.08)" />
 
         {/* ── Scene 1 — the daily 3 km trek ── */}
-        <g className="sc sc1">
+        <g className="sc sc1" opacity="0">
           <circle className="s1-sun" cx="200" cy="70" r="16" fill="#C4A35A" opacity="0.85" />
           {[0, 1, 2, 3, 4, 5, 6].map((d) => (
             <circle key={d} className={`s1-dot s1-dot-${d}`} cx={120 + d * 27} cy="112" r="6" fill="#44403C" stroke="#5a5048" />
@@ -43,7 +43,7 @@ export default function HeroArt() {
         </g>
 
         {/* ── Scene 2 — a friend shares Libry ── */}
-        <g className="sc sc2">
+        <g className="sc sc2" opacity="0">
           <g>
             <circle cx="150" cy="250" r="16" fill="#E0B48C" />
             <rect x="134" y="268" width="32" height="52" rx="12" fill="#7C4D6E" />
@@ -65,7 +65,7 @@ export default function HeroArt() {
         </g>
 
         {/* ── Scene 3 — the features ── */}
-        <g className="sc sc3">
+        <g className="sc sc3" opacity="0">
           <rect x="150" y="96" width="100" height="200" rx="16" fill="#1a1917" stroke="#C4A35A" strokeWidth="1.5" />
           <text x="200" y="130" textAnchor="middle" fontFamily="Georgia, serif" fontSize="20" fontWeight="700" fill="#C4A35A">Libry<tspan fill="#7C6BF5">.</tspan></text>
           <g className="s3-f1">
@@ -88,8 +88,8 @@ export default function HeroArt() {
           <text x="200" y="430" textAnchor="middle" fill="#78716C" fontFamily="Georgia, serif" fontStyle="italic" fontSize="16">read · collect · get paid</text>
         </g>
 
-        {/* ── Scene 4 — the payoff ── */}
-        <g className="sc sc4">
+        {/* ── Scene 4 — the payoff (opacity=1 inline so it shows even if CSS fails) ── */}
+        <g className="sc sc4" opacity="1">
           <rect x="120" y="300" width="160" height="44" rx="14" fill="#4E7A52" />
           <rect x="112" y="286" width="24" height="58" rx="10" fill="#3f6543" />
           <rect x="264" y="286" width="24" height="58" rx="10" fill="#3f6543" />
