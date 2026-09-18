@@ -50,8 +50,10 @@
 }
 @media (max-width: 560px) {
   .heroIn { padding-top: 2rem; gap: 1.6rem; }
-  .heroCta { width: 100%; }
+  .heroCta { width: 100%; gap: 0.5rem; }
   .heroCta .btn { flex: 1 1 auto; justify-content: center; }
+  /* Trim the oversized hero buttons on phones so the pair fits comfortably. */
+  .heroCta .btnLg { padding: 0.68rem 0.9rem; font-size: 0.9rem; }
 }
 .hero h1 { font-size: clamp(2.7rem, 6.4vw, 4.6rem); }
 .hero h1 em { font-style: normal; color: var(--goldSoft); }

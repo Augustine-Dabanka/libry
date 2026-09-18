@@ -48,15 +48,16 @@ export default async function Landing() {
               Stories worth <em>lingering</em> in.
             </h1>
             <p className={s.sub}>
-              A calm, curated bookstore with interactive, choose-your-path stories —
-              where readers come first and writers keep 65%.
+              A calm bookstore and creator marketplace — books, interactive
+              choose-your-path stories, and digital products, where readers come
+              first and creators keep 65%.
             </p>
             <div className={s.heroCta} style={{ marginTop: "1.7rem" }}>
               <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding">
                 Start Reading Free
               </a>
               <a className={`${s.btn} ${s.btnGhost} ${s.btnLg}`} href="/onboarding?intent=creator">
-                Publish Your Story
+                Publish &amp; Sell
               </a>
             </div>
             <div className={s.heroNote}>
@@ -204,10 +205,11 @@ export default async function Landing() {
               65%<small>Yours on every sale</small>
             </div>
             <p className={s.sub} style={{ marginTop: "1.2rem", maxWidth: "40ch" }}>
-              Publish in minutes, keep the majority, and see who&apos;s actually reading you.
+              Sell books, interactive stories and digital products — keep the
+              majority, and see who&apos;s actually reading you.
             </p>
             <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding" style={{ marginTop: "1.3rem" }}>
-              Publish your book
+              Start creating
             </a>
           </div>
           <div className={s.steps}>
@@ -220,13 +222,13 @@ export default async function Landing() {
             <div className={s.step}>
               <b>2</b>
               <span>
-                <strong>Set</strong> — free or premium, pick a type, and upload your own cover (or paste a URL).
+                <strong>Sell more than books</strong> — add templates, audio, downloads, video &amp; courses as digital products, free or premium.
               </span>
             </div>
             <div className={s.step}>
               <b>3</b>
               <span>
-                <strong>Publish</strong> — it goes live in the catalog instantly. Keep 65%, always.
+                <strong>Publish</strong> — it goes live instantly. Keep 65%; withdraw once you join the Library Partnership Program.
               </span>
             </div>
           </div>
