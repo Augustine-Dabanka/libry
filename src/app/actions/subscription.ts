@@ -2,14 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { type Plan, PLAN_PRICE, PERIOD_DAYS } from "@/lib/plans";
 
 const RATE = Number(process.env.NEXT_PUBLIC_PAYSTACK_USD_RATE || "1") || 1;
-
-export type Plan = "weekly" | "monthly" | "yearly";
-
-// Authoritative plan prices (USD) — the client can't set these.
-export const PLAN_PRICE: Record<Plan, number> = { weekly: 2.49, monthly: 6.99, yearly: 59 };
-const PERIOD_DAYS: Record<Plan, number> = { weekly: 7, monthly: 30, yearly: 365 };
 
 export async function subscribeUnlimited(input: {
   plan: Plan; genres: string[]; maxAge: string; picks: number; reference: string;
