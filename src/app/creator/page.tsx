@@ -11,6 +11,8 @@ import BecomeCreator from "@/components/BecomeCreator";
 import CreatorTabs, { type CreatorTab } from "@/components/CreatorTabs";
 import PromotePanel from "@/components/PromotePanel";
 import FinancePanel from "@/components/FinancePanel";
+import ProductsPanel from "@/components/ProductsPanel";
+import { type ProductType } from "@/app/actions/products";
 import { isCreatorActive, creatorStatusMeta } from "@/lib/creatorStatus";
 import { formatPrice } from "@/lib/types";
 
@@ -187,6 +189,23 @@ export default async function CreatorDashboard() {
   if (sharedIds.length) {
     const { data: sb } = await supabase.from("books").select("id, title, price, type, status, rating").in("id", sharedIds);
     sharedBooks = (sb ?? []) as MyBook[];
+  }
+
+  // Digital products owned by this creator, with sale counts.
+  type ProdRow = { id: number; title: string; description: string | null; type: string; price: number | null; cover_url: string | null; file_path: string | null; file_name: string | null; file_size: number | null; external_url: string | null; category: string | null; is_published: boolean };
+  let myProducts: (ProdRow & { sales: number })[] = [];
+  {
+    const pr = await supabase.from("products").select("id, title, description, type, price, cover_url, file_path, file_name, file_size, external_url, category, is_published").eq("user_id", user.id).order("created_at", { ascending: false });
+    if (!pr.error && pr.data) {
+      const rows = pr.data as ProdRow[];
+      const ids = rows.map((r) => r.id);
+      const salesMap = new Map<number, number>();
+      if (ids.length) {
+        const { data: pps } = await supabase.from("product_purchases").select("product_id").in("product_id", ids);
+        (pps ?? []).forEach((x: { product_id: number }) => salesMap.set(x.product_id, (salesMap.get(x.product_id) ?? 0) + 1));
+      }
+      myProducts = rows.map((r) => ({ ...r, sales: salesMap.get(r.id) ?? 0 }));
+    }
   }
 
   const stat = (label: string, value: string, sub: string) => (
@@ -422,10 +441,23 @@ export default async function CreatorDashboard() {
                 </div>
               );
 
+              const productsNode = (
+                <ProductsPanel
+                  userId={user.id}
+                  canPublish={active}
+                  products={myProducts.map((p) => ({
+                    id: p.id, title: p.title, description: p.description, type: p.type as ProductType, price: p.price,
+                    cover_url: p.cover_url, file_path: p.file_path, file_name: p.file_name, file_size: p.file_size,
+                    external_url: p.external_url, category: p.category, is_published: p.is_published, sales: p.sales,
+                  }))}
+                />
+              );
+
               const tabs: CreatorTab[] = [
                 { id: "overview", label: "Overview", icon: "📊", node: overview },
                 { id: "earnings", label: "Earnings", icon: "💰", node: financeNode },
                 { id: "books", label: "Your Books", icon: "📚", node: booksNode },
+                { id: "products", label: "Products", icon: "🎁", node: productsNode },
                 { id: "create", label: "Create", icon: "✍️", node: createNode },
                 { id: "audience", label: "Audience", icon: "🌍", node: audienceNode },
                 { id: "promote", label: "Promote", icon: "📣", node: promoteNode },

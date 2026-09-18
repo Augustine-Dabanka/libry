@@ -86,7 +86,7 @@ export default async function EditBook({
     <>
       <section className="section">
         <a
-          href="/creator?tab=books"
+          href="/creator#books"
           style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", fontWeight: 600, marginBottom: "0.9rem" }}
         >
           ← Back to dashboard
