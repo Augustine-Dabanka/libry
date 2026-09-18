@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import LibraryTabs, { type LibBook } from "@/components/LibraryTabs";
+import ProductMini, { type ProductCard } from "@/components/ProductMini";
 
 type BookRow = { id: number; title: string; author: string | null; price: number | null; type: string | null };
 
@@ -61,6 +62,17 @@ export default async function MyLibrary({
     purchased = [...m.values()];
   }
 
+  // Digital products the reader owns (guarded).
+  let myProducts: ProductCard[] = [];
+  {
+    const pp = await supabase.from("product_purchases").select("product_id").eq("user_id", user.id);
+    if (!pp.error && pp.data?.length) {
+      const ids = [...new Set((pp.data as { product_id: number }[]).map((r) => r.product_id))];
+      const { data: prods } = await supabase.from("products").select("id, title, type, price, cover_url, category").in("id", ids);
+      myProducts = (prods ?? []) as ProductCard[];
+    }
+  }
+
   const initialTab = tab === "wishlist" || tab === "purchased" ? (tab as "wishlist" | "purchased") : "reading";
 
   return (
@@ -75,6 +87,19 @@ export default async function MyLibrary({
         </p>
 
         <LibraryTabs reading={reading} wishlist={wishlist} purchased={purchased} initialTab={initialTab} />
+
+        {myProducts.length > 0 ? (
+          <div style={{ marginTop: "2.6rem" }}>
+            <div className="section-header">
+              <h2>🎁 Your products</h2>
+            </div>
+            <div className="book-grid-mini">
+              {myProducts.map((p) => (
+                <ProductMini key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </section>
     </>
   );

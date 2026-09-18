@@ -34,10 +34,10 @@ export default async function CreatorDashboard() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  type Prof = { full_name?: string; username?: string; pen_name?: string; bio?: string; is_creator?: boolean };
+  type Prof = { full_name?: string; username?: string; pen_name?: string; bio?: string; is_creator?: boolean; avatar_url?: string };
   const primaryProfile = await supabase
     .from("profiles")
-    .select("full_name, username, pen_name, bio, is_creator")
+    .select("full_name, username, pen_name, bio, is_creator, avatar_url")
     .eq("id", user.id)
     .maybeSingle();
   const profile = primaryProfile.error
@@ -424,7 +424,7 @@ export default async function CreatorDashboard() {
               );
 
               const profileNode = (
-                <CreatorProfileForm userId={user.id} initialPenName={profile?.pen_name || profile?.full_name || ""} initialBio={profile?.bio || ""} />
+                <CreatorProfileForm userId={user.id} initialPenName={profile?.pen_name || profile?.full_name || ""} initialBio={profile?.bio || ""} initialAvatar={profile?.avatar_url || ""} />
               );
 
               const promoteNode = (

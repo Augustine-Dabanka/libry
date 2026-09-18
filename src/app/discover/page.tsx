@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BookMini from "@/components/BookMini";
 import BookCarousel from "@/components/BookCarousel";
+import ProductMini, { type ProductCard } from "@/components/ProductMini";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
@@ -48,6 +49,13 @@ export default async function Discover({
   if (res.error) res = await run(false, false); // is_editors_pick not migrated
   const books = (res.data ?? []) as unknown as Book[];
   const activeLabel = FILTERS.find((f) => f.key === filter)?.label ?? "Discover";
+
+  // Digital products from creators (guarded pre-migration).
+  let products: ProductCard[] = [];
+  {
+    const pp = await supabase.from("products").select("id, title, type, price, cover_url, category").eq("is_published", true).order("created_at", { ascending: false }).limit(18);
+    if (!pp.error && pp.data) products = pp.data as ProductCard[];
+  }
 
   // Spotlight: books with an active, paid promotion (guarded pre-migration).
   let spotlight: Book[] = [];
@@ -116,6 +124,20 @@ export default async function Discover({
             </p>
           </div>
         )}
+
+        {products.length > 0 ? (
+          <div style={{ marginTop: "2.6rem" }}>
+            <div className="section-header">
+              <h2>🎁 Digital products</h2>
+              <a href="/discover" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>From creators</a>
+            </div>
+            <div className="book-grid-mini">
+              {products.map((p) => (
+                <ProductMini key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </section>
     </>
   );
