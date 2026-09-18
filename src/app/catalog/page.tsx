@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
-import BookCard from "@/components/BookCard";
+import BookMini from "@/components/BookMini";
 import CatalogSort from "@/components/CatalogSort";
 import { allowedRatings, GENRES } from "@/lib/content";
 import { type Book } from "@/lib/types";
@@ -24,9 +24,9 @@ function Shelf({ title, href, books }: { title: string; href: string; books: Cat
           View all →
         </a>
       </div>
-      <div className="book-grid">
+      <div className="book-grid-mini">
         {books.slice(0, 12).map((b) => (
-          <BookCard key={b.id} book={b} />
+          <BookMini key={b.id} book={b} />
         ))}
       </div>
     </section>
@@ -142,8 +142,8 @@ export default async function Catalog({
             <h2>{heading}</h2>
           </div>
           {books.length > 0 ? (
-            <div className="book-grid">
-              {books.map((b) => <BookCard key={b.id} book={b} />)}
+            <div className="book-grid-mini">
+              {books.map((b) => <BookMini key={b.id} book={b} />)}
             </div>
           ) : (
             <div style={{ border: "1px solid var(--border)", borderRadius: 16, padding: "3rem 2rem", textAlign: "center", background: "var(--stone)" }}>

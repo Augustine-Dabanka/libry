@@ -9,6 +9,7 @@ import RevenueChart from "@/components/RevenueChart";
 import CreatorProfileForm from "@/components/CreatorProfileForm";
 import BecomeCreator from "@/components/BecomeCreator";
 import CreatorTabs, { type CreatorTab } from "@/components/CreatorTabs";
+import PromotePanel from "@/components/PromotePanel";
 import { isCreatorActive, creatorStatusMeta } from "@/lib/creatorStatus";
 import { formatPrice } from "@/lib/types";
 
@@ -138,6 +139,17 @@ export default async function CreatorDashboard() {
         const p = byId.get(r.follower_id);
         return { name: p?.full_name || p?.username || "Reader", username: p?.username ?? null, avatar: p?.avatar_url ?? null, since: r.created_at };
       });
+    }
+  }
+
+  // --- Active promotions by this creator (guarded — table may be pre-migration). ---
+  type PromoRow = { id: number; book_id: number; kind: string; ends_at: string; title: string };
+  let activePromos: PromoRow[] = [];
+  {
+    const pr = await supabase.from("promotions").select("id, book_id, kind, ends_at").eq("creator_id", user.id).eq("status", "active").gt("ends_at", new Date().toISOString()).order("ends_at", { ascending: true });
+    if (!pr.error && pr.data?.length) {
+      const bmap = new Map(books.map((b) => [Number(b.id), b.title]));
+      activePromos = (pr.data as { id: number; book_id: number; kind: string; ends_at: string }[]).map((r) => ({ ...r, title: bmap.get(Number(r.book_id)) || "Your book" }));
     }
   }
 
@@ -362,6 +374,10 @@ export default async function CreatorDashboard() {
                 <CreatorProfileForm userId={user.id} initialPenName={profile?.pen_name || profile?.full_name || ""} initialBio={profile?.bio || ""} />
               );
 
+              const promoteNode = (
+                <PromotePanel email={user.email ?? undefined} books={books.map((b) => ({ id: Number(b.id), title: b.title }))} active={activePromos} />
+              );
+
               const accountNode = (
                 <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.6rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.8rem" }}>
@@ -385,6 +401,7 @@ export default async function CreatorDashboard() {
                 { id: "books", label: "Your Books", icon: "📚", node: booksNode },
                 { id: "create", label: "Create", icon: "✍️", node: createNode },
                 { id: "audience", label: "Audience", icon: "🌍", node: audienceNode },
+                { id: "promote", label: "Promote", icon: "📣", node: promoteNode },
                 { id: "profile", label: "Profile", icon: "👤", node: profileNode },
                 { id: "account", label: "Account", icon: "🛡️", node: accountNode },
               ];

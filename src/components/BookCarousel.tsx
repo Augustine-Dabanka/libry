@@ -1,4 +1,5 @@
-import { type Book, formatPrice, bookCover } from "@/lib/types";
+import { type Book } from "@/lib/types";
+import BookMini from "@/components/BookMini";
 
 // A horizontal, snap-scrolling row of compact book cards (Wattpad-style),
 // grouped under a section title. Keeps several categories visible per screen on
@@ -12,29 +13,11 @@ export default function BookCarousel({ title, books, href = "/catalog" }: { titl
         <a href={href} style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontSize: "0.85rem", whiteSpace: "nowrap" }}>View all →</a>
       </div>
       <div className="book-carousel">
-        {books.map((b) => {
-          const cover = bookCover(b);
-          const label = (b.type || "").toLowerCase() === "interactive" ? "Interactive" : b.category || b.type || null;
-          return (
-            <a key={b.id} className="cc-card" href={`/book/${b.id}`}>
-              <div className="cc-cover">
-                {cover ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={cover} alt={`Cover of ${b.title}`} loading="lazy" />
-                ) : (
-                  <div className="cc-fallback">
-                    <span className="cc-mark">LIBRY</span>
-                    <span className="cc-fallback-title">{b.title}</span>
-                  </div>
-                )}
-                {label ? <span className="cc-badge">{label}</span> : null}
-              </div>
-              <div className="cc-title">{b.title}</div>
-              <div className="cc-author">{b.author || "Unknown author"}</div>
-              <div className="cc-price">{b.price != null && b.price > 0 ? formatPrice(b.price) : "Free"}</div>
-            </a>
-          );
-        })}
+        {books.map((b) => (
+          <div key={b.id} className="cc-slot">
+            <BookMini book={b} />
+          </div>
+        ))}
       </div>
     </section>
   );

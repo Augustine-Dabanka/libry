@@ -621,7 +621,10 @@ body.has-rail { padding-left: var(--rail-w); }
   padding: 0.2rem 0.2rem 0.7rem;
 }
 .book-carousel::-webkit-scrollbar { display: none; }
-.cc-card { flex: 0 0 auto; width: clamp(132px, 42vw, 158px); scroll-snap-align: start; text-decoration: none; display: block; }
+.cc-slot { flex: 0 0 auto; width: clamp(132px, 42vw, 158px); scroll-snap-align: start; }
+/* Compact grid (catalog) — same card size as the home carousels. */
+.book-grid-mini { display: grid; grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 1.3rem 0.9rem; }
+.cc-card { text-decoration: none; display: block; width: 100%; }
 .cc-cover {
   position: relative; aspect-ratio: 2 / 3; border-radius: 10px; overflow: hidden;
   border: 1px solid rgba(197, 160, 89, 0.28);

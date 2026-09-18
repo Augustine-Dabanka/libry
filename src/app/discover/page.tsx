@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BookCard from "@/components/BookCard";
+import BookCarousel from "@/components/BookCarousel";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
@@ -48,6 +49,17 @@ export default async function Discover({
   const books = (res.data ?? []) as unknown as Book[];
   const activeLabel = FILTERS.find((f) => f.key === filter)?.label ?? "Discover";
 
+  // Spotlight: books with an active, paid promotion (guarded pre-migration).
+  let spotlight: Book[] = [];
+  {
+    const pr = await supabase.from("promotions").select("book_id").eq("status", "active").gt("ends_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(12);
+    if (!pr.error && pr.data?.length) {
+      const ids = [...new Set((pr.data as { book_id: number }[]).map((r) => r.book_id))];
+      const sb = await supabase.from("books").select("id, title, author, price, type, category, cover_url").in("id", ids).eq("is_published", true);
+      if (!sb.error) spotlight = (sb.data ?? []) as unknown as Book[];
+    }
+  }
+
   return (
     <>
       <AppNav />
@@ -55,6 +67,13 @@ export default async function Discover({
         <div className="section-header">
           <h2>Discover · {activeLabel}</h2>
         </div>
+
+        {spotlight.length > 0 ? (
+          <div style={{ marginBottom: "1.6rem" }}>
+            <BookCarousel title="✦ Spotlight" books={spotlight} href="/discover" />
+            <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.78rem", marginTop: "-0.4rem" }}>Promoted by their creators.</p>
+          </div>
+        ) : null}
 
         <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginTop: "-1.5rem", marginBottom: "2rem" }}>
           {FILTERS.map((f) => (
