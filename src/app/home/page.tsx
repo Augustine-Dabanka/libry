@@ -204,6 +204,26 @@ export default async function Home() {
         </div>
       </div>
 
+      {/* Trending tropes — the hooky genres readers chase. */}
+      <div className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
+        <div className="section-header"><h2>🔥 Trending tropes</h2></div>
+        <div style={{ display: "flex", gap: "0.55rem", overflowX: "auto", paddingBottom: "0.4rem" }}>
+          {[
+            { g: "Romance", e: "💛" }, { g: "Dark Romance", e: "🖤" }, { g: "Werewolf", e: "🐺" },
+            { g: "Vampire", e: "🧛" }, { g: "Enemies to Lovers", e: "⚔️", q: "q" }, { g: "Paranormal", e: "👻" },
+            { g: "New Adult", e: "🔥" }, { g: "Teen Fiction", e: "🎒" }, { g: "LGBTQ+", e: "🏳️‍🌈" }, { g: "Fantasy", e: "🐉" },
+          ].map((t) => (
+            <a
+              key={t.g}
+              href={t.q ? `/catalog?q=${encodeURIComponent(t.g)}` : `/catalog?genre=${encodeURIComponent(t.g)}`}
+              style={{ flexShrink: 0, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 999, padding: "0.5rem 0.95rem", color: "var(--ivory)", fontFamily: "var(--sans)", fontSize: "0.88rem", fontWeight: 600, whiteSpace: "nowrap" }}
+            >
+              <span aria-hidden="true">{t.e}</span> {t.g}
+            </a>
+          ))}
+        </div>
+      </div>
+
       <Shelf title="✦ Featured this week" books={featured} />
       <Shelf title="Trending on Libry" books={trending.length ? trending : books.slice(0, 8)} />
 
