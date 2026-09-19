@@ -1083,9 +1083,18 @@ footer a:hover {
     flex-direction: column;
     text-align: center;
     padding-top: 3rem;
+    /* Stack content then art with a normal gap — not shoved apart across 78vh. */
+    min-height: auto;
+    justify-content: flex-start;
+    gap: 1.5rem;
   }
   .hero-actions {
     justify-content: center;
+  }
+  .hero-art-wrap {
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
   }
   .book-detail {
     grid-template-columns: 1fr;

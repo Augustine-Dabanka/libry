@@ -193,7 +193,7 @@ export default async function Home() {
             </a>
           </div>
         </div>
-        <div>
+        <div className="hero-art-wrap" style={{ width: "100%", maxWidth: 400, display: "flex", justifyContent: "center", flexShrink: 0 }}>
           <HeroArt />
         </div>
       </section>
