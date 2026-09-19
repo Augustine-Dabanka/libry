@@ -28,7 +28,7 @@ export default function FinancePanel({
   partner?: "none" | "pending" | "approved" | "rejected";
 }) {
   const router = useRouter();
-  const [method, setMethod] = useState(account?.method === "bank" ? "bank" : "momo");
+  const [method, setMethod] = useState<string>(account?.method || "momo");
   const [provider, setProvider] = useState(account?.provider ?? "");
   const [name, setName] = useState(account?.account_name ?? "");
   const [number, setNumber] = useState(account?.account_number ?? "");
@@ -97,20 +97,50 @@ export default function FinancePanel({
       {/* Payout details */}
       <div style={card}>
         <h3 style={{ marginBottom: "0.2rem" }}>Payout details</h3>
-        <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", marginBottom: "0.6rem" }}>Where we send your money. Only you can see this.</p>
-        <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem" }}>
-          {(["momo", "bank"] as const).map((m) => (
+        <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", marginBottom: "0.6rem" }}>Where we send your money. Only you can see this. Pick the option that works for your country.</p>
+        <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
+          {([["momo", "Mobile money"], ["bank", "Bank"], ["paypal", "PayPal"], ["wise", "Wise / Intl"]] as [string, string][]).map(([m, lbl]) => (
             <button key={m} type="button" onClick={() => setMethod(m)} style={{ padding: "0.45rem 0.9rem", borderRadius: 999, cursor: "pointer", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.82rem", border: `1px solid ${method === m ? "var(--gold)" : "var(--border)"}`, background: method === m ? "rgba(95,160,104,0.14)" : "transparent", color: method === m ? "var(--gold)" : "var(--ivory-muted)" }}>
-              {m === "momo" ? "Mobile money" : "Bank"}
+              {lbl}
             </button>
           ))}
         </div>
-        <label style={label}>{method === "momo" ? "Network (MTN, Vodafone, AirtelTigo)" : "Bank name"}</label>
-        <input style={field} value={provider} onChange={(e) => setProvider(e.target.value)} placeholder={method === "momo" ? "MTN" : "e.g. GCB Bank"} />
-        <label style={label}>Account name</label>
-        <input style={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name on the account" />
-        <label style={label}>{method === "momo" ? "Mobile money number" : "Account number"}</label>
-        <input style={field} value={number} onChange={(e) => setNumber(e.target.value)} placeholder={method === "momo" ? "024…" : "Account number"} inputMode="numeric" />
+        {method === "momo" ? (
+          <>
+            <label style={label}>Network (MTN, Vodafone/Telecel, AirtelTigo)</label>
+            <input style={field} value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="MTN" />
+            <label style={label}>Account name</label>
+            <input style={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name on the account" />
+            <label style={label}>Mobile money number</label>
+            <input style={field} value={number} onChange={(e) => setNumber(e.target.value)} placeholder="024…" inputMode="numeric" />
+          </>
+        ) : method === "bank" ? (
+          <>
+            <label style={label}>Bank name (add country if outside Ghana)</label>
+            <input style={field} value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="e.g. GCB Bank · Ghana / Barclays · UK" />
+            <label style={label}>Account name</label>
+            <input style={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name on the account" />
+            <label style={label}>Account number / IBAN / sort code</label>
+            <input style={field} value={number} onChange={(e) => setNumber(e.target.value)} placeholder="Account number, IBAN, or sort code + number" />
+          </>
+        ) : method === "paypal" ? (
+          <>
+            <label style={label}>PayPal email</label>
+            <input style={field} value={number} onChange={(e) => setNumber(e.target.value)} placeholder="you@email.com" inputMode="email" />
+            <label style={label}>Account name</label>
+            <input style={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name on the PayPal account" />
+            <input type="hidden" value={provider} readOnly />
+          </>
+        ) : (
+          <>
+            <label style={label}>Wise email or account details</label>
+            <input style={field} value={number} onChange={(e) => setNumber(e.target.value)} placeholder="Wise email, or IBAN / account number" />
+            <label style={label}>Account name</label>
+            <input style={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name on the account" />
+            <label style={label}>Country &amp; currency</label>
+            <input style={field} value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="e.g. USA · USD" />
+          </>
+        )}
         <button type="button" className="btn btn-outline" disabled={busy} onClick={saveAccount} style={{ marginTop: "1rem" }}>{busy ? "Saving…" : "Save payout details"}</button>
       </div>
 

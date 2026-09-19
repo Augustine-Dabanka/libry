@@ -37,8 +37,9 @@ export default function AdminPanel({ apps, payouts }: { apps: PartnerApp[]; payo
     router.refresh();
   }
 
+  const methodLabel: Record<string, string> = { momo: "MoMo", bank: "Bank", paypal: "PayPal", wise: "Wise/Intl" };
   const acct = (p: PartnerApp["payout"]) =>
-    p ? `${p.method === "bank" ? "Bank" : "MoMo"} · ${p.provider || "—"} · ${p.account_name || "—"} · ${p.account_number || "—"}` : "No payout details on file";
+    p ? `${methodLabel[p.method] || p.method} · ${p.provider || "—"} · ${p.account_name || "—"} · ${p.account_number || "—"}` : "No payout details on file";
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1.2rem 4rem" }}>

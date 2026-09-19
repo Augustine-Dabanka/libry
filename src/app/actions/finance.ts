@@ -9,7 +9,7 @@ export async function savePayoutAccount(input: { method: string; provider: strin
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in." };
-  const method = input.method === "bank" ? "bank" : "momo";
+  const method = ["momo", "bank", "paypal", "wise"].includes(input.method) ? input.method : "momo";
   if (!input.accountNumber.trim() || !input.accountName.trim()) return { error: "Enter your account name and number." };
   const { error } = await supabase.from("payout_accounts").upsert(
     {
