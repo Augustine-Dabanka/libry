@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { AGE_RATINGS, AGE_LABEL, GENRES } from "@/lib/content";
+import { AGE_RATINGS, AGE_LABEL, GENRES, TROPES } from "@/lib/content";
 
 const MIN_PRICE = 2.99;
 
@@ -48,6 +48,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
   const [category, setCategory] = useState(book.category ?? "");
   const [price, setPrice] = useState(String(book.price ?? 0));
   const [age, setAge] = useState(book.age_rating ?? "Everyday");
+  const [tags, setTags] = useState<string>(((book as { tags?: string[] | null }).tags ?? []).join(", "));
   const [cover, setCover] = useState(book.cover_url ?? "");
   const [coverBusy, setCoverBusy] = useState(false);
   const [coverErr, setCoverErr] = useState<string | null>(null);
@@ -104,9 +105,14 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
       is_free: priceNum <= 0,
       age_rating: age,
       cover_url: cover.trim() || null,
+      tags: tags.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 12),
     };
     let { error } = await supabase.from("books").update(payload).eq("id", book.id);
     // Retry gracefully if a column/constraint isn't migrated yet.
+    if (error && /tags/i.test(error.message)) {
+      delete payload.tags;
+      ({ error } = await supabase.from("books").update(payload).eq("id", book.id));
+    }
     if (error && /cover_url/i.test(error.message)) {
       delete payload.cover_url;
       ({ error } = await supabase.from("books").update(payload).eq("id", book.id));
@@ -215,6 +221,21 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
             ))}
           </select>
         </div>
+      </div>
+
+      <label style={label}>Tropes &amp; tags (comma-separated — these hook readers)</label>
+      <input style={field} value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Enemies to Lovers, Slow Burn, Small Town" />
+      <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap", marginTop: "0.45rem" }}>
+        {TROPES.slice(0, 12).map((t) => {
+          const cur = tags.split(",").map((s) => s.trim()).filter(Boolean);
+          const on = cur.includes(t);
+          return (
+            <button key={t} type="button" onClick={() => setTags((on ? cur.filter((x) => x !== t) : [...cur, t]).join(", "))}
+              style={{ padding: "0.25rem 0.6rem", borderRadius: 999, cursor: "pointer", fontFamily: "var(--sans)", fontSize: "0.75rem", fontWeight: 600, border: `1px solid ${on ? "var(--gold)" : "var(--border)"}`, background: on ? "rgba(197,160,89,0.14)" : "transparent", color: on ? "var(--gold)" : "var(--ivory-muted)" }}>
+              {on ? "✓ " : "+ "}{t}
+            </button>
+          );
+        })}
       </div>
 
       <label style={label}>Story text</label>

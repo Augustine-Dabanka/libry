@@ -94,9 +94,9 @@ function Controls({ q, active, sort, genre }: { q: string; active: string; sort:
 export default async function Catalog({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; type?: string; free?: string; paid?: string; sort?: string; genre?: string }>;
+  searchParams: Promise<{ q?: string; type?: string; free?: string; paid?: string; sort?: string; genre?: string; tag?: string }>;
 }) {
-  const { q, type, free, paid, sort, genre } = await searchParams;
+  const { q, type, free, paid, sort, genre, tag } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -110,12 +110,13 @@ export default async function Catalog({
   const safe = term.replace(/[,()*]/g, " ").trim();
   const typeFilter = (type ?? "").trim();
   const genreFilter = (genre ?? "").trim();
+  const tagFilter = (tag ?? "").trim();
   const freeOnly = free === "1" || free === "true";
   const paidOnly = paid === "1" || paid === "true";
   const sortKey = (sort ?? "").trim();
   // A chosen sort also switches to the flat grid — otherwise the shelf view
   // buckets books and the sort order is invisible (that's why sort "did nothing").
-  const filtered = !!(safe || typeFilter || genreFilter || freeOnly || paidOnly || sortKey);
+  const filtered = !!(safe || typeFilter || genreFilter || tagFilter || freeOnly || paidOnly || sortKey);
   const activeChip = typeFilter === "Interactive" ? "Interactive" : typeFilter === "Fiction" ? "Fiction" : typeFilter === "Non-Fiction" ? "Non-Fiction" : freeOnly ? "free" : paidOnly ? "paid" : "all";
 
   const runQuery = (withAge: boolean) => {
@@ -130,6 +131,7 @@ export default async function Catalog({
       // regular genre pages (Romance, Fantasy, …) so genres don't cross-mix.
       if (typeFilter !== "Interactive") query = query.neq("type", "Interactive");
     }
+    if (tagFilter) query = query.contains("tags", [tagFilter]);
     if (freeOnly) query = query.or("price.eq.0,is_free.eq.true");
     if (paidOnly) query = query.gt("price", 0);
     if (safe) query = query.or(`title.ilike.%${safe}%,author.ilike.%${safe}%`);
@@ -146,7 +148,7 @@ export default async function Catalog({
 
   // ---------- Filtered / search view: a single flat grid ----------
   if (filtered) {
-    const heading = term ? `Results for “${term}”` : genreFilter ? `${genreFilter}` : freeOnly ? "Free to Read" : paidOnly ? "Premium Reads" : typeFilter ? `${typeFilter} stories` : "Catalog";
+    const heading = term ? `Results for “${term}”` : tagFilter ? `${tagFilter}` : genreFilter ? `${genreFilter}` : freeOnly ? "Free to Read" : paidOnly ? "Premium Reads" : typeFilter ? `${typeFilter} stories` : "Catalog";
     return (
       <>
         <AppNav />

@@ -83,3 +83,28 @@ export const GENRES = [
   "Spirituality",
   "Comics & Graphic",
 ] as const;
+
+// Reader-magnet tropes for tagging books — the sharp discovery signals readers
+// search for. Creators pick from these (and can type their own).
+export const TROPES = [
+  "Enemies to Lovers",
+  "Slow Burn",
+  "Forbidden Love",
+  "Fake Dating",
+  "Second Chance",
+  "Friends to Lovers",
+  "Grumpy x Sunshine",
+  "Found Family",
+  "Love Triangle",
+  "Forced Proximity",
+  "Rivals",
+  "Billionaire",
+  "Royalty",
+  "Small Town",
+  "Soulmates",
+  "Age Gap",
+  "Chosen One",
+  "Redemption Arc",
+  "Morally Grey",
+  "Cliffhanger",
+] as const;

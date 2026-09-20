@@ -39,7 +39,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 
   const primary = await supabase
     .from("books")
-    .select("id, title, author, description, content, price, type, status, age_rating, category, rating, cover_url")
+    .select("id, title, author, description, content, price, type, status, age_rating, category, rating, cover_url, tags")
     .eq("id", id)
     .maybeSingle();
   let data = primary.data;
@@ -49,7 +49,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
       .select("id, title, author, description, content, price, type, status, category, rating, cover_url")
       .eq("id", id)
       .maybeSingle();
-    data = alt.data ? { ...alt.data, age_rating: null } : null;
+    data = alt.data ? { ...alt.data, age_rating: null, tags: [] } : null;
   }
   const book = data as BookDetail | null;
 
@@ -235,6 +235,18 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
                 {agePill(book.age_rating)}
               </span>
             </div>
+            {(() => {
+              const tags = ((book as { tags?: string[] | null }).tags ?? []).filter(Boolean);
+              return tags.length ? (
+                <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginTop: "0.2rem" }}>
+                  {tags.slice(0, 8).map((t) => (
+                    <a key={t} href={`/catalog?tag=${encodeURIComponent(t)}`} style={{ textDecoration: "none", fontFamily: "var(--sans)", fontSize: "0.75rem", fontWeight: 600, color: "var(--gold)", background: "rgba(196,163,90,0.12)", border: "1px solid rgba(196,163,90,0.3)", borderRadius: 999, padding: "0.2rem 0.6rem" }}>
+                      #{t}
+                    </a>
+                  ))}
+                </div>
+              ) : null;
+            })()}
             {book.description ? (
               <p style={{ color: "var(--ivory-muted)", marginTop: "1rem", maxWidth: 560 }}>{book.description}</p>
             ) : null}
