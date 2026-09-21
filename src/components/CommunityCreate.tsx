@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createCommunity } from "@/app/actions/communities";
+import ImagePicker from "@/components/ImagePicker";
 
 export default function CommunityCreate() {
   const router = useRouter();
@@ -10,13 +11,14 @@ export default function CommunityCreate() {
   const [name, setName] = useState("");
   const [emoji, setEmoji] = useState("📚");
   const [desc, setDesc] = useState("");
+  const [cover, setCover] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
   function submit() {
     setErr(null);
     start(async () => {
-      const res = await createCommunity({ name, description: desc, emoji });
+      const res = await createCommunity({ name, description: desc, emoji, coverUrl: cover });
       if (res?.error) { setErr(res.error); return; }
       if (res?.slug) router.push(`/c/${res.slug}`);
     });
@@ -36,6 +38,7 @@ export default function CommunityCreate() {
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Community name" style={field} />
       </div>
       <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="What's it about? (optional)" rows={2} style={{ ...field, resize: "vertical" }} />
+      <ImagePicker value={cover} onChange={setCover} label="Community cover" aspect="16 / 9" />
       {err ? <p style={{ color: "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.84rem", marginTop: "0.6rem" }}>{err}</p> : null}
       <div style={{ display: "flex", gap: "0.6rem", marginTop: "0.9rem" }}>
         <button type="button" className="btn btn-gold" onClick={submit} disabled={pending || !name.trim()} style={{ padding: "0.5rem 1.2rem" }}>{pending ? "Creating…" : "Create"}</button>
