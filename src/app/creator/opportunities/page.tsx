@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import AppNav from "@/components/AppNav";
 import WaitlistForm from "@/components/WaitlistForm";
 
 export const metadata = { title: "Programs & Opportunities — Libry Creators" };
@@ -28,7 +27,6 @@ export default async function CreatorOpportunities() {
 
   return (
     <>
-      <AppNav />
       <section className="section" style={{ maxWidth: 860, marginInline: "auto" }}>
         <div style={{ fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "0.6rem" }}>Creator Hub</div>
         <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 3.4rem)", lineHeight: 1.08, marginBottom: "0.8rem" }}>Programs &amp; Opportunities</h1>

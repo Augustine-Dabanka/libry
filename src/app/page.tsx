@@ -37,8 +37,8 @@ export default async function Landing() {
             Libry<span>.</span>
           </a>
           <div className={s.navLinks}>
-            <a href="#features">Features</a>
             <a href="#interactive">Interactive</a>
+            <a href="#comics">Comics</a>
             <a href="#creators">Creators</a>
             <a href="#communities">Communities</a>
             <a href="/unlimited">Unlimited</a>
@@ -62,16 +62,16 @@ export default async function Landing() {
               Stories worth <em>lingering</em> in.
             </h1>
             <p className={s.sub}>
-              A calm bookstore and creator marketplace — books, interactive
-              choose-your-path stories, and digital products, where readers come
-              first and creators keep 65%.
+              Libry is the home of interactive stories, creator voices, and
+              communities that keep the story going — where readers come first
+              and creators keep 65%.
             </p>
             <div className={s.heroCta} style={{ marginTop: "1.7rem" }}>
               <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding">
-                Start Reading Free
+                ✦ Start your story
               </a>
-              <a className={`${s.btn} ${s.btnGhost} ${s.btnLg}`} href="/onboarding?intent=creator">
-                Publish &amp; Sell
+              <a className={`${s.btn} ${s.btnGhost} ${s.btnLg}`} href="#interactive">
+                ▶ See how it works
               </a>
             </div>
             <div className={s.heroNote}>
@@ -98,43 +98,82 @@ export default async function Landing() {
         </div>
       </div>
 
+      {/* Explore rail: Store + Comics as cover-topped cards (mockup) */}
+      <section id="comics" className={s.band} style={{ scrollMarginTop: 70 }}>
+        <div className={s.wrap}>
+          <div className={s.secHead} style={{ marginBottom: "1.4rem" }}>
+            <span className={s.eyebrow}>Explore Libry</span>
+            <h2 style={{ margin: "0.4rem 0 0" }}>More than books.</h2>
+          </div>
+          <div className={s.exploreGrid}>
+            <a href="/onboarding" className={s.xcard}>
+              <div className={s.xcover} style={{ background: "linear-gradient(150deg,#2f2233,#4a2d52 55%,#1c1017)" }}>
+                <span className={s.xemoji}>🎨</span>
+                <span className={s.xtag}>Store</span>
+              </div>
+              <div className={s.xbody}>
+                <h3>Digital Store</h3>
+                <p>Templates, audio, courses and downloads. Support creators, grow your collection.</p>
+                <span className={s.xlink}>Browse the store →</span>
+              </div>
+            </a>
+            <a href="/onboarding" className={s.xcard}>
+              <div className={s.xcover} style={{ background: "linear-gradient(150deg,#2a3340,#1f4a55 55%,#10222a)" }}>
+                <span className={s.xemoji}>💥</span>
+                <span className={s.xtag}>Comics</span>
+              </div>
+              <div className={s.xbody}>
+                <h3>Comics</h3>
+                <p>Visual stories, infinite worlds. Read panel by panel, or all at once.</p>
+                <span className={s.xlink}>Explore comics →</span>
+              </div>
+            </a>
+            <a href="/onboarding" className={s.xcard}>
+              <div className={s.xcover} style={{ background: "linear-gradient(150deg,#3a2c1a,#7a5230 55%,#241a10)" }}>
+                <span className={s.xemoji}>🌿</span>
+                <span className={s.xtag}>Interactive</span>
+              </div>
+              <div className={s.xbody}>
+                <h3>Interactive stories</h3>
+                <p>Choose-your-path tales that branch with every decision — and end differently for everyone.</p>
+                <span className={s.xlink}>Start a path →</span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {communities.length > 0 ? (
-        <section id="communities" className={s.band} style={{ scrollMarginTop: 70 }}>
+        <section id="communities" className={`${s.band} ${s.cardBg}`} style={{ scrollMarginTop: 70 }}>
           <div className={s.wrap}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "1rem", marginBottom: "1.4rem" }}>
               <div>
-                <span className={s.eyebrow}>Explore</span>
-                <h2 style={{ margin: 0 }}>Popular communities</h2>
+                <span className={s.eyebrow}>Find your people</span>
+                <h2 style={{ margin: "0.4rem 0 0" }}>Communities that keep the story going.</h2>
               </div>
-              <a href="/onboarding" style={{ color: "#c4a35a", fontFamily: "var(--sans)", fontWeight: 700, textDecoration: "none" }}>View all communities →</a>
+              <a href="/onboarding" style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>View all →</a>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: "1rem" }}>
-              {communities.map((c) => (
-                <a key={c.id} href={`/c/${c.slug}`} style={{ textDecoration: "none", display: "block", background: "#1c1917", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "1.3rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.6rem" }}>
-                    <span style={{ width: 44, height: 44, borderRadius: "50%", border: "1.5px solid rgba(196,163,90,0.5)", display: "grid", placeItems: "center", fontSize: "1.3rem", flexShrink: 0 }}>{c.emoji || "📚"}</span>
-                    <div style={{ fontFamily: "var(--serif, Georgia, serif)", color: "#faf7f2", fontSize: "1.1rem" }}>{c.name}</div>
-                  </div>
-                  {c.description ? <p style={{ color: "#a8a29e", fontFamily: "var(--sans)", fontSize: "0.88rem", lineHeight: 1.5, margin: "0 0 0.8rem" }}>{c.description}</p> : null}
-                  <div style={{ color: "#8a8580", fontFamily: "var(--sans)", fontSize: "0.8rem" }}>👥 {c.member_count.toLocaleString()} member{c.member_count === 1 ? "" : "s"}</div>
-                </a>
-              ))}
-            </div>
-
-            {/* Digital Store + Comics */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem", marginTop: "1.2rem" }}>
-              <a href="/onboarding" style={{ textDecoration: "none", display: "block", background: "#1c1917", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "1.5rem 1.6rem" }}>
-                <div style={{ color: "#c4a35a", fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "0.4rem" }}>Store</div>
-                <h3 style={{ color: "#faf7f2", fontSize: "1.4rem", marginBottom: "0.4rem" }}>Digital Store</h3>
-                <p style={{ color: "#a8a29e", fontFamily: "var(--sans)", fontSize: "0.92rem", lineHeight: 1.55, marginBottom: "0.9rem" }}>Templates, audio, courses and downloads. Support creators, add to your collection.</p>
-                <span style={{ color: "#c4a35a", fontFamily: "var(--sans)", fontWeight: 700 }}>Browse the store →</span>
-              </a>
-              <a href="/onboarding" style={{ textDecoration: "none", display: "block", background: "#1c1917", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "1.5rem 1.6rem" }}>
-                <div style={{ color: "#c4a35a", fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "0.4rem" }}>Comics</div>
-                <h3 style={{ color: "#faf7f2", fontSize: "1.4rem", marginBottom: "0.4rem" }}>Comics</h3>
-                <p style={{ color: "#a8a29e", fontFamily: "var(--sans)", fontSize: "0.92rem", lineHeight: 1.55, marginBottom: "0.9rem" }}>Visual stories, infinite worlds. Read panel by panel, or all at once.</p>
-                <span style={{ color: "#c4a35a", fontFamily: "var(--sans)", fontWeight: 700 }}>Explore comics →</span>
-              </a>
+            <div className={s.commGrid}>
+              {communities.map((c, i) => {
+                const grads = [
+                  "linear-gradient(150deg,#3a2c1a,#7a5230)",
+                  "linear-gradient(150deg,#2f2233,#5b2f5f)",
+                  "linear-gradient(150deg,#2a3340,#1f4a55)",
+                  "linear-gradient(150deg,#33221a,#8a3a2a)",
+                ];
+                return (
+                  <a key={c.id} href={`/c/${c.slug}`} className={s.commCard}>
+                    <div className={s.commCover} style={{ background: grads[i % grads.length] }}>
+                      <span className={s.commEmoji}>{c.emoji || "📚"}</span>
+                    </div>
+                    <div className={s.commBody}>
+                      <div className={s.commName}>{c.name}</div>
+                      {c.description ? <p className={s.commDesc}>{c.description}</p> : null}
+                      <div className={s.commMeta}>👥 {c.member_count.toLocaleString()} member{c.member_count === 1 ? "" : "s"}</div>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -313,6 +352,13 @@ export default async function Landing() {
                 Libry<span>.</span>
               </div>
               <p className={s.footTag}>Stories worth lingering in.</p>
+              <div className={s.news}>
+                <span className={s.newsLabel}>✦ Stay in the story</span>
+                <p className={s.newsText}>New releases, interactive drops and creator spotlights — a quiet note, now and then.</p>
+                <a className={`${s.btn} ${s.btnGold}`} href="/waitlist" style={{ marginTop: "0.7rem" }}>
+                  Join the list →
+                </a>
+              </div>
               <div className={s.footSocial}>
                 <a href="https://www.youtube.com/@officially_libry" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
                   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.8-1.8C19.3 5 12 5 12 5s-7.3 0-8.8.5A2.5 2.5 0 0 0 1.4 7.3C1 8.8 1 12 1 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.8 1.8C4.7 19 12 19 12 19s7.3 0 8.8-.5a2.5 2.5 0 0 0 1.8-1.8C23 15.2 23 12 23 12zM9.8 15.3V8.7l5.7 3.3z" /></svg>
@@ -331,14 +377,15 @@ export default async function Landing() {
             <div>
               <h4>Read</h4>
               <a className="fx" href="/catalog">Browse the catalog</a>
-              <a className="fx" href="/unlimited">Libry Unlimited</a>
-              <a className="fx" href="/discover?filter=free">Free to read</a>
               <a className="fx" href="/discover?filter=interactive">Interactive stories</a>
+              <a className="fx" href="/discover?filter=free">Free to read</a>
+              <a className="fx" href="/unlimited">Premium (Unlimited)</a>
               <a className="fx" href="/my-library">My Library</a>
             </div>
             <div>
-              <h4>Write</h4>
+              <h4>Create</h4>
               <a className="fx" href="/creator">Become a creator</a>
+              <a className="fx" href="/creator/opportunities">Creator opportunities</a>
               <a className="fx" href="/creator-hub/docs?tab=guidelines">Publishing guidelines</a>
               <a className="fx" href="/creator-hub/docs?tab=analytics">Creator Hub</a>
             </div>
