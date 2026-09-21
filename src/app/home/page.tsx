@@ -8,6 +8,7 @@ import StreakCard from "@/components/StreakCard";
 import AudiencePicker, { type AudienceGroup } from "@/components/AudiencePicker";
 import ContinueReading, { type ResumeItem } from "@/components/ContinueReading";
 import CommunityCover from "@/components/CommunityCover";
+import RankedShelf from "@/components/RankedShelf";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 import { rankBooks, type BookSignals } from "@/lib/ranking";
@@ -304,7 +305,7 @@ export default async function Home() {
       </div>
 
       <Shelf title="✦ Featured this week" books={featured} />
-      <Shelf title="Trending on Libry" books={trending.length ? trending : books.slice(0, 8)} />
+      <RankedShelf title="Trending stories & comics" books={trending.length ? trending : books.slice(0, 8)} />
 
       {audienceGroups.some((g) => g.books.length > 0) ? (
         <div className="section" style={{ paddingTop: "1rem", paddingBottom: 0 }}>

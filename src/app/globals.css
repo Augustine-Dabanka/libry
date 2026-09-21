@@ -1570,6 +1570,10 @@ body { overflow-x: clip; }
 .ccov-glow { position: absolute; top: -30%; right: -20%; width: 70%; height: 90%; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.18), transparent 70%); pointer-events: none; }
 .ccov-glyph { font-size: 2rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4)); opacity: 0.92; }
 
+/* ══════════ Ranked shelf (Wattpad-style chart numerals) ══════════ */
+.rank-slot { position: relative; }
+.rank-num { position: absolute; top: -6px; left: -6px; z-index: 2; font-family: var(--serif, Georgia, serif); font-weight: 800; font-size: 2.5rem; line-height: 1; color: var(--gold); text-shadow: 0 2px 10px rgba(0,0,0,0.75), 0 0 2px rgba(0,0,0,0.6); pointer-events: none; }
+
 /* ══════════ Continue reading rail (cover + progress + resume) ══════════ */
 .cr-row { display: flex; gap: 0.9rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch; }
 .cr-card { flex: 0 0 270px; scroll-snap-align: start; display: flex; gap: 0.85rem; background: var(--stone); border: 1px solid var(--border); border-radius: 14px; padding: 0.7rem; text-decoration: none; transition: border-color .18s, transform .18s; }

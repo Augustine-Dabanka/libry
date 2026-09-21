@@ -38,11 +38,12 @@ export default async function Landing() {
             Libry<span>.</span>
           </a>
           <div className={s.navLinks}>
+            <a href="#features">Features</a>
             <a href="#interactive">Interactive</a>
-            <a href="#comics">Comics</a>
             <a href="#creators">Creators</a>
-            <a href="#communities">Communities</a>
             <a href="/unlimited">Unlimited</a>
+            <a href="#communities">Communities</a>
+            <a href="#comics">Comics</a>
           </div>
           <div className={s.navRight}>
             <a href="/login" className={s.txt}>

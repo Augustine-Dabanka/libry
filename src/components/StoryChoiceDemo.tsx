@@ -11,7 +11,7 @@ type Node = {
 // A tiny branching demo, themed light-vs-shadow to match the hero art.
 const STORY: Record<string, Node> = {
   start: {
-    text: "The path splits before you. A lantern glows warm to the left; something stirs in the shadows to the right. Who will you become?",
+    text: "The path splits. Who will you become?",
     choices: [
       { label: "Step into the light", to: "light" },
       { label: "Venture into shadow", to: "shadow" },
@@ -118,6 +118,12 @@ export default function StoryChoiceDemo() {
         >
           {node.text}
         </p>
+
+        {isStart ? (
+          <p style={{ margin: "0.6rem 0 0", color: "#C6BEB2", fontFamily: "var(--sans, 'Plus Jakarta Sans', sans-serif)", fontSize: "0.9rem" }}>
+            Your choices shape the story. Live. Breathe. Decide.
+          </p>
+        ) : null}
 
         {node.end ? (
           <div style={{ marginTop: "1.3rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
