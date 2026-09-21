@@ -73,8 +73,12 @@ export default function NavClient({
   // top bar takes over below 900px (CSS drops the padding there).
   useEffect(() => {
     document.body.classList.add("has-rail");
-    return () => document.body.classList.remove("has-rail");
-  }, []);
+    if (signedIn) document.body.classList.add("has-mobtabs");
+    return () => {
+      document.body.classList.remove("has-rail");
+      document.body.classList.remove("has-mobtabs");
+    };
+  }, [signedIn]);
 
   useEffect(() => setSearch(typeof window !== "undefined" ? window.location.search : ""), [pathname]);
 
@@ -423,6 +427,27 @@ export default function NavClient({
           <a className="btn btn-gold mm-cta" href="/login">Log in</a>
         )}
       </div>
+
+      {/* ══════════ MOBILE: app-style bottom tab bar (signed-in) ══════════ */}
+      {signedIn ? (
+        <nav className="mobtabs" aria-label="Primary">
+          {([
+            { href: "/home", label: "Home", icon: "home" as IconName },
+            { href: "/discover", label: "Discover", icon: "compass" as IconName },
+            { href: "/my-library", label: "Library", icon: "library" as IconName },
+            { href: "/creator", label: "Create", icon: "pen" as IconName },
+            { href: "/settings", label: "Profile", icon: null },
+          ]).map((t) => {
+            const on = pathname === t.href || pathname.startsWith(t.href + "/");
+            return (
+              <a key={t.href} href={t.href} className={`mobtab${on ? " active" : ""}`} aria-current={on ? "page" : undefined}>
+                <span className="mobtab-ico">{t.icon ? <Icon name={t.icon} /> : <span className="mobtab-avatar">{avatar}</span>}</span>
+                <span className="mobtab-label">{t.label}</span>
+              </a>
+            );
+          })}
+        </nav>
+      ) : null}
 
       <CartDrawer email={email} />
     </>

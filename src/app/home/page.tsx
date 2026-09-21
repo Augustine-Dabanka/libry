@@ -6,6 +6,7 @@ import ProductMini, { type ProductCard } from "@/components/ProductMini";
 import HeroArt from "@/components/HeroArt";
 import StreakCard from "@/components/StreakCard";
 import AudiencePicker, { type AudienceGroup } from "@/components/AudiencePicker";
+import ContinueReading, { type ResumeItem } from "@/components/ContinueReading";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 import { rankBooks, type BookSignals } from "@/lib/ranking";
@@ -172,27 +173,41 @@ export default async function Home() {
   }
 
   // --- Continue reading: books this reader has started but not finished ---
-  let continueBooks: Book[] = [];
+  let continueItems: ResumeItem[] = [];
   {
     const cp = await supabase
       .from("reading_progress")
-      .select("book_id, progress_percentage")
+      .select("book_id, progress_percentage, current_chapter")
       .eq("user_email", user.email ?? "")
       .order("book_id", { ascending: false })
       .limit(60);
     if (!cp.error && cp.data) {
       const ids: number[] = [];
-      for (const r of cp.data as { book_id: number; progress_percentage: number | null }[]) {
+      const pctById = new Map<number, number>();
+      const chapById = new Map<number, number>();
+      for (const r of cp.data as { book_id: number; progress_percentage: number | null; current_chapter: number | null }[]) {
         const p = Number(r.progress_percentage ?? 0);
         const id = Number(r.book_id);
-        if (p > 0 && p < 100 && !ids.includes(id)) ids.push(id);
+        if (p > 0 && p < 100 && !ids.includes(id)) {
+          ids.push(id);
+          pctById.set(id, p);
+          chapById.set(id, Number(r.current_chapter ?? 0));
+        }
       }
       const top = ids.slice(0, 12);
       if (top.length) {
         const cb = await supabase.from("books").select("id, title, author, price, type, rating, category, cover_url").in("id", top);
         if (!cb.error && cb.data) {
           const byId = new Map((cb.data as Book[]).map((b) => [Number(b.id), b]));
-          continueBooks = top.map((id) => byId.get(id)).filter(Boolean) as Book[];
+          continueItems = top
+            .map((id) => {
+              const book = byId.get(id);
+              if (!book) return null;
+              const chap = chapById.get(id) ?? 0;
+              const label = chap > 1 ? `Chapter ${chap}` : book.category || book.type || "Reading now";
+              return { book, pct: pctById.get(id) ?? 0, label } as ResumeItem;
+            })
+            .filter(Boolean) as ResumeItem[];
         }
       }
     }
@@ -264,9 +279,7 @@ export default async function Home() {
         </div>
       </div>
 
-      {continueBooks.length > 0 ? (
-        <Shelf title="▸ Continue reading" books={continueBooks} href="/my-library" />
-      ) : null}
+      <ContinueReading items={continueItems} />
 
       {/* Trending tropes — the hooky genres readers chase. */}
       <div className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
