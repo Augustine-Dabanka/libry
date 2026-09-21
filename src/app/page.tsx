@@ -11,6 +11,19 @@ export default async function Landing() {
   } = await supabase.auth.getUser();
   if (user) redirect("/home");
 
+  // Popular communities for the marketing showcase (public read).
+  type Comm = { id: number; slug: string; name: string; description: string | null; emoji: string | null; member_count: number };
+  let communities: Comm[] = [];
+  {
+    const { data } = await supabase
+      .from("communities")
+      .select("id, slug, name, description, emoji, member_count, is_official")
+      .order("is_official", { ascending: false })
+      .order("member_count", { ascending: false })
+      .limit(4);
+    if (data) communities = data as Comm[];
+  }
+
   return (
     <div className={s.page}>
       <div className={s.topbar}>
@@ -27,6 +40,7 @@ export default async function Landing() {
             <a href="#features">Features</a>
             <a href="#interactive">Interactive</a>
             <a href="#creators">Creators</a>
+            <a href="#communities">Communities</a>
             <a href="/unlimited">Unlimited</a>
           </div>
           <div className={s.navRight}>
@@ -83,6 +97,48 @@ export default async function Landing() {
           <div className={s.trustItem}>Free — no card required</div>
         </div>
       </div>
+
+      {communities.length > 0 ? (
+        <section id="communities" className={s.band} style={{ scrollMarginTop: 70 }}>
+          <div className={s.wrap}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "1rem", marginBottom: "1.4rem" }}>
+              <div>
+                <span className={s.eyebrow}>Explore</span>
+                <h2 style={{ margin: 0 }}>Popular communities</h2>
+              </div>
+              <a href="/onboarding" style={{ color: "#c4a35a", fontFamily: "var(--sans)", fontWeight: 700, textDecoration: "none" }}>View all communities →</a>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: "1rem" }}>
+              {communities.map((c) => (
+                <a key={c.id} href={`/c/${c.slug}`} style={{ textDecoration: "none", display: "block", background: "#1c1917", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "1.3rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.6rem" }}>
+                    <span style={{ width: 44, height: 44, borderRadius: "50%", border: "1.5px solid rgba(196,163,90,0.5)", display: "grid", placeItems: "center", fontSize: "1.3rem", flexShrink: 0 }}>{c.emoji || "📚"}</span>
+                    <div style={{ fontFamily: "var(--serif, Georgia, serif)", color: "#faf7f2", fontSize: "1.1rem" }}>{c.name}</div>
+                  </div>
+                  {c.description ? <p style={{ color: "#a8a29e", fontFamily: "var(--sans)", fontSize: "0.88rem", lineHeight: 1.5, margin: "0 0 0.8rem" }}>{c.description}</p> : null}
+                  <div style={{ color: "#8a8580", fontFamily: "var(--sans)", fontSize: "0.8rem" }}>👥 {c.member_count.toLocaleString()} member{c.member_count === 1 ? "" : "s"}</div>
+                </a>
+              ))}
+            </div>
+
+            {/* Digital Store + Comics */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem", marginTop: "1.2rem" }}>
+              <a href="/onboarding" style={{ textDecoration: "none", display: "block", background: "#1c1917", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "1.5rem 1.6rem" }}>
+                <div style={{ color: "#c4a35a", fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "0.4rem" }}>Store</div>
+                <h3 style={{ color: "#faf7f2", fontSize: "1.4rem", marginBottom: "0.4rem" }}>Digital Store</h3>
+                <p style={{ color: "#a8a29e", fontFamily: "var(--sans)", fontSize: "0.92rem", lineHeight: 1.55, marginBottom: "0.9rem" }}>Templates, audio, courses and downloads. Support creators, add to your collection.</p>
+                <span style={{ color: "#c4a35a", fontFamily: "var(--sans)", fontWeight: 700 }}>Browse the store →</span>
+              </a>
+              <a href="/onboarding" style={{ textDecoration: "none", display: "block", background: "#1c1917", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "1.5rem 1.6rem" }}>
+                <div style={{ color: "#c4a35a", fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "0.4rem" }}>Comics</div>
+                <h3 style={{ color: "#faf7f2", fontSize: "1.4rem", marginBottom: "0.4rem" }}>Comics</h3>
+                <p style={{ color: "#a8a29e", fontFamily: "var(--sans)", fontSize: "0.92rem", lineHeight: 1.55, marginBottom: "0.9rem" }}>Visual stories, infinite worlds. Read panel by panel, or all at once.</p>
+                <span style={{ color: "#c4a35a", fontFamily: "var(--sans)", fontWeight: 700 }}>Explore comics →</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className={`${s.band} ${s.cardBg}`}>
         <div className={s.wrap}>
