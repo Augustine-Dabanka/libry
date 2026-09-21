@@ -1494,3 +1494,9 @@ body { overflow-x: clip; }
 .ProseMirror img { max-width: 100%; border-radius: 8px; margin: 0.4rem 0; }
 .ProseMirror hr { border: none; border-top: 2px solid var(--border); margin: 1rem 0; }
 .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--muted); float: left; height: 0; pointer-events: none; }
+
+/* Communities discover: sidebar stacks under the grid on small screens. */
+@media (max-width: 860px) {
+  .communities-grid { grid-template-columns: 1fr !important; }
+  .communities-trending { position: static !important; }
+}
