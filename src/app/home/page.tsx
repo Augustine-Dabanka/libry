@@ -5,6 +5,7 @@ import BookCarousel from "@/components/BookCarousel";
 import ProductMini, { type ProductCard } from "@/components/ProductMini";
 import HeroArt from "@/components/HeroArt";
 import StreakCard from "@/components/StreakCard";
+import AudiencePicker, { type AudienceGroup } from "@/components/AudiencePicker";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 import { rankBooks, type BookSignals } from "@/lib/ranking";
@@ -170,6 +171,65 @@ export default async function Home() {
     }
   }
 
+  // --- Continue reading: books this reader has started but not finished ---
+  let continueBooks: Book[] = [];
+  {
+    const cp = await supabase
+      .from("reading_progress")
+      .select("book_id, progress_percentage")
+      .eq("user_email", user.email ?? "")
+      .order("book_id", { ascending: false })
+      .limit(60);
+    if (!cp.error && cp.data) {
+      const ids: number[] = [];
+      for (const r of cp.data as { book_id: number; progress_percentage: number | null }[]) {
+        const p = Number(r.progress_percentage ?? 0);
+        const id = Number(r.book_id);
+        if (p > 0 && p < 100 && !ids.includes(id)) ids.push(id);
+      }
+      const top = ids.slice(0, 12);
+      if (top.length) {
+        const cb = await supabase.from("books").select("id, title, author, price, type, rating, category, cover_url").in("id", top);
+        if (!cb.error && cb.data) {
+          const byId = new Map((cb.data as Book[]).map((b) => [Number(b.id), b]));
+          continueBooks = top.map((id) => byId.get(id)).filter(Boolean) as Book[];
+        }
+      }
+    }
+  }
+
+  // --- "For you" audience groups (Kids / Teen / YA / Adult), age-gated ---
+  let audienceGroups: AudienceGroup[] = [];
+  {
+    const ab = await supabase
+      .from("books")
+      .select("id, title, author, price, type, rating, category, cover_url, age_rating")
+      .eq("is_published", true)
+      .in("age_rating", allowed)
+      .limit(160);
+    const list = (!ab.error ? (ab.data ?? []) : []) as (Book & { age_rating?: string | null })[];
+    const pick = (ratings: string[]) => list.filter((b) => ratings.includes((b.age_rating ?? "").trim())).slice(0, 12);
+    audienceGroups = [
+      { key: "kids", label: "Kids", emoji: "🧸", books: pick(["Everyone", "9+"]) },
+      { key: "teen", label: "Teen", emoji: "🎒", books: pick(["13+"]) },
+      { key: "ya", label: "YA", emoji: "🔥", books: pick(["16+"]) },
+      { key: "adult", label: "Adult", emoji: "🌙", books: pick(["18+"]) },
+    ];
+  }
+
+  // --- Popular communities row (public read) ---
+  type HomeComm = { id: number; slug: string; name: string; emoji: string | null; member_count: number };
+  let communities: HomeComm[] = [];
+  {
+    const cc = await supabase
+      .from("communities")
+      .select("id, slug, name, emoji, member_count, is_official")
+      .order("is_official", { ascending: false })
+      .order("member_count", { ascending: false })
+      .limit(6);
+    if (!cc.error && cc.data) communities = cc.data as HomeComm[];
+  }
+
   return (
     <>
       <AppNav />
@@ -204,6 +264,10 @@ export default async function Home() {
         </div>
       </div>
 
+      {continueBooks.length > 0 ? (
+        <Shelf title="▸ Continue reading" books={continueBooks} href="/my-library" />
+      ) : null}
+
       {/* Trending tropes — the hooky genres readers chase. */}
       <div className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
         <div className="section-header"><h2>🔥 Trending tropes</h2></div>
@@ -227,6 +291,12 @@ export default async function Home() {
       <Shelf title="✦ Featured this week" books={featured} />
       <Shelf title="Trending on Libry" books={trending.length ? trending : books.slice(0, 8)} />
 
+      {audienceGroups.some((g) => g.books.length > 0) ? (
+        <div className="section" style={{ paddingTop: "1rem", paddingBottom: 0 }}>
+          <AudiencePicker groups={audienceGroups} />
+        </div>
+      ) : null}
+
       {products.length > 0 ? (
         <div className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
           <div className="section-header">
@@ -249,6 +319,32 @@ export default async function Home() {
       <Shelf title="Top Rated on Libry" books={topRated} href="/catalog?sort=rating" />
       <Shelf title="Free to Read" books={freeBooks} href="/catalog?free=1" />
       <Shelf title="Premium Reads" books={premiumBooks} href="/catalog?paid=1" />
+
+      {communities.length > 0 ? (
+        <div className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
+          <div className="section-header">
+            <h2>👥 Popular communities</h2>
+            <a href="/communities" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>View all →</a>
+          </div>
+          <div style={{ display: "flex", gap: "0.8rem", overflowX: "auto", paddingBottom: "0.5rem" }}>
+            {communities.map((c) => (
+              <a
+                key={c.id}
+                href={`/c/${c.slug}`}
+                style={{ flexShrink: 0, width: 150, textDecoration: "none", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}
+              >
+                <div style={{ height: 66, background: "linear-gradient(150deg, hsl(35 30% 26%), hsl(20 35% 16%))", display: "grid", placeItems: "center", fontSize: "1.7rem" }}>
+                  {c.emoji || "📚"}
+                </div>
+                <div style={{ padding: "0.6rem 0.7rem 0.75rem" }}>
+                  <div style={{ fontFamily: "var(--sans)", fontWeight: 700, color: "var(--ivory)", fontSize: "0.85rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
+                  <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.72rem", marginTop: "0.15rem" }}>👥 {c.member_count.toLocaleString()}</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {books.length === 0 ? (
         <section className="section" style={{ paddingTop: "1.5rem" }}>
