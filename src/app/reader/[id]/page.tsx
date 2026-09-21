@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import ReaderView from "@/components/ReaderView";
 import InteractiveReader from "@/components/InteractiveReader";
+import ComicReader from "@/components/ComicReader";
 import { firstChapterExcerpt } from "@/lib/chapters";
 import { parseInteractive } from "@/lib/interactive";
+import { parseComic, isComicType } from "@/lib/comic";
 import { isMatureRating } from "@/lib/content";
 
 function Gate({ children }: { children: React.ReactNode }) {
@@ -99,6 +101,36 @@ export default async function ReaderPage({
   const canFull = isFree || isOwner || purchased;
   const showSample = isSample || !canFull;
   const locked = !canFull && (book.price ?? 0) > 0;
+
+  // ---- Comics: image/panel reader (webtoon scroll or page-by-page) ----
+  if (isComicType(book.type) && content) {
+    const comic = parseComic(content);
+    if (comic.pages.some((p) => p.kind === "image")) {
+      // Preview locked comics with the first few pages.
+      let pages = comic.pages;
+      if (showSample && locked) {
+        let shown = 0;
+        pages = [];
+        for (const p of comic.pages) {
+          pages.push(p);
+          if (p.kind === "image" && ++shown >= 4) break;
+        }
+      }
+      return (
+        <ComicReader
+          bookId={String(book.id)}
+          title={book.title}
+          author={book.author}
+          pages={pages}
+          userEmail={user?.email ?? null}
+          sample={showSample && locked}
+          locked={showSample && locked}
+          signedIn={!!user}
+          price={book.price}
+        />
+      );
+    }
+  }
 
   const { excerpt, truncated } = showSample ? firstChapterExcerpt(content) : { excerpt: content, truncated: false };
 

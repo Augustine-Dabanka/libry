@@ -175,6 +175,8 @@ export default function NavClient({
                     </div>
                     <div className="rf-col">
                       <h6>Formats</h6>
+                      <a href="/comics">💥 Comics</a>
+                      <a href="/catalog?type=Interactive">✦ Interactive</a>
                       <a href="/catalog?free=1">Free to read</a>
                       <a href="/catalog?paid=1">Premium</a>
                       <a href="/unlimited">Libry Unlimited</a>
