@@ -7,6 +7,7 @@ import HeroArt from "@/components/HeroArt";
 import StreakCard from "@/components/StreakCard";
 import AudiencePicker, { type AudienceGroup } from "@/components/AudiencePicker";
 import ContinueReading, { type ResumeItem } from "@/components/ContinueReading";
+import CommunityCover from "@/components/CommunityCover";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 import { rankBooks, type BookSignals } from "@/lib/ranking";
@@ -233,12 +234,12 @@ export default async function Home() {
   }
 
   // --- Popular communities row (public read) ---
-  type HomeComm = { id: number; slug: string; name: string; emoji: string | null; member_count: number };
+  type HomeComm = { id: number; slug: string; name: string; emoji: string | null; cover_url: string | null; member_count: number };
   let communities: HomeComm[] = [];
   {
     const cc = await supabase
       .from("communities")
-      .select("id, slug, name, emoji, member_count, is_official")
+      .select("id, slug, name, emoji, cover_url, member_count, is_official")
       .order("is_official", { ascending: false })
       .order("member_count", { ascending: false })
       .limit(6);
@@ -347,8 +348,8 @@ export default async function Home() {
                 href={`/c/${c.slug}`}
                 style={{ flexShrink: 0, width: 150, textDecoration: "none", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}
               >
-                <div style={{ height: 66, background: "linear-gradient(150deg, hsl(35 30% 26%), hsl(20 35% 16%))", display: "grid", placeItems: "center", fontSize: "1.7rem" }}>
-                  {c.emoji || "📚"}
+                <div style={{ position: "relative", height: 66 }}>
+                  <CommunityCover name={c.name} emoji={c.emoji} coverUrl={c.cover_url} />
                 </div>
                 <div style={{ padding: "0.6rem 0.7rem 0.75rem" }}>
                   <div style={{ fontFamily: "var(--sans)", fontWeight: 700, color: "var(--ivory)", fontSize: "0.85rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>

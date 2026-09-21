@@ -2,10 +2,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import CommunityCreate from "@/components/CommunityCreate";
+import CommunityCover from "@/components/CommunityCover";
 
 export const metadata = { title: "Discover communities — Libry" };
 
-type Community = { id: number; slug: string; name: string; description: string | null; emoji: string | null; category: string | null; price: number | null; price_period: string | null; member_count: number };
+type Community = { id: number; slug: string; name: string; description: string | null; emoji: string | null; cover_url: string | null; category: string | null; price: number | null; price_period: string | null; member_count: number };
 
 const CATS = ["All", "Stories", "Comics", "Hobbies", "Tech", "Self-Improvement", "Kids", "Teen", "YA", "Adult"];
 
@@ -23,7 +24,7 @@ export default async function CommunitiesPage({ searchParams }: { searchParams: 
 
   const { data: comms } = await supabase
     .from("communities")
-    .select("id, slug, name, description, emoji, category, price, price_period, member_count, is_official")
+    .select("id, slug, name, description, emoji, cover_url, category, price, price_period, member_count, is_official")
     .order("member_count", { ascending: false })
     .order("is_official", { ascending: false });
   let communities = (comms ?? []) as Community[];
@@ -73,10 +74,10 @@ export default async function CommunitiesPage({ searchParams }: { searchParams: 
                   const paid = (Number(c.price) || 0) > 0;
                   return (
                     <a key={c.id} href={`/c/${c.slug}`} style={{ textDecoration: "none", display: "block", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden" }}>
-                      <div style={{ position: "relative", height: 96, background: "linear-gradient(150deg, hsl(35 30% 24%), hsl(20 35% 15%))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2.2rem" }}>
-                        {c.emoji || "📚"}
-                        <span style={{ position: "absolute", top: 8, left: 8, background: paid ? "var(--gold)" : "rgba(18,16,14,0.75)", color: paid ? "#12100E" : "var(--ivory)", fontFamily: "var(--sans)", fontSize: "0.7rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: 6 }}>{priceLabel(c)}</span>
-                        {mine.has(c.id) ? <span style={{ position: "absolute", top: 8, right: 8, background: "rgba(95,160,104,0.9)", color: "#0c1a0e", fontFamily: "var(--sans)", fontSize: "0.68rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: 6 }}>Joined</span> : null}
+                      <div style={{ position: "relative", height: 96 }}>
+                        <CommunityCover name={c.name} emoji={c.emoji} coverUrl={c.cover_url} />
+                        <span style={{ position: "absolute", top: 8, left: 8, zIndex: 1, background: paid ? "var(--gold)" : "rgba(18,16,14,0.75)", color: paid ? "#12100E" : "var(--ivory)", fontFamily: "var(--sans)", fontSize: "0.7rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: 6 }}>{priceLabel(c)}</span>
+                        {mine.has(c.id) ? <span style={{ position: "absolute", top: 8, right: 8, zIndex: 1, background: "rgba(95,160,104,0.9)", color: "#0c1a0e", fontFamily: "var(--sans)", fontSize: "0.68rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: 6 }}>Joined</span> : null}
                       </div>
                       <div style={{ padding: "0.9rem 1rem 1.1rem" }}>
                         <div style={{ fontFamily: "var(--serif)", color: "var(--ivory)", fontSize: "1.02rem", marginBottom: "0.25rem" }}>{c.name}</div>

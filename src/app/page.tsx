@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import StoryChoiceDemo from "@/components/StoryChoiceDemo";
+import CommunityCover from "@/components/CommunityCover";
 import s from "./landing.module.css";
 
 // Public marketing landing. Signed-in users are sent straight to their app home.
@@ -12,12 +13,12 @@ export default async function Landing() {
   if (user) redirect("/home");
 
   // Popular communities for the marketing showcase (public read).
-  type Comm = { id: number; slug: string; name: string; description: string | null; emoji: string | null; member_count: number };
+  type Comm = { id: number; slug: string; name: string; description: string | null; emoji: string | null; cover_url: string | null; member_count: number };
   let communities: Comm[] = [];
   {
     const { data } = await supabase
       .from("communities")
-      .select("id, slug, name, description, emoji, member_count, is_official")
+      .select("id, slug, name, description, emoji, cover_url, member_count, is_official")
       .order("is_official", { ascending: false })
       .order("member_count", { ascending: false })
       .limit(4);
@@ -154,26 +155,18 @@ export default async function Landing() {
               <a href="/onboarding" style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>View all →</a>
             </div>
             <div className={s.commGrid}>
-              {communities.map((c, i) => {
-                const grads = [
-                  "linear-gradient(150deg,#3a2c1a,#7a5230)",
-                  "linear-gradient(150deg,#2f2233,#5b2f5f)",
-                  "linear-gradient(150deg,#2a3340,#1f4a55)",
-                  "linear-gradient(150deg,#33221a,#8a3a2a)",
-                ];
-                return (
-                  <a key={c.id} href={`/c/${c.slug}`} className={s.commCard}>
-                    <div className={s.commCover} style={{ background: grads[i % grads.length] }}>
-                      <span className={s.commEmoji}>{c.emoji || "📚"}</span>
-                    </div>
-                    <div className={s.commBody}>
-                      <div className={s.commName}>{c.name}</div>
-                      {c.description ? <p className={s.commDesc}>{c.description}</p> : null}
-                      <div className={s.commMeta}>👥 {c.member_count.toLocaleString()} member{c.member_count === 1 ? "" : "s"}</div>
-                    </div>
-                  </a>
-                );
-              })}
+              {communities.map((c) => (
+                <a key={c.id} href={`/c/${c.slug}`} className={s.commCard}>
+                  <div className={s.commCover}>
+                    <CommunityCover name={c.name} emoji={c.emoji} coverUrl={c.cover_url} />
+                  </div>
+                  <div className={s.commBody}>
+                    <div className={s.commName}>{c.name}</div>
+                    {c.description ? <p className={s.commDesc}>{c.description}</p> : null}
+                    <div className={s.commMeta}>👥 {c.member_count.toLocaleString()} member{c.member_count === 1 ? "" : "s"}</div>
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
         </section>
