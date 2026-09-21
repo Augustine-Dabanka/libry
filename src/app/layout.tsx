@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import BackgroundFX from "@/components/BackgroundFX";
@@ -9,6 +9,16 @@ export const metadata: Metadata = {
   title: "Libry — Stories worth lingering in",
   description:
     "Curated books and interactive, choose-your-path storybooks. Free classics, honest reviews, and 65% to the creators you love.",
+  applicationName: "Libry",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Libry" },
+};
+
+// Dark app chrome + safe-area-aware viewport so the installed PWA feels native.
+export const viewport: Viewport = {
+  themeColor: "#0c0a09",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
