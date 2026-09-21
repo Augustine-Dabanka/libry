@@ -231,6 +231,7 @@ export default async function CreatorDashboard() {
             </p>
           </div>
           <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+            <a className="btn btn-outline" href="/creator/opportunities" style={{ padding: "0.45rem 1rem", fontSize: "0.85rem" }}>✦ Opportunities</a>
             <a className="btn btn-outline" href="/creator-hub/docs?tab=guidelines" style={{ padding: "0.45rem 1rem", fontSize: "0.85rem" }}>📋 Guidelines</a>
             {/* Steps back to reading without ending the session — this is not a
                 full sign-out (that lives in the account menu). */}
