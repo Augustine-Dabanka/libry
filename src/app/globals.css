@@ -1569,6 +1569,20 @@ body { overflow-x: clip; }
   .communities-trending { position: static !important; }
 }
 
+/* ══════════ Branded route loader (LibryLoader) ══════════ */
+.libry-loader { display: grid; place-items: center; gap: 1.1rem; padding: 2rem; }
+.libry-loader .ll-mark { display: flex; align-items: center; gap: 0.5rem; font-family: var(--serif, 'Fraunces', Georgia, serif); font-style: italic; font-weight: 600; font-size: 2.4rem; color: var(--ivory); animation: libry-pulse 1.5s ease-in-out infinite; }
+.libry-loader .ll-mark i { color: var(--gold); font-style: normal; }
+.libry-loader .ll-label { font-family: var(--sans); font-size: 0.82rem; letter-spacing: 0.08em; color: var(--muted); }
+.libry-bar { width: 150px; height: 4px; border-radius: 999px; background: var(--stone); overflow: hidden; position: relative; }
+.libry-bar::before { content: ""; position: absolute; top: 0; bottom: 0; left: -42%; width: 42%; border-radius: 999px; background: linear-gradient(90deg, var(--gold), var(--gold-hi, #dcc088)); animation: libry-slide 1.15s ease-in-out infinite; }
+@keyframes libry-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@keyframes libry-slide { 0% { left: -42%; } 100% { left: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .libry-loader .ll-mark { animation: none; opacity: 1; }
+  .libry-bar::before { animation: none; left: 0; width: 100%; }
+}
+
 /* ══════════ Skeleton shimmer (perceived speed) ══════════ */
 .sk { position: relative; overflow: hidden; background: var(--stone, #1c1917); }
 .sk::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); animation: sk-shimmer 1.4s ease-in-out infinite; }
