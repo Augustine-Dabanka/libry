@@ -438,7 +438,7 @@ export default function NavClient({
             { href: "/discover", label: "Discover", icon: "compass" as IconName },
             { href: "/my-library", label: "Library", icon: "library" as IconName },
             { href: "/creator", label: "Create", icon: "pen" as IconName },
-            { href: "/settings", label: "Profile", icon: null },
+            { href: "/profile", label: "Profile", icon: null },
           ]).map((t) => {
             const on = pathname === t.href || pathname.startsWith(t.href + "/");
             return (

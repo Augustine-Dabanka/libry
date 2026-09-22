@@ -85,6 +85,7 @@ const PUBLIC_PREFIXES = [
   '/book',
   '/b',
   '/author',
+  '/u',
   '/ad',
   // Staff-only, but gated by its own passcode (not a Libry login) so company
   // members without a reader account can still reach it.
