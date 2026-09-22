@@ -12,6 +12,16 @@ export default async function Landing() {
   } = await supabase.auth.getUser();
   if (user) redirect("/home");
 
+  // Real, DB-derived platform figures — never hardcode counts (spec §22/§23).
+  let freeCount = 0;
+  let publishedCount = 0;
+  {
+    const pub = await supabase.from("books").select("id", { count: "exact", head: true }).eq("is_published", true);
+    publishedCount = pub.count ?? 0;
+    const free = await supabase.from("books").select("id", { count: "exact", head: true }).eq("is_published", true).or("price.is.null,price.lte.0");
+    freeCount = free.count ?? 0;
+  }
+
   // Popular communities for the marketing showcase (public read).
   type Comm = { id: number; slug: string; name: string; description: string | null; emoji: string | null; cover_url: string | null; member_count: number };
   let communities: Comm[] = [];
@@ -92,11 +102,17 @@ export default async function Landing() {
           <div className={s.trustItem}>
             <b>65%</b> to creators
           </div>
-          <div className={s.trustItem}>
-            <b>17</b> books to read free
-          </div>
+          {freeCount > 0 ? (
+            <div className={s.trustItem}>
+              <b>{freeCount.toLocaleString()}</b> free {freeCount === 1 ? "book" : "books"} to read
+            </div>
+          ) : null}
+          {publishedCount > 0 ? (
+            <div className={s.trustItem}>
+              <b>{publishedCount.toLocaleString()}</b> stories &amp; counting
+            </div>
+          ) : null}
           <div className={s.trustItem}>Interactive, choose-your-path stories</div>
-          <div className={s.trustItem}>Free — no card required</div>
         </div>
       </div>
 
