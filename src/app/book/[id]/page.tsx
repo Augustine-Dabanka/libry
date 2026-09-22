@@ -7,6 +7,7 @@ import LikeButton from "@/components/LikeButton";
 import BookMini from "@/components/BookMini";
 import Stars from "@/components/Stars";
 import ReviewsSection, { type Review } from "@/components/ReviewsSection";
+import StoryCommunityButton from "@/components/StoryCommunityButton";
 import ReportButton from "@/components/ReportButton";
 import ShareButton from "@/components/ShareButton";
 import ContinueOnPhone from "@/components/ContinueOnPhone";
@@ -27,6 +28,7 @@ type BookDetail = {
   category: string | null;
   rating: number | null;
   cover_url?: string | null;
+  user_id?: string | null;
 };
 
 
@@ -39,7 +41,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 
   const primary = await supabase
     .from("books")
-    .select("id, title, author, description, content, price, type, status, age_rating, category, rating, cover_url, tags")
+    .select("id, title, author, description, content, price, type, status, age_rating, category, rating, cover_url, tags, user_id")
     .eq("id", id)
     .maybeSingle();
   let data = primary.data;
@@ -122,6 +124,15 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         .maybeSingle();
       if (!rp.error) progressPct = Math.min(100, Math.round(Number(rp.data?.progress_percentage ?? 0)));
     }
+  }
+
+  // Story-specific community (spec §31): show the linked community, or let the
+  // creator start one, pre-configured from this story.
+  const isCreator = !!user && !!book.user_id && book.user_id === user.id;
+  let storyCommunity: { slug: string; name: string; member_count: number } | null = null;
+  {
+    const sc = await supabase.from("communities").select("slug, name, member_count").eq("book_id", book.id).maybeSingle();
+    if (!sc.error && sc.data) storyCommunity = sc.data as { slug: string; name: string; member_count: number };
   }
   const isInteractive = (book.type || "").toLowerCase() === "interactive";
   const hasProgress = owned && progressPct > 3 && progressPct < 100;
@@ -307,6 +318,26 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
                 </li>
               ))}
             </ol>
+          </div>
+        ) : null}
+
+        {/* Story community (spec §31) */}
+        {storyCommunity ? (
+          <div style={{ marginBottom: "2.5rem" }}>
+            <h2 style={{ fontSize: "1.4rem", marginBottom: "0.8rem" }}>Community</h2>
+            <a href={`/c/${storyCommunity.slug}`} style={{ display: "flex", alignItems: "center", gap: "1rem", textDecoration: "none", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1rem 1.2rem" }}>
+              <span style={{ fontSize: "1.6rem" }}>📖</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "var(--serif)", color: "var(--ivory)", fontSize: "1.08rem" }}>{storyCommunity.name}</div>
+                <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem" }}>👥 {storyCommunity.member_count.toLocaleString()} member{storyCommunity.member_count === 1 ? "" : "s"} · theories, chapter chat &amp; more</div>
+              </div>
+              <span style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontWeight: 700, flexShrink: 0 }}>Open →</span>
+            </a>
+          </div>
+        ) : isCreator ? (
+          <div style={{ marginBottom: "2.5rem" }}>
+            <h2 style={{ fontSize: "1.4rem", marginBottom: "0.4rem" }}>Community</h2>
+            <StoryCommunityButton bookId={Number(book.id)} />
           </div>
         ) : null}
 
