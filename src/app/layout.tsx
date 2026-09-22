@@ -4,6 +4,7 @@ import "./globals.css";
 import BackgroundFX from "@/components/BackgroundFX";
 import AppFooter from "@/components/AppFooter";
 import CookieBanner from "@/components/CookieBanner";
+import AppSplash from "@/components/AppSplash";
 
 export const metadata: Metadata = {
   title: "Libry — Stories worth lingering in",
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             __html: `try{var r=document.documentElement;var t=localStorage.getItem('libry-theme')||'system';var d=t==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;r.setAttribute('data-theme',d);var b=localStorage.getItem('libry-brand');if(b)r.setAttribute('data-brand',b);}catch(e){}`,
           }}
         />
+        <AppSplash />
         <BackgroundFX />
         {children}
         <AppFooter />

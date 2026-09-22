@@ -1569,6 +1569,18 @@ body { overflow-x: clip; }
   .communities-trending { position: static !important; }
 }
 
+/* ══════════ First-load splash (AppSplash) ══════════ */
+.app-splash { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: radial-gradient(600px 340px at 50% 32%, rgba(196,163,90,0.10), transparent 70%), var(--charcoal, #14110d); animation: as-splash 2.3s ease forwards; }
+.app-splash .as-inner { display: grid; place-items: center; gap: 1.15rem; text-align: center; padding: 1.5rem; }
+.app-splash .as-mark { display: flex; align-items: center; gap: 0.55rem; font-family: var(--serif, 'Fraunces', Georgia, serif); font-style: italic; font-weight: 600; font-size: clamp(2.2rem, 8vw, 2.9rem); color: var(--ivory); animation: libry-pulse 1.5s ease-in-out infinite; }
+.app-splash .as-mark i { color: var(--gold); font-style: normal; }
+.app-splash .as-tip { font-family: var(--sans); font-size: 0.9rem; color: var(--muted); max-width: 320px; min-height: 2.6em; line-height: 1.45; animation: as-tip-in 0.5s ease; }
+@keyframes as-splash { 0%, 62% { opacity: 1; } 100% { opacity: 0; visibility: hidden; pointer-events: none; } }
+@keyframes as-tip-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .app-splash .as-mark, .app-splash .as-tip { animation: none; }
+}
+
 /* ══════════ Branded route loader (LibryLoader) ══════════ */
 .libry-loader { display: grid; place-items: center; gap: 1.1rem; padding: 2rem; }
 .libry-loader .ll-mark { display: flex; align-items: center; gap: 0.5rem; font-family: var(--serif, 'Fraunces', Georgia, serif); font-style: italic; font-weight: 600; font-size: 2.4rem; color: var(--ivory); animation: libry-pulse 1.5s ease-in-out infinite; }
