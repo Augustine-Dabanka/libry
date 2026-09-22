@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BookMini from "@/components/BookMini";
 import { allowedRatings } from "@/lib/content";
+import { logEvent } from "@/app/actions/analytics";
 import { type Book } from "@/lib/types";
 
 export const metadata = { title: "Search — Libry" };
@@ -24,6 +25,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   if (query) {
     const { data, error } = await supabase.rpc("search_books", { q: query, ratings: allowed, lim: 48 });
     if (!error && data) results = data as Book[];
+    // Aggregate signal only — result count, never the raw term (spec §44).
+    await logEvent("search", { meta: { results: results.length } });
   }
 
   return (

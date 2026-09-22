@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { type IStory, resolveEnding } from "@/lib/interactive";
 import EndingShare from "@/components/EndingShare";
+import PathMap from "@/components/PathMap";
+import { logEvent } from "@/app/actions/analytics";
 import ReaderCompanion from "@/components/ReaderCompanion";
 
 const PAL = { bg: "#1C1917", fg: "#EDE7DE", muted: "#A8A29E", bar: "rgba(250,247,242,0.12)", gold: "#C5A059" };
@@ -53,10 +55,19 @@ export default function InteractiveReader({
     } catch { /* progress is best-effort */ }
   }
 
-  useEffect(() => { if (atEnd) save(100); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [atEnd]);
+  useEffect(() => {
+    if (atEnd) {
+      save(100);
+      void logEvent("interactive_ending", { bookId: Number(bookId), meta: { ending: endingIdx >= 0 ? endingIdx + 1 : 1, ofTotal: story.endings.length } });
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [atEnd]);
 
   function advance(choice: number | null) {
-    if (choice !== null) setPath((p) => [...p, choice]);
+    if (choice !== null) {
+      setPath((p) => [...p, choice]);
+      void logEvent("interactive_choice", { bookId: Number(bookId), meta: { chapter: idx, choice } });
+    }
     const next = idx + 1;
     setIdx(next);
     save(Math.min(100, Math.round((next / Math.max(1, total)) * 100)));
@@ -104,6 +115,16 @@ export default function InteractiveReader({
               <EndingShare
                 bookId={String(bookId)}
                 title={title}
+                endingNumber={endingIdx >= 0 ? endingIdx + 1 : 1}
+                totalEndings={story.endings.length}
+              />
+
+              <PathMap
+                steps={path.map((ch, i) => ({
+                  chapter: story.chapters[i]?.title ?? `Chapter ${i + 1}`,
+                  choice: story.chapters[i]?.choices?.[ch] ?? "",
+                }))}
+                endingLabel={ending ? ending.label : "The End"}
                 endingNumber={endingIdx >= 0 ? endingIdx + 1 : 1}
                 totalEndings={story.endings.length}
               />
