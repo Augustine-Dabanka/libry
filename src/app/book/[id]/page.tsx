@@ -51,7 +51,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
       .select("id, title, author, description, content, price, type, status, category, rating, cover_url")
       .eq("id", id)
       .maybeSingle();
-    data = alt.data ? { ...alt.data, age_rating: null, tags: [] } : null;
+    data = alt.data ? { ...alt.data, age_rating: null, tags: [], user_id: null } : null;
   }
   const book = data as BookDetail | null;
 
