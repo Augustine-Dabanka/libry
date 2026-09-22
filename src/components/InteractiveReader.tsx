@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { type IStory, resolveEnding } from "@/lib/interactive";
+import EndingShare from "@/components/EndingShare";
 import ReaderCompanion from "@/components/ReaderCompanion";
 
 const PAL = { bg: "#1C1917", fg: "#EDE7DE", muted: "#A8A29E", bar: "rgba(250,247,242,0.12)", gold: "#C5A059" };
@@ -96,9 +97,16 @@ export default function InteractiveReader({
                 Your choices led here — this story has <strong style={{ color: PAL.fg }}>{story.endings.length} endings</strong>. Take a different path to find the others.
               </p>
               <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
-                <button type="button" onClick={restart} className="btn btn-gold">↺ Read it again</button>
+                <button type="button" onClick={restart} className="btn btn-gold">↺ Explore another path</button>
                 <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
               </div>
+
+              <EndingShare
+                bookId={String(bookId)}
+                title={title}
+                endingNumber={endingIdx >= 0 ? endingIdx + 1 : 1}
+                totalEndings={story.endings.length}
+              />
             </div>
           </>
         ) : chapter ? (
