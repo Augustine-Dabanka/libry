@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import CoverMaker from "@/components/CoverMaker";
 
 // Downscale a chosen image to a compact JPEG data URL, preserving aspect ratio
 // (max width `maxW`). Stored inline in the DB column — no storage bucket needed,
@@ -46,7 +47,7 @@ export default function ImagePicker({
   maxW?: number;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [mode, setMode] = useState<"upload" | "url">("upload");
+  const [mode, setMode] = useState<"upload" | "url" | "make">("upload");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -77,9 +78,14 @@ export default function ImagePicker({
         <span style={{ fontFamily: "var(--sans)", fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--muted)" }}>{label}</span>
         <div style={{ display: "flex", gap: "0.9rem", marginLeft: "auto" }}>
           <button type="button" onClick={() => setMode("upload")} style={tab(mode === "upload")}>Upload</button>
+          <button type="button" onClick={() => setMode("make")} style={tab(mode === "make")}>🎨 Make one</button>
           <button type="button" onClick={() => setMode("url")} style={tab(mode === "url")}>Paste URL</button>
         </div>
       </div>
+
+      {mode === "make" ? (
+        <CoverMaker onDone={(uri) => { onChange(uri); setMode("upload"); }} />
+      ) : (
 
       <div style={{ display: "flex", gap: "0.9rem", alignItems: "flex-start" }}>
         <div style={{ position: "relative", flex: "0 0 128px", aspectRatio: aspect, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", background: "var(--charcoal)", display: "grid", placeItems: "center" }}>
@@ -114,6 +120,7 @@ export default function ImagePicker({
           {err ? <p style={{ color: "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.78rem", marginTop: "0.4rem" }}>{err}</p> : null}
         </div>
       </div>
+      )}
     </div>
   );
 }
