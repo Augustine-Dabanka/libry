@@ -6,6 +6,7 @@ import CartDrawer from "@/components/CartDrawer";
 import LogoutSurvey from "@/components/LogoutSurvey";
 import StreakCard from "@/components/StreakCard";
 import { cartCount, onCartChange, openCart } from "@/lib/cart";
+import { createClient } from "@/lib/supabase/client";
 
 /* ── line icons (22px, stroke = currentColor) ─────────────────────────────── */
 type IconName = "home" | "browse" | "spark" | "compass" | "library" | "medal" | "pen" | "heart" | "cart" | "theme" | "cog" | "community" | "bell";
@@ -66,7 +67,21 @@ export default function NavClient({
   const [mSection, setMSection] = useState<null | "genres" | "discover" | "community">(null);
   const [cartN, setCartN] = useState(0);
   const [wishN, setWishN] = useState(wishCount);
+  const [notifN, setNotifN] = useState(notifCount);
   const [search, setSearch] = useState("");
+
+  // Live notification badge (Supabase Realtime). notifications RLS is scoped to
+  // user_id = auth.uid(), so an unfiltered subscription only delivers this
+  // user's own new notifications.
+  useEffect(() => {
+    if (!signedIn) return;
+    const supabase = createClient();
+    const ch = supabase
+      .channel("nav-notifications")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => setNotifN((n) => n + 1))
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [signedIn]);
   const rootRef = useRef<HTMLElement>(null);
 
   // The rail reserves a slim gutter on the left for every shell page; the mobile
@@ -197,7 +212,7 @@ export default function NavClient({
                   <a href={it.href} className={`rail-item${active ? " active" : ""}`} aria-current={active ? "page" : undefined}>
                     <span className="rail-ico">
                       <Icon name={it.icon} />
-                      {notifCount > 0 ? <span className="rail-dot">{notifCount}</span> : null}
+                      {notifN > 0 ? <span className="rail-dot">{notifN}</span> : null}
                     </span>
                     <span className="rail-label">{it.label}</span>
                   </a>
@@ -206,7 +221,7 @@ export default function NavClient({
                       <h6>Community</h6>
                       <a href="/community">Feed</a>
                       <a href="/communities">Communities</a>
-                      <a href="/notifications">Notifications{notifCount > 0 ? ` (${notifCount})` : ""}</a>
+                      <a href="/notifications">Notifications{notifN > 0 ? ` (${notifN})` : ""}</a>
                     </div>
                   </div>
                 </div>
@@ -395,14 +410,14 @@ export default function NavClient({
               aria-expanded={mSection === "community"}
               onClick={() => setMSection((s) => (s === "community" ? null : "community"))}
             >
-              <span>Community{notifCount > 0 ? <span className="mm-count">{notifCount}</span> : null}</span>
+              <span>Community{notifN > 0 ? <span className="mm-count">{notifN}</span> : null}</span>
               <span className="mm-caret">▾</span>
             </button>
             <div className={`mm-sub${mSection === "community" ? " open" : ""}`}>
               <a href="/community">Feed</a>
               <a href="/communities">Communities</a>
               <a href="/notifications">
-                Notifications{notifCount > 0 ? <span className="mm-count">{notifCount}</span> : null}
+                Notifications{notifN > 0 ? <span className="mm-count">{notifN}</span> : null}
               </a>
             </div>
           </div>

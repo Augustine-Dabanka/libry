@@ -63,7 +63,7 @@ export default function FinancePanel({
   const label: React.CSSProperties = { display: "block", fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)", marginTop: "0.8rem" };
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: "1.5rem" }}>
       {/* Balance tiles */}
       <div className="stats-grid">
         <div className="stat-card"><div className="label">Total earned (net 65%)</div><div className="value">{formatPrice(net)}</div><div className="change" style={{ color: "var(--muted)" }}>Your share of all sales</div></div>

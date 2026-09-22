@@ -69,6 +69,30 @@ export default function CommunityFeed({ userId, userName, avatarUrl, communityId
 
   useEffect(() => { load(); }, [load]);
 
+  // Live feed: new posts appear without a refresh (Supabase Realtime). RLS still
+  // gates delivery, so a client only receives posts it may read. Scoped to a
+  // specific community/channel; the global feed stays on load-only.
+  useEffect(() => {
+    if (communityId == null) return;
+    const supabase = createClient();
+    const ch = supabase
+      .channel(`community-${communityId}-${channel}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "community_posts", filter: `community_id=eq.${communityId}` },
+        async (payload) => {
+          const row = payload.new as { id: number; user_id: string; author_name: string | null; body: string; image_url?: string | null; created_at: string; channel?: string };
+          if (row.channel && row.channel !== channel) return;
+          setPosts((prev) => (prev.some((p) => p.id === row.id) ? prev : [{ id: row.id, user_id: row.user_id, author_name: row.author_name, body: row.body, image_url: row.image_url ?? null, created_at: row.created_at, likes: 0, liked: false, comments: 0 }, ...prev]));
+          const pr = await supabase.from("profiles").select("id, is_creator, avatar_url").eq("id", row.user_id).maybeSingle();
+          const data = pr.data as { is_creator?: boolean; avatar_url?: string | null } | null;
+          if (data) setMeta((m) => new Map(m).set(row.user_id, { creator: !!data.is_creator, avatar: data.avatar_url ?? null }));
+        },
+      )
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [communityId, channel]);
+
   async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
