@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AGE_RATINGS, AGE_LABEL, GENRES, TROPES } from "@/lib/content";
+import { isComicType } from "@/lib/comic";
+import ComicPagesEditor from "@/components/ComicPagesEditor";
 
 const MIN_PRICE = 2.99;
 
@@ -179,6 +181,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
             <option>Fiction</option>
             <option>Non-Fiction</option>
             <option>Interactive</option>
+            <option>Comic</option>
           </select>
         </div>
         <div style={{ flex: 1, minWidth: 150 }}>
@@ -238,13 +241,22 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
         })}
       </div>
 
-      <label style={label}>Story text</label>
-      <textarea
-        style={{ ...field, minHeight: 200, resize: "vertical", fontFamily: "var(--serif)", lineHeight: 1.7 }}
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Paste or edit your story. Drop an image with ![caption](https://…​.jpg) on its own line."
-      />
+      {isComicType(type) ? (
+        <>
+          <label style={label}>Comic pages</label>
+          <ComicPagesEditor bookId={book.id} value={content} onChange={setContent} />
+        </>
+      ) : (
+        <>
+          <label style={label}>Story text</label>
+          <textarea
+            style={{ ...field, minHeight: 200, resize: "vertical", fontFamily: "var(--serif)", lineHeight: 1.7 }}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Paste or edit your story. Drop an image with ![caption](https://…​.jpg) on its own line."
+          />
+        </>
+      )}
 
       {err ? <p style={{ color: "var(--terracotta)", marginTop: "0.9rem", fontSize: "0.9rem" }}>{err}</p> : null}
 
