@@ -58,7 +58,7 @@ function Content({ tab }: { tab: string }) {
       <h4>Age and mature content</h4>
       <p>Mature (18+) titles are hidden by default and shown only when you turn on mature content in Settings. Don&apos;t enable it unless you&apos;re old enough, and creators must rate their work with the correct age rating.</p>
       <h4>Publishing</h4>
-      <p>You retain ownership of what you publish and grant Libry a license to host and display it. Creators keep <strong>65%</strong> of each sale; Libry keeps 35% to run the platform (a 30% platform cut plus a 5% platform &amp; infra fee). Payments are live via Paystack. Earnings accrue on every sale, and creators withdraw them after joining the Library Partnership Program — a verification of identity and payout details, after which payouts are processed by the platform.</p>
+      <p>You retain ownership of what you publish and grant Libry a license to host and display it. Creators keep <strong>65%</strong> of each sale; Libry keeps 35% to run the platform (a 30% platform cut plus a 5% platform &amp; infra fee). Payments are live via Paystack. Earnings accrue on every sale, and creators withdraw them after joining the Libry Partnership Program — a verification of identity and payout details, after which payouts are processed by the platform.</p>
       <h4>Acceptable use</h4>
       <p>Follow the Community Guidelines. We may remove content or accounts that violate them.</p>
       <h4>Changes</h4>

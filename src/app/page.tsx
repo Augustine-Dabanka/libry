@@ -333,7 +333,7 @@ export default async function Landing() {
             <div className={s.step}>
               <b>3</b>
               <span>
-                <strong>Publish</strong> — it goes live instantly. Keep 65%; withdraw once you join the Library Partnership Program.
+                <strong>Publish</strong> — it goes live instantly. Keep 65%; withdraw once you join the Libry Partnership Program.
               </span>
             </div>
           </div>

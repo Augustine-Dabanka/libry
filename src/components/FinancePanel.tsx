@@ -87,7 +87,7 @@ export default function FinancePanel({
         </div>
         {!isPartner ? (
           <p style={{ color: "var(--gold-hi)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem" }}>
-            🤝 Payouts unlock once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Library Partnership Program</a>{partner === "pending" ? " — your application is under review." : "."} You keep earning in the meantime.
+            🤝 Payouts unlock once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Libry Partnership Program</a>{partner === "pending" ? " — your application is under review." : "."} You keep earning in the meantime.
           </p>
         ) : null}
         {isPartner && !hasAccount ? <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem" }}>Add your payout details below first.</p> : null}

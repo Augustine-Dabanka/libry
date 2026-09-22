@@ -31,6 +31,12 @@ export default function ProductBuy({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [has, setHas] = useState(owned);
+  const [showTerms, setShowTerms] = useState(false);
+
+  const TERMS_KEY = "libry-download-terms-ok";
+  function termsAccepted() {
+    try { return localStorage.getItem(TERMS_KEY) === "1"; } catch { return false; }
+  }
 
   useEffect(() => { paystackReady().then(setLive).catch(() => setLive(false)); }, []);
 
@@ -68,7 +74,7 @@ export default function ProductBuy({
     await grant(`demo-${Date.now()}`);
   }
 
-  async function access() {
+  async function doDownload() {
     setErr(null);
     setBusy(true);
     const res = await getDownloadUrl(productId);
@@ -76,6 +82,18 @@ export default function ProductBuy({
     if (res.error) { setErr(res.error); return; }
     const url = res.url || res.external;
     if (url) window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  // It's in the reader's library either way; a one-time acknowledgment gates the
+  // actual file download (accepting responsibility for how it's used).
+  function access() {
+    if (isVideo || termsAccepted()) { void doDownload(); return; }
+    setShowTerms(true);
+  }
+  function acceptAndDownload() {
+    try { localStorage.setItem(TERMS_KEY, "1"); } catch { /* private mode — acknowledge for this action only */ }
+    setShowTerms(false);
+    void doDownload();
   }
 
   const btn: React.CSSProperties = {
@@ -88,9 +106,21 @@ export default function ProductBuy({
   return (
     <div>
       {has ? (
-        <button type="button" onClick={access} disabled={busy} style={btn}>
-          {busy ? "Opening…" : isVideo ? "▶ Watch now" : "↓ Download"}
-        </button>
+        showTerms ? (
+          <div style={{ border: "1px solid var(--border)", borderRadius: 14, padding: "1rem 1.1rem", background: "var(--charcoal)" }}>
+            <p style={{ fontFamily: "var(--sans)", fontSize: "0.86rem", color: "var(--ivory-muted)", lineHeight: 1.6, margin: "0 0 0.9rem" }}>
+              This file is saved in your library. By downloading it you accept that <strong style={{ color: "var(--ivory)" }}>you are responsible for how you store and use it</strong>, that downloads are non-refundable, and that Libry is not liable for anything that happens to the file once it leaves the platform.
+            </p>
+            <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+              <button type="button" onClick={acceptAndDownload} disabled={busy} style={{ ...btn, width: "auto", flex: "1 1 auto" }}>{busy ? "Preparing…" : "I understand — download"}</button>
+              <button type="button" onClick={() => setShowTerms(false)} style={{ background: "transparent", border: "1px solid var(--border)", borderRadius: 14, color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontWeight: 700, padding: "0 1.1rem", cursor: "pointer" }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <button type="button" onClick={access} disabled={busy} style={btn}>
+            {busy ? "Opening…" : isVideo ? "▶ Watch now" : "↓ Download"}
+          </button>
+        )
       ) : (
         <button type="button" onClick={buy} disabled={busy} style={btn}>
           {busy ? "Processing…" : price > 0 ? `${live ? "Buy" : "Get"} — ${formatPrice(price)}` : "Get it free"}

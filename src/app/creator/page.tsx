@@ -279,7 +279,7 @@ export default async function CreatorDashboard() {
                     <ul style={{ margin: "1.2rem 0 0", paddingLeft: "1.1rem", color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.7 }}>
                       <li>Every purchase of your book credits <strong style={{ color: "var(--ivory)" }}>65% of the price</strong> to you — the &ldquo;Projected earnings&rdquo; figure above.</li>
                       <li>Libry keeps 35% to run the platform — a 30% platform cut plus a 5% platform &amp; infrastructure fee (hosting, payments, discovery).</li>
-                      <li>Payments are <strong style={{ color: "var(--ivory)" }}>live via Paystack</strong>. Earnings accrue on every sale; withdraw them once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Library Partnership Program</a> (a quick verification of your identity and payout details).</li>
+                      <li>Payments are <strong style={{ color: "var(--ivory)" }}>live via Paystack</strong>. Earnings accrue on every sale; withdraw them once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Libry Partnership Program</a> (a quick verification of your identity and payout details).</li>
                       <li>You keep your readers — followers, reviews, and the relationship — always.</li>
                     </ul>
                   </div>

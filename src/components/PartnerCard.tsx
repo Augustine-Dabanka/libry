@@ -7,7 +7,7 @@ import { applyForPartner, withdrawPartner } from "@/app/actions/partner";
 export type PartnerStatus = "none" | "pending" | "approved" | "rejected";
 
 const META: Record<PartnerStatus, { label: string; tone: string; heading: string; blurb: string }> = {
-  none: { label: "Not enrolled", tone: "var(--muted)", heading: "Join the Library Partnership Program", blurb: "Earnings accrue from your first sale. To withdraw them, join the Partnership Program — a quick review of your identity and payout details, so we can send money safely and stay compliant." },
+  none: { label: "Not enrolled", tone: "var(--muted)", heading: "Join the Libry Partnership Program", blurb: "Earnings accrue from your first sale. To withdraw them, join the Partnership Program — a quick review of your identity and payout details, so we can send money safely and stay compliant." },
   pending: { label: "Under review", tone: "#D9A441", heading: "Your application is under review", blurb: "We're reviewing your account and payout details. This usually takes a few days. You'll keep earning in the meantime — payouts unlock the moment you're approved." },
   approved: { label: "Partner", tone: "#7DBE86", heading: "You're a Libry Partner", blurb: "Your payouts are enabled. Once you request one, Libry processes it to your saved account via Paystack — no manual back-and-forth." },
   rejected: { label: "Needs attention", tone: "#E0836B", heading: "We couldn't approve you yet", blurb: "Something in your application needs another look — usually payout details. Update your payout account and re-apply, or contact support." },

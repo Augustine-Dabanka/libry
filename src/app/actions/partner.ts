@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-// Apply to the Library Partnership Program (moves status none/rejected -> pending).
+// Apply to the Libry Partnership Program (moves status none/rejected -> pending).
 export async function applyForPartner() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
