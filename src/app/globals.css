@@ -1563,6 +1563,12 @@ body { overflow-x: clip; }
   .communities-trending { position: static !important; }
 }
 
+/* ══════════ Skeleton shimmer (perceived speed) ══════════ */
+.sk { position: relative; overflow: hidden; background: var(--stone, #1c1917); }
+.sk::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); animation: sk-shimmer 1.4s ease-in-out infinite; }
+@keyframes sk-shimmer { 100% { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .sk::after { animation: none; } }
+
 /* ══════════ Community cover (real image or designed duotone) ══════════ */
 .ccov { position: absolute; inset: 0; overflow: hidden; }
 .ccov img { width: 100%; height: 100%; object-fit: cover; display: block; }
