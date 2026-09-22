@@ -257,7 +257,7 @@ export default async function Home() {
             Welcome back, <span style={{ fontStyle: "italic" }}>{firstName || "reader"}</span>
           </h1>
           <p>We&apos;ve lined up beautiful, character-driven fiction — picked for you below.</p>
-          <form className="hero-search" action="/catalog" method="get">
+          <form className="hero-search" action="/search" method="get">
             <input name="q" type="text" placeholder="Search titles, authors, worlds…" aria-label="Search books" />
             <button type="submit">Search</button>
           </form>

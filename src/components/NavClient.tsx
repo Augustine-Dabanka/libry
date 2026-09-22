@@ -179,6 +179,7 @@ export default function NavClient({
                     </div>
                     <div className="rf-col">
                       <h6>Formats</h6>
+                      <a href="/search">🔍 Search</a>
                       <a href="/comics">💥 Comics</a>
                       <a href="/catalog?type=Interactive">✦ Interactive</a>
                       <a href="/catalog?free=1">Free to read</a>
@@ -345,6 +346,7 @@ export default function NavClient({
 
         <div className="mm-scroll">
           <a className="mm-link" href="/home">Home</a>
+          <a className="mm-link" href="/search">🔍 Search</a>
           <a className="mm-link" href="/catalog">Browse all</a>
 
           <div className="mm-group">
