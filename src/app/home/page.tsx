@@ -9,6 +9,7 @@ import AudiencePicker, { type AudienceGroup } from "@/components/AudiencePicker"
 import ContinueReading, { type ResumeItem } from "@/components/ContinueReading";
 import CommunityCover from "@/components/CommunityCover";
 import RankedShelf from "@/components/RankedShelf";
+import Reveal from "@/components/Reveal";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 import { rankBooks, type BookSignals } from "@/lib/ranking";
@@ -308,15 +309,15 @@ export default async function Home() {
       <RankedShelf title="Trending stories & comics" books={trending.length ? trending : books.slice(0, 8)} />
 
       {audienceGroups.some((g) => g.books.length > 0) ? (
-        <div className="section" style={{ paddingTop: "1rem", paddingBottom: 0 }}>
+        <Reveal className="section" style={{ paddingTop: "1rem", paddingBottom: 0 }}>
           <AudiencePicker groups={audienceGroups} />
-        </div>
+        </Reveal>
       ) : null}
 
       {products.length > 0 ? (
-        <div className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
+        <Reveal className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
           <div className="section-header">
-            <h2>🎁 Digital products</h2>
+            <h2 className="tw-tracking-tight">🎁 Digital products</h2>
             <a href="/discover" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>View all →</a>
           </div>
           <div className="book-grid-mini">
@@ -324,7 +325,7 @@ export default async function Home() {
               <ProductMini key={p.id} product={p} />
             ))}
           </div>
-        </div>
+        </Reveal>
       ) : null}
       {followedNew.length > 0 ? (
         <Shelf title="New from authors you follow" books={followedNew} />
@@ -337,7 +338,7 @@ export default async function Home() {
       <Shelf title="Premium Reads" books={premiumBooks} href="/catalog?paid=1" />
 
       {communities.length > 0 ? (
-        <div className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
+        <Reveal className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
           <div className="section-header">
             <h2>👥 Popular communities</h2>
             <a href="/communities" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>View all →</a>
@@ -347,7 +348,8 @@ export default async function Home() {
               <a
                 key={c.id}
                 href={`/c/${c.slug}`}
-                style={{ flexShrink: 0, width: 150, textDecoration: "none", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}
+                className="tw-transition-transform tw-duration-200 hover:tw-scale-[1.04]"
+                style={{ flexShrink: 0, width: 150, textDecoration: "none", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", display: "block" }}
               >
                 <div style={{ position: "relative", height: 66 }}>
                   <CommunityCover name={c.name} emoji={c.emoji} coverUrl={c.cover_url} />
@@ -359,7 +361,7 @@ export default async function Home() {
               </a>
             ))}
           </div>
-        </div>
+        </Reveal>
       ) : null}
 
       {books.length === 0 ? (
