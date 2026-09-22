@@ -30,3 +30,15 @@ export function formatPrice(price: number | null): string {
   if (!price || price <= 0) return "Free";
   return `$${Number(price).toFixed(2)}`;
 }
+
+// Consistent format language (spec §9). Maps a book's raw `type` to one of the
+// formats the product actually supports, with an icon. Serial/Audio only when
+// the type explicitly says so — we don't over-claim formats.
+export function bookFormat(type?: string | null): { label: string; icon: string } {
+  const t = (type || "").toLowerCase();
+  if (t === "interactive") return { label: "Interactive", icon: "✦" };
+  if (t === "comic" || t === "comics" || t === "graphic novel" || t === "webtoon") return { label: "Comic", icon: "▦" };
+  if (t === "audio" || t === "audiobook") return { label: "Audio", icon: "♪" };
+  if (t === "serial" || t === "series") return { label: "Serial", icon: "≡" };
+  return { label: "Novel", icon: "❦" };
+}

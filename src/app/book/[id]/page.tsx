@@ -10,7 +10,7 @@ import ReviewsSection, { type Review } from "@/components/ReviewsSection";
 import ReportButton from "@/components/ReportButton";
 import ShareButton from "@/components/ShareButton";
 import ContinueOnPhone from "@/components/ContinueOnPhone";
-import { formatPrice, bookCover, genCover, type Book } from "@/lib/types";
+import { formatPrice, bookCover, genCover, bookFormat, type Book } from "@/lib/types";
 import { AGE_LABEL, agePill, isMatureRating } from "@/lib/content";
 import { AUTHOR_BIOS } from "@/lib/authorBios";
 
@@ -225,8 +225,8 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
             ) : null}
             <div style={{ display: "flex", gap: "0.6rem", margin: "1rem 0", flexWrap: "wrap", alignItems: "center" }}>
               <span className="price" style={{ fontSize: "1.1rem" }}>{formatPrice(book.price)}</span>
+              {(() => { const f = bookFormat(book.type); return <span className="badge" style={{ background: "rgba(196,163,90,0.14)", color: "var(--gold)", borderColor: "rgba(196,163,90,0.35)" }}>{f.icon} {f.label}</span>; })()}
               {book.category ? <span className="badge">{book.category}</span> : null}
-              {book.type && book.type !== book.category ? <span className="badge">{book.type}</span> : null}
               {book.status ? <span className="badge">{book.status}</span> : null}
               <span
                 className={`age-pill${isMatureRating(book.age_rating) ? " mature" : ""}`}
