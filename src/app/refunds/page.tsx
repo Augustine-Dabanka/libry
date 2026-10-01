@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LegalDoc from "@/components/LegalDoc";
+import { LEGAL } from "@/lib/legal";
 
 export const metadata: Metadata = { title: "Refund Policy — Libry" };
 
@@ -7,7 +8,7 @@ export default function RefundsPage() {
   return (
     <LegalDoc
       title="Refund Policy"
-      updated="[EFFECTIVE DATE]"
+      updated={LEGAL.effectiveDate}
       current="/refunds"
       intro="Libry sells digital stories that are delivered instantly. This policy explains when refunds do and don't apply, and how creator payouts relate to them."
     >
@@ -29,7 +30,9 @@ export default function RefundsPage() {
       </p>
 
       <h2>4. Subscriptions</h2>
-      <p>Any subscription (e.g. Libry Unlimited) can be cancelled to stop future renewals; already-billed periods are non-refundable except as required by law. <strong>[CONFIRM SUBSCRIPTION TERMS]</strong></p>
+      <p>Any subscription (e.g. Libry Unlimited) can be cancelled to stop future renewals; already-billed periods are non-refundable except as required by law. <strong>{LEGAL.subscriptionTerms}</strong></p>
+      <h2>4a. Coins</h2>
+      <p>Coins are a store credit for Libry only. They have <strong>no cash value</strong>, can&rsquo;t be withdrawn, sold or transferred, and are spent bought-coins first. Earned coins (ads, coupons, rewards) are never refundable. Bought coins that are still <strong>unspent</strong> can be refunded within <strong>{LEGAL.refundWindow}</strong> of purchase; spent coins follow the rules for the item they unlocked. We may remove coins gained through fraud, abuse or a refunded payment.</p>
 
       <h2>5. Creator payouts &amp; chargebacks</h2>
       <p>
@@ -37,7 +40,7 @@ export default function RefundsPage() {
       </p>
 
       <h2>6. How to request</h2>
-      <p>Email <strong>[SUPPORT EMAIL]</strong> within <strong>[REQUEST WINDOW]</strong> of purchase with your account email and the order reference. We aim to respond within <strong>[RESPONSE TIME]</strong>.</p>
+      <p>Email <strong>{LEGAL.supportEmail}</strong> within <strong>{LEGAL.refundWindow}</strong> of purchase with your account email and the order reference. We aim to respond within <strong>{LEGAL.responseTime}</strong>.</p>
     </LegalDoc>
   );
 }

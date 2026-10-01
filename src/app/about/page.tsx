@@ -159,7 +159,7 @@ export default function About() {
           {[
             { big: "65%", small: "kept by creators on every sale" },
             { big: "3", small: "endings in every interactive tale" },
-            { big: "0", small: "ads, ever — reading comes first" },
+            { big: "0", small: "ads unless you choose one — reading comes first" },
           ].map((s) => (
             <div key={s.small} style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.6rem 1.2rem" }}>
               <div style={{ fontFamily: "var(--serif)", fontSize: "2.2rem", color: "var(--gold)" }}>{s.big}</div>

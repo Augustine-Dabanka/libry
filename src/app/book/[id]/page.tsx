@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BackButton from "@/components/BackButton";
 import AddToCartButton from "@/components/AddToCartButton";
+import CoinUnlockButton from "@/components/CoinUnlockButton";
+import { coinCost } from "@/lib/coins";
 import WishlistButton from "@/components/WishlistButton";
 import LikeButton from "@/components/LikeButton";
 import BookMini from "@/components/BookMini";
@@ -41,14 +43,14 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 
   const primary = await supabase
     .from("books")
-    .select("id, title, author, description, content, price, type, status, age_rating, category, rating, cover_url, tags, user_id")
+    .select("id, title, author, description, content:has_content, price, type, status, age_rating, category, rating, cover_url, tags, user_id")
     .eq("id", id)
     .maybeSingle();
   let data = primary.data;
   if (primary.error) {
     const alt = await supabase
       .from("books")
-      .select("id, title, author, description, content, price, type, status, category, rating, cover_url")
+      .select("id, title, author, description, content:has_content, price, type, status, category, rating, cover_url")
       .eq("id", id)
       .maybeSingle();
     data = alt.data ? { ...alt.data, age_rating: null, tags: [], user_id: null } : null;
@@ -136,6 +138,12 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   }
   const isInteractive = (book.type || "").toLowerCase() === "interactive";
   const hasProgress = owned && progressPct > 3 && progressPct < 100;
+  // Coin balance for the "Unlock for N coins" option (null = wallet not set up yet).
+  let coinBalance: number | null = null;
+  if (user && !owned && (book.price ?? 0) > 0) {
+    const w = await supabase.from("coin_wallets").select("bonus, paid").eq("user_id", user.id).maybeSingle();
+    if (!w.error) coinBalance = Number(w.data?.bonus ?? 0) + Number(w.data?.paid ?? 0);
+  }
 
   // Likes (public read; guarded).
   let likeCount = 0;
@@ -285,6 +293,9 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
               ) : null}
               {(book.price ?? 0) > 0 && !owned ? (
                 <AddToCartButton item={{ id: book.id, title: book.title, author: book.author, price: book.price }} />
+              ) : null}
+              {(book.price ?? 0) > 0 && !owned && user && coinBalance !== null && book.user_id !== user.id ? (
+                <CoinUnlockButton bookId={Number(book.id)} cost={coinCost(book.price)} balance={coinBalance} />
               ) : null}
               {user ? <WishlistButton bookId={Number(book.id)} userId={user.id} initial={wishlisted} /> : null}
               <LikeButton bookId={Number(book.id)} userId={user?.id ?? null} initialLiked={liked} initialCount={likeCount} />

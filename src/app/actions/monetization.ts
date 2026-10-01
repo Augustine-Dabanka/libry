@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 
 export const TIERS: Record<string, { priority: number; days: number; price: number }> = {
   Boost: { priority: 10, days: 3, price: 4 },
@@ -9,46 +7,16 @@ export const TIERS: Record<string, { priority: number; days: number; price: numb
   Spotlight: { priority: 30, days: 7, price: 15 },
 };
 
-// Promote a book to a home-page placement tier (simulated purchase).
-export async function promoteBook(bookId: number, tier: string) {
-  const t = TIERS[tier];
-  if (!t) return;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
-
-  const ends = new Date(Date.now() + t.days * 86_400_000).toISOString();
-  await supabase.from("promoted_books").insert({
-    book_id: bookId,
-    user_id: user.id,
-    tier,
-    priority: t.priority,
-    ends_at: ends,
-  });
-  revalidatePath("/creator");
-  revalidatePath("/home");
+// Legacy free "promote" button: it granted home-page placement with no payment.
+// Promotions now go through the paid Promote panel (actions/promotions.ts).
+export async function promoteBook(_bookId: number, _tier: string) {
+  void _bookId; void _tier;
+  return { error: "Use Promote in your creator dashboard." };
 }
 
-// Buy a token bundle (simulated purchase — grants tokens immediately).
-export async function buyTokens(amount: number) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
-
-  const { data: st } = await supabase
-    .from("user_stats")
-    .select("tokens")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const current = st?.tokens ?? 0;
-  await supabase
-    .from("user_stats")
-    .update({ tokens: current + amount, tokens_updated_at: new Date().toISOString() })
-    .eq("user_id", user.id);
-  revalidatePath("/shop");
-  revalidatePath("/home");
+// Token bundles are disabled until purchases are verified server-side with
+// Paystack. The old version granted any amount for free to anyone who called it.
+export async function buyTokens(_amount: number) {
+  void _amount;
+  return { error: "Token purchases open soon." };
 }

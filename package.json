@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:launch": "node scripts/launch-check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.126.0",

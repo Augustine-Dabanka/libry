@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LegalDoc from "@/components/LegalDoc";
+import { LEGAL } from "@/lib/legal";
 
 export const metadata: Metadata = { title: "Privacy Policy — Libry" };
 
@@ -7,7 +8,7 @@ export default function PrivacyPage() {
   return (
     <LegalDoc
       title="Privacy Policy"
-      updated="[EFFECTIVE DATE]"
+      updated={LEGAL.effectiveDate}
       current="/privacy"
       intro="This policy explains what Craft & Anchor collects when you use Libry, why, and the choices you have. We aim to collect only what a calm reading service needs."
     >
@@ -31,10 +32,10 @@ export default function PrivacyPage() {
       <h2>3. Who we share it with</h2>
       <p>We do not sell your personal data. We share it only with service providers that help us run Libry, under contract, including:</p>
       <ul>
-        <li><strong>Hosting &amp; database</strong> — [SUPABASE] and [VERCEL].</li>
-        <li><strong>Email</strong> — [RESEND] for transactional messages.</li>
-        <li><strong>Payments</strong> — [PAYMENT PROCESSOR] for purchases and creator payouts.</li>
-        <li><strong>Error monitoring</strong> — [SENTRY] for diagnostics.</li>
+        <li><strong>Hosting &amp; database</strong> — {LEGAL.host} and {LEGAL.web}.</li>
+        <li><strong>Email</strong> — {LEGAL.mail} for transactional messages.</li>
+        <li><strong>Payments</strong> — {LEGAL.payments} for purchases and creator payouts.</li>
+        <li><strong>Error monitoring</strong> — {LEGAL.monitoring} for diagnostics.</li>
       </ul>
       <p>We may also disclose data where legally required, or to protect rights and safety.</p>
 
@@ -45,13 +46,13 @@ export default function PrivacyPage() {
       <p>We keep your data for as long as your account is active and as needed for the purposes above (e.g. tax/records for purchases). You can delete your account in Settings; some records may be retained where the law requires.</p>
 
       <h2>6. Your rights</h2>
-      <p>Subject to your local law, you may access, correct, export, or delete your data, and object to or restrict certain processing. Contact <strong>[PRIVACY EMAIL]</strong> to exercise these rights. You may also opt out of marketing at any time.</p>
+      <p>Subject to your local law, you may access, correct, export, or delete your data, and object to or restrict certain processing. Contact <strong>{LEGAL.privacyEmail}</strong> to exercise these rights. You may also opt out of marketing at any time.</p>
 
       <h2>7. Children</h2>
-      <p>Libry is not directed to children under <strong>[MINIMUM AGE]</strong>. If you believe a child has given us data without appropriate consent, contact us and we will address it.</p>
+      <p>Libry is not directed to children under <strong>{LEGAL.minimumAge}</strong>. If you believe a child has given us data without appropriate consent, contact us and we will address it.</p>
 
       <h2>8. Contact</h2>
-      <p>Privacy questions: <strong>[PRIVACY EMAIL]</strong> — [CRAFT &amp; ANCHOR — REGISTERED LEGAL NAME], [REGISTERED ADDRESS].</p>
+      <p>Privacy questions: <strong>{LEGAL.privacyEmail}</strong> — {LEGAL.entity}, {LEGAL.address}.</p>
     </LegalDoc>
   );
 }

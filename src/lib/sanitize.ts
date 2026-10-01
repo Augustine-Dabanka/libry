@@ -25,6 +25,28 @@ const ALLOWED_ATTR = new Set([
 
 const VOID_TAGS = new Set(["br", "hr", "img"]);
 
+// Browsers decode HTML entities inside attributes, so "jav&#x61;script:" and
+// "javascript&colon;" still run. Decode first, strip whitespace/control chars,
+// then allow only known-safe schemes (or relative links).
+function decodeEntities(v: string): string {
+  return v
+    .replace(/&#x([0-9a-f]+);?/gi, (_, h) => String.fromCodePoint(parseInt(h, 16) || 0))
+    .replace(/&#(\d+);?/g, (_, d) => String.fromCodePoint(Number(d) || 0))
+    .replace(/&colon;/gi, ":").replace(/&tab;/gi, "").replace(/&newline;/gi, "")
+    .replace(/&lpar;/gi, "(").replace(/&rpar;/gi, ")").replace(/&amp;/gi, "&");
+}
+function safeUrl(raw: string, key: "href" | "src" | string): boolean {
+  // eslint-disable-next-line no-control-regex
+  const v = decodeEntities(raw).replace(/[\u0000-\u0020\u007f-\u009f]/g, "").toLowerCase();
+  if (v === "") return false;
+  const scheme = /^([a-z][a-z0-9+.-]*):/.exec(v);
+  if (!scheme) return true; // relative: "/x", "#x", "x.png"
+  if (["http", "https"].includes(scheme[1])) return true;
+  if (key === "href" && scheme[1] === "mailto") return true;
+  if (key === "src" && /^data:image\/(png|jpe?g|gif|webp|avif);/.test(v)) return true;
+  return false;
+}
+
 export function sanitizeHtml(html: string): string {
   if (!html) return "";
   let s = html;
@@ -48,8 +70,7 @@ export function sanitizeHtml(html: string): string {
       let val = a[3] ?? a[4] ?? a[5] ?? "";
       if (key.startsWith("on")) continue;
       if (!ALLOWED_ATTR.has(key)) continue;
-      const low = val.trim().toLowerCase().replace(/\s+/g, "");
-      if ((key === "href" || key === "src") && /^(javascript:|vbscript:|data:text\/html)/i.test(low)) continue;
+      if ((key === "href" || key === "src") && !safeUrl(val, key)) continue;
       if (key === "style" && /expression|javascript:|url\s*\(/i.test(val)) continue;
       val = val.replace(/"/g, "&quot;");
       out += ` ${key}="${val}"`;

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { serviceClient } from "@/lib/supabase/service";
 import { looksLikeHtml } from "@/lib/sanitize";
 import { buildEpub, contentToChapters, bookFilename } from "@/lib/epub";
 
@@ -17,10 +18,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   const { data: book } = await supabase
     .from("books")
-    .select("id, title, author, content, price, type, user_id")
+    .select("id, title, author, price, type, user_id, has_content")
     .eq("id", id)
     .maybeSingle();
-  if (!book || !book.content) return new Response("Book not found.", { status: 404 });
+  if (!book || !(book as { has_content?: boolean }).has_content) return new Response("Book not found.", { status: 404 });
 
   // Ownership: free books, your own books, or a recorded purchase.
   const isFree = (book.price ?? 0) <= 0;
@@ -36,7 +37,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const who = pr.data?.full_name || pr.data?.username || user.email || "a Libry reader";
   const watermark = `Prepared for ${who}${user.email ? ` (${user.email})` : ""} via Libry on ${new Date().toISOString().slice(0, 10)}. This is your personal copy — please keep it to yourself.`;
 
-  const chapters = contentToChapters(book.content, looksLikeHtml(book.content));
+  // Text is fetched server-side only after the ownership check above.
+  const svc = serviceClient();
+  const cr = svc
+    ? await svc.from("books").select("content").eq("id", book.id).maybeSingle()
+    : await supabase.from("books").select("content").eq("id", book.id).maybeSingle();
+  const text = ((cr.data as { content?: string | null } | null)?.content) ?? "";
+  if (!text) return new Response("Book not found.", { status: 404 });
+  const chapters = contentToChapters(text, looksLikeHtml(text));
   const epub = await buildEpub({
     bookId: String(book.id),
     title: book.title,

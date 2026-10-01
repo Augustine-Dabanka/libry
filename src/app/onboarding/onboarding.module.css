@@ -372,3 +372,41 @@
   8% { opacity: 1; }
   100% { opacity: 0.9; transform: translateY(110vh) rotate(720deg); }
 }
+
+/* ---- Reactive koala (batch 4) -------------------------------------------- */
+.kAll, .kHead, .kEyes, .kDots, .kShadow { transform-box: view-box; }
+.kAll { transform-origin: 60px 116px; }
+.kHead { transform-origin: 60px 90px; }
+.kEyes { transform-origin: 60px 54px; animation: kBlink 4.2s infinite; }
+.kShadow { transform-origin: 60px 115px; }
+.kDots { color: var(--muted, #8a827a); opacity: 0; }
+
+/* idle: slow breathing */
+.kIdle .kAll { animation: kBreathe 3.2s ease-in-out infinite; }
+
+/* think: head tilts, thought dots pulse in sequence */
+.kThink .kHead { animation: kTilt 2.6s ease-in-out infinite; }
+.kThink .kDots { opacity: 1; }
+.kThink .kDots circle { animation: kDot 1.5s ease-in-out infinite; }
+.kThink .kDots circle:nth-child(2) { animation-delay: 0.2s; }
+.kThink .kDots circle:nth-child(3) { animation-delay: 0.4s; }
+
+/* cheer: anticipation squash, jump with stretch, land squash, settle */
+.kCheer .kAll { animation: kHop 0.8s cubic-bezier(0.3, 0.7, 0.4, 1) 1; }
+.kCheer .kShadow { animation: kShadow 0.8s cubic-bezier(0.3, 0.7, 0.4, 1) 1; }
+
+@keyframes kBlink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.12); } }
+@keyframes kBreathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.025, 0.975); } }
+@keyframes kTilt { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+@keyframes kDot { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+@keyframes kHop {
+  0% { transform: translateY(0) scale(1.1, 0.88); }
+  30% { transform: translateY(-22px) scale(0.94, 1.08); }
+  60% { transform: translateY(0) scale(1.08, 0.9); }
+  80%, 100% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes kShadow { 0%, 60%, 100% { transform: scale(1); opacity: 1; } 30% { transform: scale(0.7); opacity: 0.5; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .kAll, .kHead, .kEyes, .kDots circle, .kShadow { animation: none !important; }
+}

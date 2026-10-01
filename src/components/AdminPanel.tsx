@@ -48,7 +48,7 @@ export default function AdminPanel({ apps, payouts }: { apps: PartnerApp[]; payo
           <h1 style={{ fontSize: "1.6rem" }}>Admin · Libry</h1>
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>Partnership reviews & payout processing. Staff only.</p>
         </div>
-        <button type="button" className="btn btn-outline" onClick={() => run("logout", adminLogout)} style={{ padding: "0.45rem 1rem", fontSize: "0.85rem" }}>Lock</button>
+        <button type="button" className="btn btn-outline" onClick={() => run("logout", adminLogout)} style={{ padding: "0.45rem 1rem", fontSize: "0.85rem" }}>Sign out</button>
       </div>
 
       {err ? <p style={{ color: "var(--terracotta)", fontFamily: "var(--sans)", marginBottom: "1rem" }}>{err}</p> : null}

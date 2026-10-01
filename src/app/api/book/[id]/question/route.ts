@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { looksLikeHtml } from "@/lib/sanitize";
 
 export const runtime = "nodejs";
@@ -41,8 +42,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   if (!process.env.ANTHROPIC_API_KEY) return json({ available: false });
 
-  const { data: book } = await supabase.from("books").select("content").eq("id", id).maybeSingle();
-  const content = (book?.content as string) || "";
+  // Only generate for books this reader may read (free, own, or bought), and
+  // read the text server-side (visitors can't select it directly any more).
+  const { data: meta } = await supabase.from("books").select("id, price, user_id").eq("id", id).maybeSingle();
+  if (!meta) return json({ available: false });
+  if (Number(meta.price ?? 0) > 0 && meta.user_id !== user.id) {
+    const pu = await supabase.from("purchases").select("id").eq("user_id", user.id).eq("book_id", meta.id).maybeSingle();
+    if (!pu.data) return json({ available: false });
+  }
+  const { data: book } = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? await createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } }).from("books").select("content").eq("id", id).maybeSingle()
+    : await supabase.from("books").select("content").eq("id", id).maybeSingle();
+  const content = ((book as { content?: string | null } | null)?.content as string) || "";
   if (!content) return json({ available: false });
 
   const text = stripToText(content, looksLikeHtml(content));
@@ -74,7 +85,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   // Cache for everyone (best-effort).
   try {
-    await supabase.from("book_questions").insert({ book_id: Number(id), checkpoint: at, question: q.question, options: q.options, answer: q.answer });
+    // Cache with the service role: readers can no longer write this table directly.
+    const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (svcKey) {
+      const svc = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, svcKey, { auth: { persistSession: false } });
+      await svc.from("book_questions").insert({ book_id: Number(id), checkpoint: at, question: q.question, options: q.options, answer: q.answer });
+    }
   } catch {
     /* no table / race — fine */
   }

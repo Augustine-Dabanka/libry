@@ -7,6 +7,7 @@ import LogoutSurvey from "@/components/LogoutSurvey";
 import StreakCard from "@/components/StreakCard";
 import { cartCount, onCartChange, openCart } from "@/lib/cart";
 import { createClient } from "@/lib/supabase/client";
+import LibryIcon from "@/components/Icon";
 
 /* ── line icons (22px, stroke = currentColor) ─────────────────────────────── */
 type IconName = "home" | "browse" | "spark" | "compass" | "library" | "medal" | "pen" | "heart" | "cart" | "theme" | "cog" | "community" | "bell";
@@ -186,7 +187,7 @@ export default function NavClient({
                     <div className="rf-col">
                       <h6>Genres</h6>
                       <div className="rf-genres">
-                        <a href="/catalog?type=Interactive">✦ Interactive</a>
+                        <a href="/catalog?type=Interactive"><LibryIcon name="interactive" size={16} /> Interactive</a>
                         {genreList.map((g) => (
                           <a key={g} href={`/catalog?genre=${encodeURIComponent(g)}`}>{g}</a>
                         ))}
@@ -194,9 +195,9 @@ export default function NavClient({
                     </div>
                     <div className="rf-col">
                       <h6>Formats</h6>
-                      <a href="/search">🔍 Search</a>
-                      <a href="/comics">💥 Comics</a>
-                      <a href="/catalog?type=Interactive">✦ Interactive</a>
+                      <a href="/search"><LibryIcon name="search" size={16} /> Search</a>
+                      <a href="/comics"><LibryIcon name="comics" size={16} /> Comics</a>
+                      <a href="/catalog?type=Interactive"><LibryIcon name="interactive" size={16} /> Interactive</a>
                       <a href="/catalog?free=1">Free to read</a>
                       <a href="/catalog?paid=1">Premium</a>
                       <a href="/unlimited">Libry Unlimited</a>
@@ -283,6 +284,7 @@ export default function NavClient({
                 <a href="/home">Home</a>
                 <a href="/my-library">My Library</a>
                 <a href="/achievements">Achievements</a>
+                <a href="/wallet">Wallet</a>
                 <a href="/creator">Creator Dashboard</a>
                 <a href="/settings">Settings</a>
                 <a href="/about">About</a>
@@ -326,6 +328,7 @@ export default function NavClient({
                 <a href="/home">Home</a>
                 <a href="/my-library">My Library</a>
                 <a href="/achievements">Achievements</a>
+                <a href="/wallet">Wallet</a>
                 <a href="/creator">Creator Dashboard</a>
                 <a href="/settings">Settings</a>
                 <button type="button" onClick={toggleTheme} style={menuBtn}>◑ Toggle theme</button>
@@ -361,7 +364,7 @@ export default function NavClient({
 
         <div className="mm-scroll">
           <a className="mm-link" href="/home">Home</a>
-          <a className="mm-link" href="/search">🔍 Search</a>
+          <a className="mm-link" href="/search"><LibryIcon name="search" size={16} /> Search</a>
           <a className="mm-link" href="/catalog">Browse all</a>
 
           <div className="mm-group">
@@ -375,7 +378,7 @@ export default function NavClient({
               <span className="mm-caret">▾</span>
             </button>
             <div className={`mm-sub${mSection === "genres" ? " open" : ""}`}>
-              <a href="/catalog?type=Interactive">✦ Interactive</a>
+              <a href="/catalog?type=Interactive"><LibryIcon name="interactive" size={16} /> Interactive</a>
               {genreList.map((g) => (
                 <a key={g} href={`/catalog?genre=${encodeURIComponent(g)}`}>{g}</a>
               ))}
@@ -430,7 +433,8 @@ export default function NavClient({
             Cart{cartN > 0 ? <span className="mm-count">{cartN}</span> : null}
           </a>
           <a className="mm-link" href="/achievements">Achievements</a>
-          <a className="mm-link" href="/creator">✎ Write / Creator</a>
+          <a className="mm-link" href="/wallet">Wallet</a>
+          <a className="mm-link" href="/creator"><LibryIcon name="write" size={16} /> Write / Creator</a>
 
           <div className="mm-divider" />
 

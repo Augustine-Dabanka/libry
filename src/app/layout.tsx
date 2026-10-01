@@ -5,6 +5,8 @@ import BackgroundFX from "@/components/BackgroundFX";
 import AppFooter from "@/components/AppFooter";
 import CookieBanner from "@/components/CookieBanner";
 import AppSplash from "@/components/AppSplash";
+import { getThemeSchedule } from "@/lib/themeSchedule";
+import { themeBootScript } from "@/lib/themes";
 
 export const metadata: Metadata = {
   title: "Libry — Stories worth lingering in",
@@ -22,7 +24,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const seasons = await getThemeSchedule();
   // Bare :root in globals.css is the dark theme; [data-theme="light"] flips it.
   // suppressHydrationWarning: the inline script below sets data-brand on <html>
   // from localStorage before React hydrates, so the server/client attributes
@@ -36,6 +39,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             __html: `try{var r=document.documentElement;var t=localStorage.getItem('libry-theme')||'system';var d=t==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;r.setAttribute('data-theme',d);var b=localStorage.getItem('libry-brand');if(b)r.setAttribute('data-brand',b);}catch(e){}`,
           }}
         />
+        {/* Genre look + seasonal theme (by date, from the admin schedule). */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript(seasons) }} />
         <AppSplash />
         <BackgroundFX />
         {children}

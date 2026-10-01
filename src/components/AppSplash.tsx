@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LibryLoader from "@/components/LibryLoader";
 
 // First-load splash: a branded intro shown the moment the app opens (typing the
 // URL / a full reload), so the very first thing a visitor sees is Libry rather
@@ -10,7 +11,7 @@ import { useEffect, useState } from "react";
 // in-app navigation (the root layout persists).
 
 const TIPS = [
-  "✦ Sneak peek — interactive stories that branch with every choice",
+  "Sneak peek: interactive stories that branch with every choice",
   "Tip: build a community around a story you love",
   "Sneak peek — comics you can read panel by panel",
   "Creators keep 65%, shown openly on a live dashboard",
@@ -41,10 +42,7 @@ export default function AppSplash() {
     <div className="app-splash" role="status" aria-label="Loading Libry">
       <div className="as-inner">
         <div className="as-mark" aria-hidden="true">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 4h12a1 1 0 0 1 1 1v15l-7-3.2L5 20V5a1 1 0 0 1 1-1Z" />
-          </svg>
-          <span>Libry<i>.</i></span>
+          <LibryLoader size={64} label="Loading Libry" />
         </div>
         <div className="libry-bar" aria-hidden="true" />
         <div className="as-tip" key={tip}>{TIPS[tip]}</div>

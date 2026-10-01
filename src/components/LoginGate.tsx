@@ -653,7 +653,7 @@ export default function LoginGate({
 
         {!busy ? (
           <p style={{ color: "var(--muted)", textAlign: "center", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "1.3rem" }}>
-            By continuing you agree to explore beautiful stories.
+            By continuing you agree to our <a href="/terms" style={{ color: "inherit", textDecoration: "underline" }}>Terms of Service</a> and <a href="/privacy" style={{ color: "inherit", textDecoration: "underline" }}>Privacy Policy</a>.
           </p>
         ) : null}
       </motion.div>

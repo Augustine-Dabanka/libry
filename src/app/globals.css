@@ -1645,3 +1645,85 @@ body { overflow-x: clip; }
   }
   body.has-mobtabs { padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
 }
+
+/* ---- Batch 3: motion system ------------------------------------------------ */
+
+/* Button press feedback: a quick squeeze on tap/click, a clear focus ring for
+   keyboards. Only transform/colour transition (not `all`) so it stays cheap. */
+.btn { transition: transform 90ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease; }
+.btn:active { transform: scale(0.96) translateY(1px); }
+.btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.btn-gold:hover:active { transform: scale(0.96) translateY(1px); }
+
+/* LIBRY loader (components/LibryLoader.tsx). Sizes in em so it scales. */
+.ll { position: relative; display: inline-grid; place-items: center; width: 2.4em; height: 1.9em; font-family: var(--serif); font-weight: 600; line-height: 1; color: var(--ivory); }
+.ll > * { grid-area: 1 / 1; }
+.ll-ch { animation: 2.6s cubic-bezier(.55,0,.8,.3) infinite; will-change: transform, opacity; }
+.ll-l { animation-name: ll-l; }
+.ll-i { animation-name: ll-i; } .ll-b { animation-name: ll-b; } .ll-r { animation-name: ll-r; } .ll-y { animation-name: ll-y; }
+.ll-dot { width: 0.2em; height: 0.2em; border-radius: 50%; background: var(--gold); animation: ll-dot 2.6s ease-out infinite; will-change: transform, opacity; }
+@keyframes ll-l { 0% { transform: translateX(-1.7em); opacity: 1 } 36% { transform: none } 42% { transform: scale(1.16, .9) } 52% { transform: none } 88% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes ll-i { 0% { transform: translateY(-2em) } 36% { transform: none; opacity: 1 } 44%, 100% { transform: scale(.4); opacity: 0 } }
+@keyframes ll-b { 0% { transform: translate(-.9em, 2em) } 36% { transform: none; opacity: 1 } 44%, 100% { transform: scale(.4); opacity: 0 } }
+@keyframes ll-r { 0% { transform: translate(1em, -1.9em) } 36% { transform: none; opacity: 1 } 44%, 100% { transform: scale(.4); opacity: 0 } }
+@keyframes ll-y { 0% { transform: translateX(1.8em) } 36% { transform: none; opacity: 1 } 44%, 100% { transform: scale(.4); opacity: 0 } }
+@keyframes ll-dot { 0%, 44% { transform: translate(.37em, -1.3em); opacity: 0 } 47% { opacity: 1 } 58% { transform: translate(.37em, .29em) scale(1.4, .6) } 66% { transform: translate(.37em, .05em) scale(.9, 1.12) } 74% { transform: translate(.37em, .29em) } 88% { transform: translate(.37em, .29em); opacity: 1 } 100% { transform: translate(.37em, .29em); opacity: 0 } }
+.ll-loading { display: flex; justify-content: center; padding: 1.2rem 0 0.4rem; }
+
+/* Moving shelf (components/MovingShelf.tsx) */
+.mshelf { position: relative; }
+.mshelf-toggle { position: absolute; right: 0; top: -3.2rem; padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+.mshelf-viewport { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent); }
+.mshelf-track { display: flex; gap: 0.9rem; width: max-content; animation: mshelf-move 60s linear infinite; }
+.mshelf-viewport:hover .mshelf-track, .mshelf-viewport:focus-within .mshelf-track { animation-play-state: paused; }
+.mshelf-slot { flex: 0 0 132px; }
+@keyframes mshelf-move { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:active { transform: none; }
+  .ll-ch, .ll-dot { animation: none !important; }
+  .ll-i, .ll-b, .ll-r, .ll-y { display: none; }
+  .ll-dot { transform: translate(.37em, .29em); }
+  .mshelf-track { animation: none; }
+  .mshelf-viewport { overflow-x: auto; }
+  .mshelf-toggle { display: none; }
+}
+
+/* ---- Batch 5: looks and seasons (see src/lib/themes.ts) ---------------------
+   Accent colours apply in light and dark mode; full surface palettes apply in
+   dark mode only, so light mode stays readable. Seasons come after looks so a
+   holiday wins while it's on, and the reader's own look returns afterwards. */
+:root[data-look="horror"]  { --gold: #C1121F; --gold-hover: #D62839; --terracotta: #E5383B; --brand-glow: rgba(193,18,31,0.35); }
+:root[data-look="noir"]    { --gold: #E5E5E5; --gold-hover: #FFFFFF; --gold-hi: #E5E5E5; --terracotta: #BDBDBD; --brand-glow: rgba(229,229,229,0.18); }
+:root[data-look="scifi"]   { --gold: #35D0FF; --gold-hover: #6BDCFF; --terracotta: #7B61FF; --brand-glow: rgba(53,208,255,0.35); }
+:root[data-look="romance"] { --gold: #FF8FAB; --gold-hover: #FFA8BE; --terracotta: #C9184A; --brand-glow: rgba(255,143,171,0.35); }
+:root[data-look="fantasy"] { --gold: #D9B45A; --gold-hover: #E6C675; --gold-hi: #E6C675; --terracotta: #6A994E; --brand-glow: rgba(217,180,90,0.35); }
+:root[data-look="hero"]    { --gold: #FFD23F; --gold-hover: #FFE070; --gold-hi: #FFD23F; --terracotta: #D7263D; --brand-glow: rgba(255,210,63,0.35); }
+:root:not([data-theme="light"])[data-look="horror"]  { --charcoal: #0D0707; --stone: #1F0D0D; --stone-light: #2E1414; --muted: #B08A8A; --nav-bg: rgba(13,7,7,0.92); }
+:root:not([data-theme="light"])[data-look="noir"]    { --charcoal: #0F0F0F; --stone: #1D1D1D; --stone-light: #2A2A2A; --muted: #9A9A9A; --nav-bg: rgba(15,15,15,0.92); }
+:root:not([data-theme="light"])[data-look="scifi"]   { --charcoal: #06101F; --stone: #0E1D33; --stone-light: #16294A; --muted: #7FA3BF; --nav-bg: rgba(6,16,31,0.92); }
+:root:not([data-theme="light"])[data-look="romance"] { --charcoal: #1A0E12; --stone: #2B1820; --stone-light: #3A2230; --muted: #D1A3B1; --nav-bg: rgba(26,14,18,0.92); }
+:root:not([data-theme="light"])[data-look="fantasy"] { --charcoal: #0B1510; --stone: #15261D; --stone-light: #1F3528; --muted: #A9B89A; --nav-bg: rgba(11,21,16,0.92); }
+:root:not([data-theme="light"])[data-look="hero"]    { --charcoal: #0D1633; --stone: #16245A; --stone-light: #1F3170; --muted: #B8C4EE; --nav-bg: rgba(13,22,51,0.92); }
+:root:not([data-theme="light"])[data-look="hero"] body { background-image: radial-gradient(rgba(255,210,63,0.07) 1.5px, transparent 2px); background-size: 14px 14px; }
+:root:not([data-theme="light"])[data-look="scifi"] body { background-image: linear-gradient(rgba(53,208,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(53,208,255,0.04) 1px, transparent 1px); background-size: 28px 28px; }
+
+:root[data-season="halloween"]    { --gold: #FF7A1A; --gold-hover: #FF944A; --terracotta: #9D4EDD; --brand-glow: rgba(255,122,26,0.35); }
+:root[data-season="christmas"]    { --gold: #D7263D; --gold-hover: #E4485C; --gold-hi: #E8C170; --terracotta: #2F9E44; --brand-glow: rgba(215,38,61,0.35); }
+:root[data-season="valentines"]   { --gold: #FF6B8A; --gold-hover: #FF8FAB; --terracotta: #C9184A; --brand-glow: rgba(255,107,138,0.35); }
+:root[data-season="independence"] { --gold: #2F9E44; --gold-hover: #37B24D; --gold-hi: #FCD116; --terracotta: #CE1126; --brand-glow: rgba(252,209,22,0.30); }
+:root:not([data-theme="light"])[data-season="halloween"]  { --charcoal: #140D1A; --stone: #241830; --stone-light: #33223F; --muted: #B9A8C9; --nav-bg: rgba(20,13,26,0.92); }
+:root:not([data-theme="light"])[data-season="christmas"]  { --charcoal: #0F1A14; --stone: #17281E; --stone-light: #22382B; --muted: #A9BCAF; --nav-bg: rgba(15,26,20,0.92); }
+:root:not([data-theme="light"])[data-season="valentines"] { --charcoal: #1A0E12; --stone: #2B1820; --stone-light: #3A2230; --muted: #D1A3B1; --nav-bg: rgba(26,14,18,0.92); }
+/* Light mode: bright genre/holiday accents (yellow, white, pink) disappear on the
+   cream background, so use deeper versions that keep text and buttons readable. */
+:root[data-theme="light"][data-look="horror"]  { --gold: #A4161A; --gold-hover: #BA181B; }
+:root[data-theme="light"][data-look="noir"]    { --gold: #1C1917; --gold-hover: #3A3632; --gold-hi: #1C1917; }
+:root[data-theme="light"][data-look="scifi"]   { --gold: #0077A8; --gold-hover: #008BC4; }
+:root[data-theme="light"][data-look="romance"] { --gold: #C2185B; --gold-hover: #D81B60; }
+:root[data-theme="light"][data-look="fantasy"] { --gold: #7A5C12; --gold-hover: #8F6C18; --gold-hi: #7A5C12; }
+:root[data-theme="light"][data-look="hero"]    { --gold: #1B4B9B; --gold-hover: #2459B5; --gold-hi: #9A6B00; }
+:root[data-theme="light"][data-season="halloween"]    { --gold: #C2410C; --gold-hover: #D9480F; }
+:root[data-theme="light"][data-season="christmas"]    { --gold: #B91C1C; --gold-hover: #C92A2A; }
+:root[data-theme="light"][data-season="valentines"]   { --gold: #BE185D; --gold-hover: #D6336C; }
+:root[data-theme="light"][data-season="independence"] { --gold: #1E7B34; --gold-hover: #2B8A3E; --gold-hi: #9A7B00; }

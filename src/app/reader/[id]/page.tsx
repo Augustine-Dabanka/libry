@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
+import { serviceClient } from "@/lib/supabase/service";
 import ReaderView from "@/components/ReaderView";
 import InteractiveReader from "@/components/InteractiveReader";
 import ComicReader from "@/components/ComicReader";
 import { firstChapterExcerpt } from "@/lib/chapters";
 import { parseInteractive } from "@/lib/interactive";
-import { parseComic, isComicType } from "@/lib/comic";
+import { parseComic, isComicType, defaultComicMode } from "@/lib/comic";
 import { isMatureRating } from "@/lib/content";
 
 function Gate({ children }: { children: React.ReactNode }) {
@@ -29,7 +30,7 @@ export default async function ReaderPage({
 
   const { data: book } = await supabase
     .from("books")
-    .select("id, title, author, content, price, user_id, type, age_rating")
+    .select("id, title, author, price, user_id, type, age_rating, category")
     .eq("id", id)
     .maybeSingle();
 
@@ -72,9 +73,40 @@ export default async function ReaderPage({
     }
   }
 
-  const content = book.content ?? "";
+  const isFree = (book.price ?? 0) <= 0;
+  const isOwner = !!user && (book as { user_id?: string }).user_id === user.id;
+  let purchased = false;
+  if (user && !isFree && !isOwner) {
+    const p = await supabase.from("purchases").select("book_id").eq("user_id", user.id).eq("book_id", book.id).maybeSingle();
+    purchased = !!p.data;
+  }
+  const canFull = isFree || isOwner || purchased;
+  const showSample = isSample || !canFull;
+  const locked = !canFull && (book.price ?? 0) > 0;
+
+  // Book text is no longer readable straight from the database by visitors
+  // (that let anyone download paid books). The server fetches it here, after
+  // the access check above, and only hands the reader what it may see.
+  let content = "";
+  {
+    const svc = serviceClient();
+    const r = svc
+      ? await svc.from("books").select("content").eq("id", book.id).maybeSingle()
+      : await supabase.from("books").select("content").eq("id", book.id).maybeSingle();
+    content = ((r.data as { content?: string | null } | null)?.content) ?? "";
+  }
 
   // ---- Interactive stories: real, choice-driven branching ----
+  if ((book.type || "").toLowerCase() === "interactive" && content && !canFull) {
+    // Paid interactive stories used to play in full for everyone.
+    return (
+      <Gate>
+        <h1 style={{ marginBottom: "0.6rem" }}>Unlock {book.title}</h1>
+        <p style={{ color: "var(--muted)", marginBottom: "1.4rem" }}>This interactive story is part of the paid catalog.</p>
+        <a href={`/book/${book.id}`} className="btn btn-gold">{user ? "See unlock options" : "Sign in to unlock"}</a>
+      </Gate>
+    );
+  }
   if ((book.type || "").toLowerCase() === "interactive" && content) {
     const story = parseInteractive(content);
     if (story.chapters.length >= 1) {
@@ -91,16 +123,6 @@ export default async function ReaderPage({
   }
 
   // ---- Standard reader with the purchase gate ----
-  const isFree = (book.price ?? 0) <= 0;
-  const isOwner = !!user && (book as { user_id?: string }).user_id === user.id;
-  let purchased = false;
-  if (user && !isFree && !isOwner) {
-    const p = await supabase.from("purchases").select("book_id").eq("user_id", user.id).eq("book_id", book.id).maybeSingle();
-    purchased = !!p.data;
-  }
-  const canFull = isFree || isOwner || purchased;
-  const showSample = isSample || !canFull;
-  const locked = !canFull && (book.price ?? 0) > 0;
 
   // ---- Comics: image/panel reader (webtoon scroll or page-by-page) ----
   if (isComicType(book.type) && content) {
@@ -127,6 +149,7 @@ export default async function ReaderPage({
           locked={showSample && locked}
           signedIn={!!user}
           price={book.price}
+          defaultMode={defaultComicMode((book as { category?: string | null }).category)}
         />
       );
     }

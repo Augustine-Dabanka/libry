@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LegalDoc from "@/components/LegalDoc";
+import { LEGAL } from "@/lib/legal";
 
 export const metadata: Metadata = { title: "Cookie Policy — Libry" };
 
@@ -7,7 +8,7 @@ export default function CookiesPage() {
   return (
     <LegalDoc
       title="Cookie Policy"
-      updated="[EFFECTIVE DATE]"
+      updated={LEGAL.effectiveDate}
       current="/cookies"
       intro="Cookies and similar technologies keep Libry working and help us improve it. This page explains what we use and how you control them."
     >
@@ -40,7 +41,7 @@ export default function CookiesPage() {
       </p>
 
       <h2>6. Contact</h2>
-      <p>Questions about cookies: <strong>[CONTACT EMAIL]</strong>. See also our <a href="/privacy">Privacy Policy</a>.</p>
+      <p>Questions about cookies: <strong>{LEGAL.contactEmail}</strong>. See also our <a href="/privacy">Privacy Policy</a>.</p>
     </LegalDoc>
   );
 }

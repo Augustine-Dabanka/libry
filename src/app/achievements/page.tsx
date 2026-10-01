@@ -109,8 +109,16 @@ export default async function Achievements() {
   const tally: Tally = { finished, inLibrary, inProgress, challenges, reviews: reviewsCount, streak, products: productsOwned };
   const completion = inLibrary ? Math.round((finished / inLibrary) * 100) : 0;
 
-  // XP: 25 per finished book, plus a little for progress.
-  const xp = finished * 25 + inProgress * 5;
+  // XP = reading XP (25 per finished book, 5 per book in progress) plus activity
+  // XP from the ledger (onboarding welcome bonus, challenges). The welcome bonus
+  // promised at the end of onboarding is credited here, once per account.
+  let activityXp = 0;
+  {
+    await supabase.rpc("award_xp", { p_reason: "welcome" });
+    const st = await supabase.from("user_stats").select("xp").eq("user_id", user.id).maybeSingle();
+    if (!st.error) activityXp = Number(st.data?.xp ?? 0);
+  }
+  const xp = finished * 25 + inProgress * 5 + activityXp;
   // Level from books finished.
   let li = 0;
   for (let i = 0; i < LEVELS.length; i++) if (finished >= LEVELS[i].at) li = i;
@@ -183,6 +191,7 @@ export default async function Achievements() {
         {/* Reading streak */}
         <div style={{ marginBottom: "2.5rem" }}>
           <StreakCard />
+          <a href="/leaderboard" className="btn btn-outline" style={{ marginTop: "0.8rem" }}>See this week&apos;s leaderboard</a>
         </div>
 
         {/* Stat tiles */}

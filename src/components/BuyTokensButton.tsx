@@ -13,7 +13,7 @@ export default function BuyTokensButton({ amount, label }: { amount: number; lab
       disabled={pending}
       onClick={() => {
         playPop();
-        start(() => buyTokens(amount));
+        start(async () => { await buyTokens(amount); });
       }}
     >
       {pending ? "…" : label || `Buy ${amount}⚡`}

@@ -43,7 +43,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
 
   const { data } = await supabase
     .from("books")
-    .select("id, title, author, description, price, type, rating, content")
+    .select("id, title, author, description, price, type, rating, content:has_content")
     .eq("id", id)
     .eq("is_published", true)
     .maybeSingle();

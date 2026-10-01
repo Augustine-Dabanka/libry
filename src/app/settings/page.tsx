@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import AppearanceMode from "@/components/AppearanceMode";
 import ThemePicker from "@/components/ThemePicker";
+import LookPicker from "@/components/LookPicker";
 import SharedAccess from "@/components/SharedAccess";
 import AvatarSettings from "@/components/AvatarSettings";
 import AccountSettings from "@/components/AccountSettings";
@@ -81,6 +82,13 @@ export default async function Settings() {
           <h3 style={cardTitle}>Luxury theme</h3>
           <p style={cardLead}>Recolour the app&apos;s accent with a premium palette. Saved on this device.</p>
           <ThemePicker />
+        </div>
+
+        {/* Genre looks + holiday themes */}
+        <div style={card}>
+          <h3 style={cardTitle}>Genre looks</h3>
+          <p style={cardLead}>Give Libry the mood of what you read. Full palette in dark mode. Saved on this device.</p>
+          <LookPicker />
         </div>
 
         {/* Profile photo */}

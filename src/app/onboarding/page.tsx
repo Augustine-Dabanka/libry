@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import styles from "./onboarding.module.css";
 
 type Option = { v: string; label: string; sub?: string; icon?: string };
@@ -150,34 +150,52 @@ const CONFETTI = Array.from({ length: 46 }, (_, i) => ({
   delay: ((i * 13) % 12) / 10,
 }));
 
-function Koala() {
+type KoalaMood = "idle" | "think" | "cheer";
+
+// Onboarding koala. It reacts like a coach, using classic animation principles:
+// thinks (head tilt + thought dots) while a question is open, hops with
+// squash-and-stretch when you pick something, and breathes and blinks when idle.
+// All motion is CSS on SVG groups (see .k* in onboarding.module.css).
+function Koala({ mood = "idle" }: { mood?: KoalaMood }) {
+  const moodClass = mood === "cheer" ? styles.kCheer : mood === "think" ? styles.kThink : styles.kIdle;
   return (
-    <svg className={styles.owl} viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <ellipse cx="60" cy="115" rx="30" ry="5" fill="rgba(28,25,23,0.10)" />
-      <circle cx="28" cy="36" r="19" fill="#8B8680" />
-      <circle cx="28" cy="36" r="10" fill="#D8B4BE" />
-      <circle cx="92" cy="36" r="19" fill="#8B8680" />
-      <circle cx="92" cy="36" r="10" fill="#D8B4BE" />
-      <ellipse cx="60" cy="58" rx="37" ry="32" fill="#948F8A" />
-      <ellipse cx="60" cy="60" rx="29" ry="25" fill="#ABA6A1" />
-      <circle cx="46" cy="54" r="6" fill="#1C1917" />
-      <circle cx="74" cy="54" r="6" fill="#1C1917" />
-      <circle cx="44" cy="52" r="2" fill="#fff" />
-      <circle cx="72" cy="52" r="2" fill="#fff" />
-      <circle cx="35" cy="66" r="5" fill="rgba(216,180,190,0.55)" />
-      <circle cx="85" cy="66" r="5" fill="rgba(216,180,190,0.55)" />
-      <ellipse cx="60" cy="70" rx="12" ry="9" fill="#3A3632" />
-      <ellipse cx="56" cy="67" rx="2.2" ry="2.8" fill="rgba(255,255,255,0.28)" />
-      <path d="M51 83 q9 7 18 0" stroke="#3A3632" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      <g transform="rotate(-5 60 104)">
-        <rect x="43" y="92" width="34" height="27" rx="3" fill="#B45309" />
-        <rect x="43" y="92" width="7" height="27" rx="3" fill="#8F3F07" />
-        <rect x="55" y="99" width="17" height="2.6" rx="1.3" fill="rgba(250,247,242,0.9)" />
-        <rect x="55" y="104" width="13" height="2.2" rx="1.1" fill="rgba(250,247,242,0.6)" />
-        <circle cx="63" cy="112" r="3.2" fill="none" stroke="#C4A35A" strokeWidth="1.6" />
+    <svg className={`${styles.owl} ${moodClass}`} viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse className={styles.kShadow} cx="60" cy="115" rx="30" ry="5" fill="rgba(28,25,23,0.10)" />
+      <g className={styles.kAll}>
+        <g className={styles.kHead}>
+          <circle cx="28" cy="36" r="19" fill="#8B8680" />
+          <circle cx="28" cy="36" r="10" fill="#D8B4BE" />
+          <circle cx="92" cy="36" r="19" fill="#8B8680" />
+          <circle cx="92" cy="36" r="10" fill="#D8B4BE" />
+          <ellipse cx="60" cy="58" rx="37" ry="32" fill="#948F8A" />
+          <ellipse cx="60" cy="60" rx="29" ry="25" fill="#ABA6A1" />
+          <g className={styles.kEyes}>
+            <circle cx="46" cy="54" r="6" fill="#1C1917" />
+            <circle cx="74" cy="54" r="6" fill="#1C1917" />
+            <circle cx="44" cy="52" r="2" fill="#fff" />
+            <circle cx="72" cy="52" r="2" fill="#fff" />
+          </g>
+          <circle cx="35" cy="66" r="5" fill="rgba(216,180,190,0.55)" />
+          <circle cx="85" cy="66" r="5" fill="rgba(216,180,190,0.55)" />
+          <ellipse cx="60" cy="70" rx="12" ry="9" fill="#3A3632" />
+          <ellipse cx="56" cy="67" rx="2.2" ry="2.8" fill="rgba(255,255,255,0.28)" />
+          <path d={mood === "cheer" ? "M50 81 q10 11 20 0" : "M51 83 q9 7 18 0"} stroke="#3A3632" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+        </g>
+        <g transform="rotate(-5 60 104)">
+          <rect x="43" y="92" width="34" height="27" rx="3" fill="#B45309" />
+          <rect x="43" y="92" width="7" height="27" rx="3" fill="#8F3F07" />
+          <rect x="55" y="99" width="17" height="2.6" rx="1.3" fill="rgba(250,247,242,0.9)" />
+          <rect x="55" y="104" width="13" height="2.2" rx="1.1" fill="rgba(250,247,242,0.6)" />
+          <circle cx="63" cy="112" r="3.2" fill="none" stroke="#C4A35A" strokeWidth="1.6" />
+        </g>
+        <ellipse cx="45" cy="111" rx="7" ry="6" fill="#8B8680" />
+        <ellipse cx="79" cy="111" rx="7" ry="6" fill="#8B8680" />
       </g>
-      <ellipse cx="45" cy="111" rx="7" ry="6" fill="#8B8680" />
-      <ellipse cx="79" cy="111" rx="7" ry="6" fill="#8B8680" />
+      <g className={styles.kDots} fill="currentColor">
+        <circle cx="100" cy="22" r="3" />
+        <circle cx="108" cy="12" r="3.8" />
+        <circle cx="116" cy="3" r="4.4" />
+      </g>
     </svg>
   );
 }
@@ -214,6 +232,15 @@ export default function OnboardingPage() {
   const [trialChoice, setTrialChoice] = useState<string | null>(null);
   const [theme, setTheme] = useState("obsidian"); // default effect: Obsidian Neon
   const [frame, setFrame] = useState("gold");
+  // Brief "cheer" window after each pick so the koala hops, then settles.
+  const [cheering, setCheering] = useState(false);
+  const cheerTimer = useRef<number | null>(null);
+  function celebrate() {
+    setCheering(true);
+    if (cheerTimer.current) window.clearTimeout(cheerTimer.current);
+    cheerTimer.current = window.setTimeout(() => setCheering(false), 900);
+  }
+  useEffect(() => () => { if (cheerTimer.current) window.clearTimeout(cheerTimer.current); }, []);
 
   function applyTheme(k: string) {
     setTheme(k);
@@ -255,6 +282,7 @@ export default function OnboardingPage() {
 
   function pick(key: string, value: string) {
     setPicked(value);
+    celebrate();
     setCheer(CHEERS[Math.floor(Math.random() * CHEERS.length)]);
     const next = { ...answers, [key]: value };
     setAnswers(next);
@@ -278,8 +306,10 @@ export default function OnboardingPage() {
   }
 
   const q = idx >= 0 && idx < total ? QUESTIONS[idx] : null;
+  const koalaMood: KoalaMood = cheering ? "cheer" : q && !picked && genreSel.length === 0 && !trialChoice ? "think" : "idle";
 
   function toggleGenre(v: string) {
+    if (!genreSel.includes(v)) celebrate();
     setGenreSel((s) => (s.includes(v) ? s.filter((x) => x !== v) : [...s, v]));
   }
   function continueMulti() {
@@ -316,7 +346,7 @@ export default function OnboardingPage() {
         {/* Intro */}
         {idx === -1 && (
           <div className={styles.screen} key="intro">
-            <Koala />
+            <Koala mood={koalaMood} />
             <h1 className={styles.introTitle}>
               Before you begin,
               <br />
@@ -344,7 +374,7 @@ export default function OnboardingPage() {
         {/* Genre multi-select (the tactile grid) */}
         {q && q.multi && (
           <div className={styles.screen} key={q.key}>
-            <Koala />
+            <Koala mood={koalaMood} />
             <div className={styles.mascotLine}>{q.line}</div>
             <div className={styles.count}>
               Question {idx + 1} of {total}
@@ -369,7 +399,7 @@ export default function OnboardingPage() {
         {/* Single-select questions */}
         {q && q.type !== "country" && q.type !== "trial" && !q.multi && (
           <div className={styles.screen} key={q.key}>
-            <Koala />
+            <Koala mood={koalaMood} />
             <div className={styles.mascotLine}>{cheer || q.line}</div>
             <div className={styles.count}>
               Question {idx + 1} of {total}
@@ -393,7 +423,7 @@ export default function OnboardingPage() {
         {/* Country step */}
         {q && q.type === "country" && (
           <div className={styles.screen} key="country">
-            <Koala />
+            <Koala mood={koalaMood} />
             <div className={styles.mascotLine}>{cheer || q.line}</div>
             <div className={styles.count}>
               Question {idx + 1} of {total}
@@ -424,7 +454,7 @@ export default function OnboardingPage() {
         {/* Interactive micro-trial */}
         {q && q.type === "trial" && (
           <div className={styles.screen} key="trial">
-            <Koala />
+            <Koala mood={koalaMood} />
             <div className={styles.mascotLine}>{q.line}</div>
             <div className={styles.count}>Question {idx + 1} of {total}</div>
             <h1 className={styles.q}>{q.q}</h1>
@@ -485,7 +515,7 @@ export default function OnboardingPage() {
             <div style={{ display: "grid", placeItems: "center", marginBottom: "1.4rem" }}>
               <div style={{ width: 108, height: 108, borderRadius: "50%", display: "grid", placeItems: "center", padding: 5, background: `conic-gradient(var(--gold), ${THEMES.find((t) => t.key === frame)?.accent ?? "#C4A35A"}, var(--gold))` }}>
                 <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "var(--bg-2, #EFE7D6)", display: "grid", placeItems: "center", overflow: "hidden" }}>
-                  <div style={{ transform: "scale(0.82)" }}><Koala /></div>
+                  <div style={{ transform: "scale(0.82)" }}><Koala mood={koalaMood} /></div>
                 </div>
               </div>
             </div>

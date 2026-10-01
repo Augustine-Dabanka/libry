@@ -69,7 +69,7 @@ export default function AppFooter() {
         <span className="footer-copy">© 2026 Libry. Crafted with care for readers &amp; writers.</span>
       </div>
       <p className="footer-legal">
-        Libry is operated by Craft &amp; Anchor [registered legal name], [registered address].
+        Libry is operated by {process.env.NEXT_PUBLIC_LEGAL_ENTITY || "Craft & Anchor"}{process.env.NEXT_PUBLIC_LEGAL_ADDRESS ? `, ${process.env.NEXT_PUBLIC_LEGAL_ADDRESS}` : ""}.
         {" "}<a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/cookies">Cookies</a> · <a href="/refunds">Refunds</a>
       </p>
     </footer>

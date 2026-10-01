@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import CommunityCreate from "@/components/CommunityCreate";
@@ -20,7 +19,6 @@ export default async function CommunitiesPage({ searchParams }: { searchParams: 
   const active = CATS.includes(cat || "") ? (cat as string) : "All";
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=/communities");
 
   const { data: comms } = await supabase
     .from("communities")
@@ -32,8 +30,11 @@ export default async function CommunitiesPage({ searchParams }: { searchParams: 
   if (active !== "All") communities = communities.filter((c) => (c.category || "Stories") === active);
 
   // Which the user has joined.
-  const { data: mem } = await supabase.from("community_members").select("community_id").eq("user_id", user.id);
-  const mine = new Set((mem ?? []).map((m: { community_id: number }) => m.community_id));
+  let mine = new Set<number>();
+  if (user) {
+    const { data: mem } = await supabase.from("community_members").select("community_id").eq("user_id", user.id);
+    mine = new Set((mem ?? []).map((m: { community_id: number }) => m.community_id));
+  }
 
   const chipHref = (label: string) => (label === "All" ? "/communities" : `/communities?cat=${encodeURIComponent(label)}`);
 
@@ -46,7 +47,7 @@ export default async function CommunitiesPage({ searchParams }: { searchParams: 
             <h1>Discover communities</h1>
             <p style={{ color: "var(--muted)", fontFamily: "var(--sans)" }}>Find your people. Share your passion.</p>
           </div>
-          <CommunityCreate />
+          {user ? <CommunityCreate /> : <a href="/login?next=/communities" className="btn btn-gold">Sign in to start one</a>}
         </div>
 
         {/* Category chips */}
@@ -60,11 +61,11 @@ export default async function CommunitiesPage({ searchParams }: { searchParams: 
           {/* Popular grid */}
           <div>
             <div className="section-header" style={{ marginBottom: "0.9rem" }}>
-              <h2>{active === "All" ? "Popular ⚡" : active}</h2>
+              <h2>{active === "All" ? "Popular" : active}</h2>
             </div>
             {communities.length === 0 ? (
               <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "2.4rem 1.6rem", textAlign: "center" }}>
-                <div style={{ fontSize: "1.8rem", marginBottom: "0.4rem" }}>✦</div>
+                
                 <p style={{ color: "var(--ivory)", marginBottom: "0.3rem" }}>No communities in {active} yet.</p>
                 <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>Be the first — start one above.</p>
               </div>

@@ -78,6 +78,19 @@ const PUBLIC_PREFIXES = [
   '/about',
   '/docs',
   '/unlimited',
+  // Look before you sign up: browsing is open; reading, saving and buying ask for an account.
+  '/catalog',
+  '/discover',
+  '/comics',
+  '/communities',
+  '/leaderboard',
+  // Book detail pages are a preview: the text itself is served only after an
+  // access check in the reader, so it's safe to show these signed out.
+  '/book',
+  // API routes check access themselves (session, ownership or a shared secret).
+  // Without this, signed-out visitors got login redirects instead of cover
+  // images, and server-to-server webhooks (push, Paystack) could never arrive.
+  '/api',
   '/terms',
   '/privacy',
   '/cookies',
@@ -87,7 +100,7 @@ const PUBLIC_PREFIXES = [
   '/author',
   '/u',
   '/ad',
-  // Staff-only, but gated by its own passcode (not a Libry login) so company
-  // members without a reader account can still reach it.
+  // Staff-only: the page itself checks for a signed-in account on ADMIN_EMAILS
+  // and shows a sign-in prompt otherwise.
   '/admin',
 ]

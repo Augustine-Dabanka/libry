@@ -1,18 +1,17 @@
-// A branded, on-brand loading state — the Libry wordmark gently pulsing above an
-// indeterminate gold progress bar — shown while a route's data loads so the
-// reader never stares at a blank screen. Pure CSS (see .libry-loader in
-// globals.css), reduced-motion safe.
-export default function LibryLoader({ label = "Loading…", minHeight = "60vh" }: { label?: string; minHeight?: string }) {
+// The Libry loader: L-I-B-R-Y fly in, collide into the "L", and the dot drops
+// and bounces into place, then it repeats. Pure CSS (see .ll-* in globals.css):
+// no JS, no image, about 1 KB, and it runs on the compositor (transform/opacity
+// only) so it never slows the skeleton or the page loading underneath it.
+// Honors prefers-reduced-motion by showing the finished mark instead.
+export default function LibryLoader({ size = 56, label = "Loading" }: { size?: number; label?: string }) {
   return (
-    <div className="libry-loader" style={{ minHeight }} role="status" aria-live="polite">
-      <div className="ll-mark" aria-hidden="true">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 4h12a1 1 0 0 1 1 1v15l-7-3.2L5 20V5a1 1 0 0 1 1-1Z" />
-        </svg>
-        <span>Libry<i>.</i></span>
-      </div>
-      <div className="libry-bar" aria-hidden="true" />
-      <span className="ll-label">{label}</span>
-    </div>
+    <span className="ll" style={{ fontSize: size }} role="status" aria-label={label}>
+      <span className="ll-ch ll-i" aria-hidden="true">I</span>
+      <span className="ll-ch ll-b" aria-hidden="true">B</span>
+      <span className="ll-ch ll-r" aria-hidden="true">R</span>
+      <span className="ll-ch ll-y" aria-hidden="true">Y</span>
+      <span className="ll-ch ll-l" aria-hidden="true">L</span>
+      <span className="ll-dot" aria-hidden="true" />
+    </span>
   );
 }

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { serviceClient } from "@/lib/supabase/service";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 
 const RATE = Number(process.env.NEXT_PUBLIC_PAYSTACK_USD_RATE || "1") || 1;
@@ -100,6 +101,7 @@ async function verifyPaystack(reference: string, expectedMinor: number): Promise
     });
     const j = await r.json();
     if (!j?.status || j?.data?.status !== "success") return { ok: false, error: "Payment wasn't completed." };
+    if (process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY && j?.data?.currency && j.data.currency !== process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY) return { ok: false, error: "Payment currency didn't match." };
     if (Number(j.data.amount) + 1 < expectedMinor) return { ok: false, error: "Payment amount didn't match." };
     return { ok: true };
   } catch {
@@ -117,16 +119,24 @@ export async function buyProduct(productId: number, reference: string) {
   if (!prod.is_published && prod.user_id !== user.id) return { error: "This product isn't available." };
   const price = Number(prod.price) || 0;
 
+  // Demo references only while real payments are off, and they record no revenue.
+  const live = !!process.env.PAYSTACK_SECRET_KEY && process.env.NEXT_PUBLIC_PAYSTACK_ENABLED === "true";
   const isSimulated = /^(demo|free)-/.test(reference);
+  if (price > 0 && isSimulated && live) return { error: "Please complete payment to continue." };
+  const svc = serviceClient();
+  if (!svc) return { error: "Checkout isn't configured yet." };
   if (price > 0 && !isSimulated) {
-    const v = await verifyPaystack(reference, Math.round(price * RATE * 100));
+    const expectedMinor = Math.round(price * RATE * 100);
+    const v = await verifyPaystack(reference, expectedMinor);
     if (!v.ok) return { error: v.error };
+    const claim = await svc.from("payment_references").insert({ reference, user_id: user.id, purpose: "product", amount_minor: expectedMinor });
+    if (claim.error) return { error: "This payment was already used for another order." };
   }
-  const { error } = await supabase.from("product_purchases").upsert(
-    { user_id: user.id, product_id: productId, amount: price, reference },
+  const { error } = await svc.from("product_purchases").upsert(
+    { user_id: user.id, product_id: productId, amount: isSimulated ? 0 : price, simulated: isSimulated, reference },
     { onConflict: "user_id,product_id", ignoreDuplicates: true }
   );
-  if (error) return { error: error.message };
+  if (error) return { error: "Couldn't record the purchase. If you were charged, contact support." };
   revalidatePath("/my-library");
   revalidatePath("/creator");
   return { ok: true };

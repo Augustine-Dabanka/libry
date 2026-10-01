@@ -1,6 +1,10 @@
 import { createClient as createAdmin } from "@supabase/supabase-js";
-import { isAdmin } from "@/app/actions/admin";
+import { isAdmin, adminViewer } from "@/app/actions/admin";
 import AdminGate from "@/components/AdminGate";
+import ThemeScheduleAdmin from "@/components/ThemeScheduleAdmin";
+import CouponAdmin, { type CouponRow } from "@/components/CouponAdmin";
+import { serviceClient } from "@/lib/supabase/service";
+import { getThemeSchedule } from "@/lib/themeSchedule";
 import AdminPanel, { type PartnerApp, type PayoutReq } from "@/components/AdminPanel";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +13,10 @@ export const metadata = { title: "Admin · Libry", robots: { index: false, follo
 type PayAcct = { method: string; provider: string | null; account_name: string | null; account_number: string | null };
 
 export default async function AdminPage() {
-  if (!(await isAdmin())) return <AdminGate />;
+  if (!(await isAdmin())) {
+    const v = await adminViewer();
+    return <AdminGate signedIn={v.signedIn} email={v.email} />;
+  }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -64,5 +71,20 @@ export default async function AdminPage() {
     payout: paMap.get(r.creator_id) ?? null,
   }));
 
-  return <AdminPanel apps={apps} payouts={payouts} />;
+  const seasons = await getThemeSchedule();
+  let coupons: CouponRow[] = [];
+  {
+    const svc = serviceClient();
+    if (svc) {
+      const { data } = await svc.from("coupons").select("code, coins, max_uses, used, ends_at, active").order("created_at", { ascending: false }).limit(50);
+      if (data) coupons = data as CouponRow[];
+    }
+  }
+  return (
+    <>
+      <AdminPanel apps={apps} payouts={payouts} />
+      <CouponAdmin initial={coupons} />
+      <ThemeScheduleAdmin initial={seasons} />
+    </>
+  );
 }

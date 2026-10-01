@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { serviceClient } from "@/lib/supabase/service";
 import { promoPrice, type PromoKind } from "@/lib/promo";
 
 const RATE = Number(process.env.NEXT_PUBLIC_PAYSTACK_USD_RATE || "1") || 1;
@@ -18,6 +19,7 @@ async function verifyPaystack(reference: string, expectedMinor: number): Promise
     });
     const j = await r.json();
     if (!j?.status || j?.data?.status !== "success") return { ok: false, error: "Payment wasn't completed." };
+    if (process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY && j?.data?.currency && j.data.currency !== process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY) return { ok: false, error: "Payment currency didn't match." };
     if (Number(j.data.amount) + 1 < expectedMinor) return { ok: false, error: "Payment amount didn't match." };
     return { ok: true };
   } catch {
@@ -43,18 +45,28 @@ export async function createPromotion(input: { bookId: number; kind: PromoKind; 
   // Price is computed server-side; verify the payment covers it.
   const amountUsd = promoPrice(kind, days);
   const isSimulated = /^(demo|free)-/.test(reference);
+  // Demo references only work while real payments are switched off.
+  if (amountUsd > 0 && isSimulated && !!process.env.PAYSTACK_SECRET_KEY && process.env.NEXT_PUBLIC_PAYSTACK_ENABLED === "true") return { error: "Please complete payment to continue." };
   if (amountUsd > 0 && !isSimulated) {
     const v = await verifyPaystack(reference, Math.round(amountUsd * RATE * 100));
     if (!v.ok) return { error: v.error };
   }
 
+  // Written by the server only (creators used to be able to insert an
+  // "active" promotion for free).
+  const svc = serviceClient();
+  if (!svc) return { error: "Promotions aren't configured yet." };
+  if (amountUsd > 0 && !isSimulated) {
+    const claim = await svc.from("payment_references").insert({ reference, user_id: user.id, purpose: `promo:${bookId}`, amount_minor: Math.round(amountUsd * RATE * 100) });
+    if (claim.error) return { error: "This payment was already used." };
+  }
   const ends = new Date(Date.now() + days * 86400_000).toISOString();
-  const { error } = await supabase.from("promotions").insert({
+  const { error } = await svc.from("promotions").insert({
     book_id: bookId,
     creator_id: user.id,
     kind,
     days,
-    amount: amountUsd,
+    amount: isSimulated ? 0 : amountUsd,
     reference,
     status: "active",
     ends_at: ends,
