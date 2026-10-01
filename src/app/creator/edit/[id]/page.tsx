@@ -52,11 +52,12 @@ export default async function EditBook({
   // Book text is only readable server-side now; load it for owners and
   // collaborators after the check above.
   const svc = serviceClient();
+  let bookContent: string | null = null;
   if (book && allowed) {
     const c = svc
       ? await svc.from("books").select("content").eq("id", book.id).maybeSingle()
       : await supabase.from("books").select("content").eq("id", book.id).maybeSingle();
-    (book as { content?: string | null }).content = (c.data as { content?: string | null } | null)?.content ?? null;
+    bookContent = (c.data as { content?: string | null } | null)?.content ?? null;
   }
 
   // Chapters for the chapter editor: existing chapter rows, else the book body
@@ -71,8 +72,8 @@ export default async function EditBook({
         title: c.title || "Untitled chapter",
         content: c.content || "",
       }));
-    } else if (book.content) {
-      initialChapters = [{ title: "Chapter One", content: book.content }];
+    } else if (bookContent) {
+      initialChapters = [{ title: "Chapter One", content: bookContent }];
     }
   }
 
@@ -117,7 +118,7 @@ export default async function EditBook({
         ) : (
           <>
             <ChapterEditor bookId={Number(book.id)} initial={initialChapters} />
-            <EditBookForm book={book} />
+            <EditBookForm book={{ ...book, content: bookContent }} />
             {isOwner ? (
               <div style={{ marginTop: "2.5rem", maxWidth: 640 }}>
                 <h3 style={{ marginBottom: "0.3rem" }}>Project settings · Co-authors</h3>
