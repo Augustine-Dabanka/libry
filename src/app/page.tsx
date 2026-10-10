@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import SocialIcons from "@/components/SocialIcons";
+import { operatorLine } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
 import StoryChoiceDemo from "@/components/StoryChoiceDemo";
 import CommunityCover from "@/components/CommunityCover";
@@ -56,14 +58,14 @@ export default async function Landing() {
   return (
     <div className={s.page}>
       <div className={s.topbar}>
-        <b>Libry is live in early access</b> — reading is free to start.{" "}
+        <b>Leep is live in early access</b> — reading is free to start.{" "}
         <a href="/onboarding">Create your free account →</a>
       </div>
 
       <nav className={s.nav}>
         <div className={s.navIn}>
           <a href="/" className={s.logo}>
-            Libry<span>.</span>
+            Leep<span>.</span>
           </a>
           <div className={s.navLinks}>
             <a href="#features">Features</a>
@@ -92,7 +94,7 @@ export default async function Landing() {
               Stories worth <em>lingering</em> in.
             </h1>
             <p className={s.sub}>
-              Libry is the home of interactive stories, creator voices, and
+              Leep is the home of interactive stories, creator voices, and
               communities that keep the story going — where readers come first
               and creators keep 65%.
             </p>
@@ -150,7 +152,7 @@ export default async function Landing() {
       <section id="comics" className={s.band} style={{ scrollMarginTop: 70 }}>
         <div className={s.wrap}>
           <div className={s.secHead} style={{ marginBottom: "1.4rem" }}>
-            <span className={s.eyebrow}>Explore Libry</span>
+            <span className={s.eyebrow}>Explore Leep</span>
             <h2 style={{ margin: "0.4rem 0 0" }}>More than books.</h2>
           </div>
           <div className={s.exploreGrid}>
@@ -223,7 +225,7 @@ export default async function Landing() {
       <section className={`${s.band} ${s.cardBg}`}>
         <div className={s.wrap}>
           <div className={s.secHead} style={{ textAlign: "center", marginInline: "auto" }}>
-            <span className={s.eyebrow}>Why Libry</span>
+            <span className={s.eyebrow}>Why Leep</span>
             <h2>The bookstore that actually pays its writers.</h2>
             <p>Big platforms treat readers like a feed and writers like inventory. We built the opposite.</p>
           </div>
@@ -364,7 +366,7 @@ export default async function Landing() {
             <div className={s.step}>
               <b>3</b>
               <span>
-                <strong>Publish</strong> — it goes live instantly. Keep 65%; withdraw once you join the Libry Partnership Program.
+                <strong>Publish</strong> — it goes live instantly. Keep 65%; withdraw once you join the Leep Partnership Program.
               </span>
             </div>
           </div>
@@ -390,7 +392,7 @@ export default async function Landing() {
           <div className={s.footGrid}>
             <div>
               <div className={s.footLogo}>
-                Libry<span>.</span>
+                Leep<span>.</span>
               </div>
               <p className={s.footTag}>Stories worth lingering in.</p>
               <div className={s.news}>
@@ -400,20 +402,7 @@ export default async function Landing() {
                   Join the list →
                 </a>
               </div>
-              <div className={s.footSocial}>
-                <a href="https://www.youtube.com/@officially_libry" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.8-1.8C19.3 5 12 5 12 5s-7.3 0-8.8.5A2.5 2.5 0 0 0 1.4 7.3C1 8.8 1 12 1 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.8 1.8C4.7 19 12 19 12 19s7.3 0 8.8-.5a2.5 2.5 0 0 0 1.8-1.8C23 15.2 23 12 23 12zM9.8 15.3V8.7l5.7 3.3z" /></svg>
-                </a>
-                <a href="https://x.com/officially_libry" target="_blank" rel="noopener noreferrer" aria-label="X">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.2 2h3.3l-7.2 8.3L23 22h-6.6l-5.2-6.8L5.3 22H2l7.7-8.8L1.5 2h6.8l4.7 6.2zm-1.2 18h1.8L7.1 3.9H5.2z" /></svg>
-                </a>
-                <a href="https://www.instagram.com/officially_libry" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>
-                </a>
-                <a href="https://www.tiktok.com/@officially_libry" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 3c.3 2.1 1.6 3.7 3.7 4.1v2.7c-1.4 0-2.7-.4-3.7-1.1v5.9a5.6 5.6 0 1 1-5.6-5.6c.3 0 .6 0 .9.1v2.8a2.8 2.8 0 1 0 2 2.7V3z" /></svg>
-                </a>
-              </div>
+              <SocialIcons className={s.footSocial} />
             </div>
             <div>
               <h4>Read</h4>
@@ -432,6 +421,7 @@ export default async function Landing() {
             </div>
             <div>
               <h4>Legal</h4>
+              <a className="fx" href="/contact">Contact</a>
               <a className="fx" href="/terms">Terms of Service</a>
               <a className="fx" href="/privacy">Privacy Policy</a>
               <a className="fx" href="/cookies">Cookie Policy</a>
@@ -440,7 +430,7 @@ export default async function Landing() {
           </div>
 
           <div className={s.footBar}>
-            <span>© 2026 Libry. Operated by {process.env.NEXT_PUBLIC_LEGAL_ENTITY || "Craft & Anchor"}{process.env.NEXT_PUBLIC_LEGAL_ADDRESS ? `, ${process.env.NEXT_PUBLIC_LEGAL_ADDRESS}` : ""}.</span>
+            <span>© 2026 Leep. Operated by {operatorLine()}.</span>
             <span>Crafted with care for readers &amp; writers.</span>
           </div>
         </div>

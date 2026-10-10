@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { sanitizeSeasons } from "@/lib/themes";
 
-// Staff area. Access = a real, signed-in Libry account whose email is on the
+// Staff area. Access = a real, signed-in Leep account whose email is on the
 // ADMIN_EMAILS allowlist (comma-separated, set in Vercel env vars, never in code).
 // There is no shared passcode and no default: if ADMIN_EMAILS is empty, nobody
 // gets in. Every admin action re-checks this on the server.
@@ -81,7 +81,7 @@ export async function sendPayoutNow(payoutId: number) {
   if (!acct) return { error: "This creator hasn't added payout details." };
 
   const { sendPaystackTransfer } = await import("@/lib/paystack-transfer");
-  const res = await sendPaystackTransfer(Number(po.amount), acct, `Libry payout #${payoutId}`);
+  const res = await sendPaystackTransfer(Number(po.amount), acct, `Leep payout #${payoutId}`);
   if (!res.ok) {
     await sb.from("payouts").update({ note: res.error ?? "Transfer failed" }).eq("id", payoutId);
     return { error: res.error };

@@ -106,7 +106,7 @@ export default async function EditBook({
         </div>
         {book && allowed ? (
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.86rem", margin: "-0.4rem 0 1.2rem" }}>
-            You keep <strong style={{ color: "var(--ivory)" }}>65%</strong> of every sale · Libry keeps 35% (30% platform + 5% infra fee).
+            You keep <strong style={{ color: "var(--ivory)" }}>65%</strong> of every sale · Leep keeps 35% (30% platform + 5% infra fee).
           </p>
         ) : null}
         {!book ? (

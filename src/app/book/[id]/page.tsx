@@ -17,6 +17,7 @@ import { formatPrice, bookCover, genCover, bookFormat, type Book } from "@/lib/t
 import { AGE_LABEL, agePill, isMatureRating } from "@/lib/content";
 import { AUTHOR_BIOS } from "@/lib/authorBios";
 
+import Glyph from "@/components/Glyph";
 type BookDetail = {
   id: number | string;
   title: string;
@@ -86,7 +87,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         <>
           <AppNav />
           <section className="section" style={{ textAlign: "center", maxWidth: 460, margin: "0 auto" }}>
-            <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}>🔞</div>
+            <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}><Glyph e="🔞" /></div>
             <h2>This is an 18+ title</h2>
             <p style={{ color: "var(--muted)", margin: "0.6rem 0 1.4rem" }}>
               Mature content is off by default. Turn on <strong>Show mature content</strong> in Settings to view it.
@@ -337,10 +338,10 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
           <div style={{ marginBottom: "2.5rem" }}>
             <h2 style={{ fontSize: "1.4rem", marginBottom: "0.8rem" }}>Community</h2>
             <a href={`/c/${storyCommunity.slug}`} style={{ display: "flex", alignItems: "center", gap: "1rem", textDecoration: "none", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1rem 1.2rem" }}>
-              <span style={{ fontSize: "1.6rem" }}>📖</span>
+              <span style={{ fontSize: "1.6rem" }}><Glyph e="📖" /></span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: "var(--serif)", color: "var(--ivory)", fontSize: "1.08rem" }}>{storyCommunity.name}</div>
-                <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem" }}>👥 {storyCommunity.member_count.toLocaleString()} member{storyCommunity.member_count === 1 ? "" : "s"} · theories, chapter chat &amp; more</div>
+                <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem" }}><Glyph e="👥" /> {storyCommunity.member_count.toLocaleString()} member{storyCommunity.member_count === 1 ? "" : "s"} · theories, chapter chat &amp; more</div>
               </div>
               <span style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontWeight: 700, flexShrink: 0 }}>Open →</span>
             </a>

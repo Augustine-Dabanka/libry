@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 const PRIVATE = process.env.VAPID_PRIVATE_KEY || "";
-const SUBJECT = process.env.VAPID_SUBJECT || "mailto:hello@libry.app";
+const SUBJECT = process.env.VAPID_SUBJECT || (process.env.NEXT_PUBLIC_CONTACT_EMAIL ? `mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}` : (process.env.NEXT_PUBLIC_SITE_URL || "https://libry-sigma.vercel.app"));
 
 export function pushConfigured(): boolean {
   return !!PUBLIC && !!PRIVATE && !!process.env.SUPABASE_SERVICE_ROLE_KEY;

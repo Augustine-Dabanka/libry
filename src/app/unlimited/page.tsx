@@ -5,7 +5,7 @@ import UnlimitedPlans, { type ActiveSub } from "@/components/UnlimitedPlans";
 import { type Plan } from "@/lib/plans";
 
 export const metadata = {
-  title: "Libry Unlimited — your book box, your genres",
+  title: "Leep Unlimited — your book box, your genres",
   description: "Pick your genres, choose weekly, monthly or yearly, and keep the books you want each cycle. Reading is always free to start.",
 };
 
@@ -33,7 +33,7 @@ export default async function UnlimitedPage() {
       <AppNav />
       <section className="section" style={{ maxWidth: 820, margin: "0 auto" }}>
         <div style={{ display: "inline-block", fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--gold)", border: "1px solid rgba(197,160,89,0.4)", borderRadius: 999, padding: "0.35rem 0.9rem", marginBottom: "1.3rem" }}>
-          Libry Unlimited
+          Leep Unlimited
         </div>
 
         <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 3.4rem)", lineHeight: 1.1, letterSpacing: "-0.01em", marginBottom: "1rem" }}>

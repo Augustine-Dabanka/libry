@@ -24,10 +24,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const supabase = await createClient();
   const { data } = await supabase.from("books").select("title, author, description").eq("id", id).maybeSingle();
-  if (!data) return { title: "Libry" };
-  const desc = data.description || `Read ${data.title}${data.author ? ` by ${data.author}` : ""} on Libry.`;
+  if (!data) return { title: "Leep" };
+  const desc = data.description || `Read ${data.title}${data.author ? ` by ${data.author}` : ""} on Leep.`;
   return {
-    title: `${data.title} — Libry`,
+    title: `${data.title} — Leep`,
     description: desc,
     openGraph: { title: data.title, description: desc, type: "book" },
     twitter: { card: "summary_large_image", title: data.title, description: desc },
@@ -83,7 +83,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
       {/* minimal header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1.1rem clamp(1.1rem,5vw,3rem)" }}>
         <a href="/" style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: "1.25rem", color: "var(--ivory)", textDecoration: "none" }}>
-          Libry<span style={{ color: "var(--gold)" }}>.</span>
+          Leep<span style={{ color: "var(--gold)" }}>.</span>
         </a>
         <a href="/catalog" style={{ fontFamily: "var(--sans)", fontSize: "0.88rem", color: "var(--muted)", textDecoration: "none" }}>Browse all →</a>
       </div>
@@ -116,7 +116,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
                 </a>
               ) : null}
               <a href={primaryHref} className="btn btn-outline" style={{ padding: "0.85rem 1.6rem", fontSize: "1rem" }}>
-                {isFree ? "Open on Libry" : user ? "Get it on Libry" : "Sign up to read"}
+                {isFree ? "Open on Leep" : user ? "Get it on Leep" : "Sign up to read"}
               </a>
             </div>
             <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "1rem" }}>
@@ -135,7 +135,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
         </div>
 
         <p style={{ textAlign: "center", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", marginTop: "3rem" }}>
-          Powered by <a href="/" style={{ color: "var(--gold)" }}>Libry</a> — the bookstore that actually pays its writers.
+          Powered by <a href="/" style={{ color: "var(--gold)" }}>Leep</a> — the bookstore that actually pays its writers.
         </p>
       </section>
     </main>

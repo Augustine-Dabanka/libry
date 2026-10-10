@@ -5,7 +5,8 @@ import { allowedRatings } from "@/lib/content";
 import { logEvent } from "@/app/actions/analytics";
 import { type Book } from "@/lib/types";
 
-export const metadata = { title: "Search — Libry" };
+import Glyph from "@/components/Glyph";
+export const metadata = { title: "Search — Leep" };
 
 // Server-side full-text search (Postgres tsvector + GIN via the search_books
 // RPC): title-weighted, typo-forgiving, mature-aware, ranked. Real data only.
@@ -45,7 +46,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           </div>
         ) : results.length === 0 ? (
           <div style={{ border: "1px solid var(--border)", borderRadius: 16, padding: "2.6rem 1.6rem", textAlign: "center", background: "var(--stone)" }}>
-            <div style={{ fontSize: "1.8rem", marginBottom: "0.4rem" }}>🔍</div>
+            <div style={{ fontSize: "1.8rem", marginBottom: "0.4rem" }}><Glyph e="🔍" /></div>
             <p style={{ color: "var(--ivory)", marginBottom: "0.3rem" }}>No stories match &ldquo;{query}&rdquo;.</p>
             <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>Try a different title, author, or trope — or <a href="/catalog" style={{ color: "var(--gold)" }}>browse the catalog</a>.</p>
           </div>

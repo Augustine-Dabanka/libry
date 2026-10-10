@@ -55,7 +55,7 @@ export async function sendPaystackTransfer(amountUsd: number, acct: Acct, reason
     const recRes = await fetch(`${API}/transferrecipient`, {
       method: "POST", headers: headers(),
       body: JSON.stringify({
-        type, name: acct.account_name || "Libry creator",
+        type, name: acct.account_name || "Leep creator",
         account_number: acct.account_number, bank_code: bankCode, currency: "GHS",
       }),
       cache: "no-store",

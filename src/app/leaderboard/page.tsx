@@ -3,7 +3,7 @@ import AppNav from "@/components/AppNav";
 import Icon from "@/components/Icon";
 import LeaderboardToggle from "@/components/LeaderboardToggle";
 
-export const metadata = { title: "Weekly leaderboard · Libry" };
+export const metadata = { title: "Weekly leaderboard · Leep" };
 
 type Row = { rank: number; display_name: string; avatar_url: string | null; minutes: number; is_me: boolean };
 

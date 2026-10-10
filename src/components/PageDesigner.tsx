@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+import Glyph from "@/components/Glyph";
 // A free-canvas page designer (Fabric.js) for comic pages and handcrafted
 // layouts. Drop images, shapes, panels and text anywhere; move/resize/rotate
 // freely; then flatten the page to an image and insert it into the chapter.
@@ -185,7 +186,7 @@ export default function PageDesigner({
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
           <T onClick={() => layer(1)} title="Bring forward">⤒</T>
           <T onClick={() => layer(-1)} title="Send backward">⤓</T>
-          <T onClick={delSel} title="Delete selected" danger>🗑</T>
+          <T onClick={delSel} title="Delete selected" danger><Glyph e="🗑" /></T>
           <label style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.78rem" }}>
             BG <input type="color" defaultValue="#ffffff" onChange={(e) => setBg(e.target.value)} style={{ width: 26, height: 26, border: "none", background: "none", cursor: "pointer" }} />
           </label>
@@ -197,8 +198,8 @@ export default function PageDesigner({
       <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {/* left tools */}
         <div style={{ width: 130, padding: "0.9rem 0.7rem", background: "var(--charcoal)", borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "0.45rem", overflowY: "auto" }}>
-          <Tool onClick={() => fileRef.current?.click()}>🖼 Upload</Tool>
-          <Tool onClick={urlImage}>🔗 Image URL</Tool>
+          <Tool onClick={() => fileRef.current?.click()}><Glyph e="🖼" /> Upload</Tool>
+          <Tool onClick={urlImage}><Glyph e="🔗" /> Image URL</Tool>
           <Tool onClick={addText}>🅣 Text</Tool>
           <Tool onClick={addPanel}>▢ Panel</Tool>
           <Tool onClick={addRect}>▭ Rectangle</Tool>
@@ -206,7 +207,7 @@ export default function PageDesigner({
           <Tool onClick={addTriangle}>△ Triangle</Tool>
           <Tool onClick={addStar}>★ Star</Tool>
           <Tool onClick={addLine}>— Line</Tool>
-          <Tool onClick={addBubble}>💬 Bubble</Tool>
+          <Tool onClick={addBubble}><Glyph e="💬" /> Bubble</Tool>
         </div>
 
         {/* canvas stage */}

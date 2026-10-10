@@ -56,7 +56,7 @@ export default function RoyaltyCalculator() {
         <label style={label}>Platform fee (%)</label>
         <input style={field} type="number" min="0" max="100" step="1" value={fee} onChange={(e) => setFee(e.target.value)} />
         <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.5rem" }}>
-          Libry&apos;s standard fee is 35% — a 30% platform cut plus a 5% platform &amp; infra fee (you keep 65%).
+          Leep&apos;s standard fee is 35% — a 30% platform cut plus a 5% platform &amp; infra fee (you keep 65%).
         </p>
       </div>
 

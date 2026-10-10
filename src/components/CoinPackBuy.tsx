@@ -38,7 +38,7 @@ export default function CoinPackBuy({ packId, price, label, email, userId, live 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const Paystack: any = await loadPaystack();
-      const ref = `libry-coins-${packId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const ref = `leep-coins-${packId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       Paystack.setup({
         key: PAYSTACK_KEY,
         email,

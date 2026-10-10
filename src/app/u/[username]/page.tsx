@@ -34,9 +34,9 @@ async function getProfile(username: string): Promise<Profile | null> {
 export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
   const { username } = await params;
   const p = await getProfile(decodeURIComponent(username));
-  if (!p) return { title: "Profile — Libry" };
+  if (!p) return { title: "Profile — Leep" };
   const name = p.pen_name || p.full_name || p.username || "Reader";
-  return { title: `${name} — Libry`, description: p.bio || `${name} on Libry.` };
+  return { title: `${name} — Leep`, description: p.bio || `${name} on Leep.` };
 }
 
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {

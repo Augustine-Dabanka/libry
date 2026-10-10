@@ -1,4 +1,4 @@
-// Libry Unlimited plan definitions — shared by the server action and the client
+// Leep Unlimited plan definitions — shared by the server action and the client
 // customizer so pricing stays in one place.
 export type Plan = "weekly" | "monthly" | "yearly";
 

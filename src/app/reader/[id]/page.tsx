@@ -8,6 +8,7 @@ import { parseInteractive } from "@/lib/interactive";
 import { parseComic, isComicType, defaultComicMode } from "@/lib/comic";
 import { isMatureRating } from "@/lib/content";
 
+import Glyph from "@/components/Glyph";
 function Gate({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "2rem", textAlign: "center", background: "var(--charcoal)" }}>
@@ -59,7 +60,7 @@ export default async function ReaderPage({
     if (!showMature) {
       return (
         <Gate>
-          <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}>🔞</div>
+          <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}><Glyph e="🔞" /></div>
           <h1 style={{ marginBottom: "0.6rem" }}>This is an 18+ title</h1>
           <p style={{ color: "var(--muted)", marginBottom: "1.4rem" }}>
             Mature content is off by default. Turn on <strong style={{ color: "var(--ivory)" }}>Show mature content</strong> in Settings to read it.
@@ -81,7 +82,9 @@ export default async function ReaderPage({
     purchased = !!p.data;
   }
   const canFull = isFree || isOwner || purchased;
-  const showSample = isSample || !canFull;
+  // Guests preview the first chapter of every book; signing up unlocks the rest
+  // (free books) or the purchase step (paid books).
+  const showSample = isSample || !canFull || !user;
   const locked = !canFull && (book.price ?? 0) > 0;
 
   // Book text is no longer readable straight from the database by visitors

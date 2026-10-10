@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL || "https://libry-sigma.vercel.app";
+import { BRAND } from "@/lib/brand";
+const BASE = BRAND.siteUrl;
 
 // Index the public/shareable surfaces; keep the authenticated app and API out of
 // search results (spec §40 — protect private/subscriber content).

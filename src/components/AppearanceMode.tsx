@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import Glyph from "@/components/Glyph";
 type Mode = "dark" | "light" | "system";
 
 function apply(mode: Mode) {
@@ -55,7 +56,7 @@ export default function AppearanceMode() {
             color: mode === o.v ? "var(--gold)" : "var(--ivory-muted)",
           }}
         >
-          <span style={{ marginRight: "0.4rem" }}>{o.icon}</span>
+          <span style={{ marginRight: "0.4rem", display: "inline-flex", verticalAlign: "middle" }}><Glyph e={o.icon} /></span>
           {o.label}
         </button>
       ))}

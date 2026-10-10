@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getWallet, coinPurchasesLive } from "@/app/actions/coins";
 import { COIN_PACKS, AD_DAILY_CAP } from "@/lib/coins";
 
-export const metadata = { title: "Wallet · Libry" };
+export const metadata = { title: "Wallet · Leep" };
 export const dynamic = "force-dynamic";
 
 const card = { background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 18, padding: "1.4rem" } as const;
@@ -16,8 +16,12 @@ export default async function WalletPage() {
   const wallet = await getWallet();
   if (!wallet) redirect("/login?next=/wallet");
   const live = await coinPurchasesLive();
-  const { data: { user } } = await (await createClient()).auth.getUser();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const email = user?.email ?? null;
+  // Launch switch (migration 0042). Missing row or table = off.
+  const { data: feat } = await supabase.from("site_settings").select("value").eq("key", "features").maybeSingle();
+  const adsOn = Boolean((feat?.value as { rewarded_ads?: boolean } | null)?.rewarded_ads);
 
   return (
     <>
@@ -31,6 +35,7 @@ export default async function WalletPage() {
           </div>
         </div>
 
+        {adsOn ? (
         <div style={card}>
           <h2 style={{ fontSize: "1.2rem", marginBottom: "0.3rem" }}>Earn coins</h2>
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", marginBottom: "1rem" }}>
@@ -38,6 +43,7 @@ export default async function WalletPage() {
           </p>
           <RewardedAd />
         </div>
+        ) : null}
 
         <div style={card}>
           <h2 style={{ fontSize: "1.2rem", marginBottom: "0.3rem" }}>Redeem a code</h2>

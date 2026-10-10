@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 
+import Glyph from "@/components/Glyph";
 // Platform-wide, time-gated sale banner. Renders nothing when no sale is live.
 export default async function SaleBanner() {
   const supabase = await createClient();
@@ -35,7 +36,7 @@ export default async function SaleBanner() {
         marginBottom: "1.4rem",
       }}
     >
-      <span style={{ fontSize: "1.2rem" }}>🎉</span>
+      <span style={{ fontSize: "1.2rem" }}><Glyph e="🎉" /></span>
       <span style={{ fontWeight: 800, color: "var(--ivory)", fontFamily: "var(--sans)" }}>{c.title}</span>
       <span style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.92rem" }}>{c.description}</span>
       <span style={{ marginLeft: "auto", color: "var(--gold)", fontWeight: 700, fontFamily: "var(--sans)", fontSize: "0.85rem", whiteSpace: "nowrap" }}>

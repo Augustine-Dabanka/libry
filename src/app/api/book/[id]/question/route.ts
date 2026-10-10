@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // Model for the lightweight, cached mid-read question generator. Haiku is the
 // right tool here — it's a short, high-volume-shaped, latency-sensitive task and
 // each question is cached per book — but it's overridable if you want more depth.
-const MODEL = process.env.LIBRY_QUESTION_MODEL || "claude-haiku-4-5";
+const MODEL = process.env.LEEP_QUESTION_MODEL || process.env.LIBRY_QUESTION_MODEL || "claude-haiku-4-5";
 
 type Q = { question: string; options: string[]; answer: number };
 

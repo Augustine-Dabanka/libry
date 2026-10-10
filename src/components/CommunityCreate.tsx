@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { createCommunity } from "@/app/actions/communities";
 import ImagePicker from "@/components/ImagePicker";
 
+import Glyph from "@/components/Glyph";
+// Stored as the emoji key; <Glyph> draws the matching icon everywhere.
+const ROOM_ICONS = ["📚", "📖", "✍", "🔥", "💬", "🎨", "🎧", "🌍", "👻", "🐉", "🚀", "💛", "🎓", "☕"];
+
 export default function CommunityCreate() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -33,9 +37,14 @@ export default function CommunityCreate() {
   return (
     <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.3rem 1.4rem", marginBottom: "1.6rem", maxWidth: 520 }}>
       <h3 style={{ marginBottom: "0.6rem" }}>Start a community</h3>
-      <div style={{ display: "flex", gap: "0.6rem" }}>
-        <input value={emoji} onChange={(e) => setEmoji(e.target.value)} maxLength={4} aria-label="Emoji" style={{ ...field, width: 60, textAlign: "center", flexShrink: 0 }} />
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Community name" style={field} />
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Community name" style={field} />
+      <div role="radiogroup" aria-label="Community icon" style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", margin: "0.2rem 0 0.7rem" }}>
+        {ROOM_ICONS.map((ic) => (
+          <button key={ic} type="button" role="radio" aria-checked={emoji === ic} onClick={() => setEmoji(ic)}
+            style={{ width: 40, height: 40, borderRadius: 10, display: "grid", placeItems: "center", cursor: "pointer", color: emoji === ic ? "var(--gold)" : "var(--ivory-muted)", background: emoji === ic ? "rgba(196,163,90,0.14)" : "transparent", border: `1px solid ${emoji === ic ? "var(--gold)" : "var(--border)"}` }}>
+            <Glyph e={ic} size={20} />
+          </button>
+        ))}
       </div>
       <textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="What's it about? (optional)" rows={2} style={{ ...field, resize: "vertical" }} />
       <ImagePicker value={cover} onChange={setCover} label="Community cover" aspect="16 / 9" />

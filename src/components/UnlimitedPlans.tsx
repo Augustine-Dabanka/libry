@@ -8,6 +8,7 @@ import { type Plan, PLAN_PRICE, PLAN_LABEL, PLAN_UNIT } from "@/lib/plans";
 import { formatPrice } from "@/lib/types";
 import { GENRES } from "@/lib/content";
 
+import Glyph from "@/components/Glyph";
 const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
 const PAYSTACK_CURRENCY = process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY || "USD";
 const PAYSTACK_RATE = Number(process.env.NEXT_PUBLIC_PAYSTACK_USD_RATE || "1") || 1;
@@ -64,7 +65,7 @@ export default function UnlimitedPlans({ email, sub }: { email?: string; sub: Ac
         Paystack.setup({
           key: PAYSTACK_KEY, email,
           amount: Math.round(price * PAYSTACK_RATE * 100), currency: PAYSTACK_CURRENCY,
-          ref: `libry-sub-${Date.now()}`,
+          ref: `leep-sub-${Date.now()}`,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           callback: (resp: any) => finish(resp.reference || `paystack-${Date.now()}`),
           onClose: () => setBusy(false),
@@ -85,7 +86,7 @@ export default function UnlimitedPlans({ email, sub }: { email?: string; sub: Ac
   }
 
   async function cancel() {
-    if (!confirm("Cancel your Libry Unlimited box?")) return;
+    if (!confirm("Cancel your Leep Unlimited box?")) return;
     setBusy(true);
     const res = await cancelSubscription();
     setBusy(false);
@@ -167,7 +168,7 @@ export default function UnlimitedPlans({ email, sub }: { email?: string; sub: Ac
         )}
       </div>
       <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.78rem" }}>
-        {live ? "🔒 Secured by Paystack. " : ""}Cancel anytime. Writers keep their 65% of everything read from your box.
+        {live ? <><Glyph e="🔒" /> Secured by Paystack. </> : ""}Cancel anytime. Writers keep their 65% of everything read from your box.
       </p>
     </div>
   );

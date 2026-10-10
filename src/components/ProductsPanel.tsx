@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { createProduct, updateProduct, deleteProduct, publishProduct, type ProductType } from "@/app/actions/products";
 import { formatPrice } from "@/lib/types";
 
+import Glyph from "@/components/Glyph";
 export type MyProduct = {
   id: number;
   title: string;
@@ -138,7 +139,7 @@ export default function ProductsPanel({ userId, products, canPublish }: { userId
         </button>
         <h3 style={{ marginBottom: "0.3rem" }}>{editing.id ? "Edit product" : "New product"}</h3>
         <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.86rem", marginBottom: "0.5rem" }}>
-          You keep <strong style={{ color: "var(--ivory)" }}>65%</strong> of every sale · Libry keeps 35% (30% platform + 5% infra fee).
+          You keep <strong style={{ color: "var(--ivory)" }}>65%</strong> of every sale · Leep keeps 35% (30% platform + 5% infra fee).
         </p>
 
         <label style={labelStyle}>Product type</label>
@@ -224,12 +225,12 @@ export default function ProductsPanel({ userId, products, canPublish }: { userId
 
       {!canPublish ? (
         <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "2rem 1.6rem", textAlign: "center" }}>
-          <div style={{ fontSize: "1.6rem", marginBottom: "0.5rem" }}>🔒</div>
+          <div style={{ fontSize: "1.6rem", marginBottom: "0.5rem" }}><Glyph e="🔒" /></div>
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>Publishing is paused for your account, so new products can&apos;t go live right now.</p>
         </div>
       ) : products.length === 0 ? (
         <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "2.4rem 1.6rem", textAlign: "center" }}>
-          <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>🎁</div>
+          <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}><Glyph e="🎁" /></div>
           <h4 style={{ marginBottom: "0.35rem" }}>No products yet</h4>
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", maxWidth: 420, margin: "0 auto 1.2rem", lineHeight: 1.6 }}>
             Turn your craft into income — sell a worksheet pack, an audio reading, a template, or a course.

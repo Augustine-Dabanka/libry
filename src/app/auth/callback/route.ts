@@ -20,6 +20,8 @@ export async function GET(request: Request) {
       await persistOnboardingPrefs();
       await persistReferral();
       await persistRole();
+      // One-shot flag for the welcome splash (read before paint by layout.tsx).
+      (await cookies()).set("leep_splash", "1", { maxAge: 60, path: "/", sameSite: "lax", httpOnly: false });
 
       const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";

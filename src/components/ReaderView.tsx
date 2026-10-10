@@ -12,6 +12,7 @@ import CommentTray, { type ParaComment } from "@/components/CommentTray";
 import ReaderCompanion from "@/components/ReaderCompanion";
 import ReadingSyncToast from "@/components/ReadingSyncToast";
 
+import Glyph from "@/components/Glyph";
 type Theme = "dark" | "sepia";
 
 const PALETTES: Record<Theme, { bg: string; fg: string; muted: string; bar: string }> = {
@@ -664,7 +665,7 @@ export default function ReaderView({
                     aria-label={cs.length ? `${cs.length} comment${cs.length === 1 ? "" : "s"} on this passage` : "Comment on this passage"}
                     className={`rd-chip${cs.length ? " rd-chip-has" : ""}`}
                   >
-                    💬{cs.length ? ` ${cs.length}` : ""}
+                    <Glyph e="💬" />{cs.length ? ` ${cs.length}` : ""}
                   </button>
                 </>
               ) : null}
@@ -761,7 +762,7 @@ export default function ReaderView({
                 </div>
                 <div className="rd-menu-row">
                   <span>Reading theme</span>
-                  <button type="button" onClick={() => setTheme((t) => (t === "dark" ? "sepia" : "dark"))} style={ctrl(pal)} aria-label="Toggle reading theme">{theme === "dark" ? "☀ Sepia" : "☾ Dark"}</button>
+                  <button type="button" onClick={() => setTheme((t) => (t === "dark" ? "sepia" : "dark"))} style={ctrl(pal)} aria-label="Toggle reading theme"><Glyph e={theme === "dark" ? "☀" : "🌙"} /> {theme === "dark" ? "Sepia" : "Dark"}</button>
                 </div>
                 {canPage ? (
                   <div className="rd-menu-row">
@@ -938,7 +939,7 @@ export default function ReaderView({
                       aria-label={cs.length ? `${cs.length} comment${cs.length === 1 ? "" : "s"} on this passage` : "Comment on this passage"}
                       className={`rd-chip${cs.length ? " rd-chip-has" : ""}`}
                     >
-                      💬{cs.length ? ` ${cs.length}` : ""}
+                      <Glyph e="💬" />{cs.length ? ` ${cs.length}` : ""}
                     </button>
                   </>
                 ) : null}

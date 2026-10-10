@@ -5,6 +5,7 @@ import { type CartItem, getCart, removeFromCart, clearCart, onCartChange } from 
 import { checkoutCart, paystackReady } from "@/app/actions/purchases";
 import { formatPrice } from "@/lib/types";
 
+import Glyph from "@/components/Glyph";
 const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
 const PAYSTACK_CURRENCY = process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY || "USD";
 // Currency units charged per $1 of list price (1 for USD; the GHS-per-USD rate
@@ -174,7 +175,7 @@ export default function CartDrawer({ email }: { email?: string }) {
             </div>
           ) : items.length === 0 ? (
             <div style={{ textAlign: "center", color: "var(--muted)", fontFamily: "var(--sans)", padding: "3rem 1rem" }}>
-              <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}>🛒</div>
+              <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}><Glyph e="🛒" /></div>
               <p style={{ marginBottom: "0.3rem", color: "var(--ivory)" }}>Your cart is empty.</p>
               <p style={{ fontSize: "0.9rem" }}>
                 Add a premium book from the{" "}
@@ -269,7 +270,7 @@ export default function CartDrawer({ email }: { email?: string }) {
               <p style={{ color: "var(--terracotta)", fontSize: "0.8rem", textAlign: "center", margin: 0 }}>{err}</p>
             ) : (
               <p style={{ color: "var(--muted)", fontSize: "0.76rem", textAlign: "center", margin: 0, lineHeight: 1.5 }}>
-                {live ? "🔒 Secured by Paystack" : "🔒 Free while we finish secure payments — no card needed."}
+                <Glyph e="🔒" /> {live ? "Secured by Paystack" : "Free while we finish secure payments — no card needed."}
               </p>
             )}
           </footer>

@@ -168,7 +168,7 @@ export default function NavClient({
     <>
       {/* ══════════ DESKTOP: Chrome-style vertical rail ══════════ */}
       <aside className="railnav" aria-label="Primary">
-        <a href="/home" className="rail-logo" title="Libry — Home" aria-label="Libry home">
+        <a href="/home" className="rail-logo" title="Leep — Home" aria-label="Leep home">
           L<span>.</span>
         </a>
 
@@ -200,7 +200,7 @@ export default function NavClient({
                       <a href="/catalog?type=Interactive"><LibryIcon name="interactive" size={16} /> Interactive</a>
                       <a href="/catalog?free=1">Free to read</a>
                       <a href="/catalog?paid=1">Premium</a>
-                      <a href="/unlimited">Libry Unlimited</a>
+                      <a href="/unlimited">Leep Unlimited</a>
                     </div>
                   </div>
                 </div>
@@ -304,7 +304,7 @@ export default function NavClient({
       <nav className="navbar" ref={rootRef}>
         <div className="nav-left">
           <a href="/home" className="logo">
-            Libry<span>.</span>
+            Leep<span>.</span>
           </a>
         </div>
 
@@ -400,7 +400,7 @@ export default function NavClient({
               <a href="/discover?filter=editors-pick">Editor&apos;s Pick</a>
               <a href="/catalog?free=1">Free to read</a>
               <a href="/catalog?paid=1">Premium</a>
-              <a href="/unlimited">Libry Unlimited</a>
+              <a href="/unlimited">Leep Unlimited</a>
             </div>
           </div>
 

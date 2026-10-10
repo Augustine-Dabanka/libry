@@ -33,7 +33,7 @@ export default function CouponAdmin({ initial }: { initial: CouponRow[] }) {
         }}
         style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.8rem", alignItems: "end", marginBottom: "1rem" }}
       >
-        <label style={lbl}>Code<input required value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="LIBRY-LAUNCH" maxLength={32} style={field} /></label>
+        <label style={lbl}>Code<input required value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="LEEP-LAUNCH" maxLength={32} style={field} /></label>
         <label style={lbl}>Coins<input type="number" min={1} max={10000} value={coins} onChange={(e) => setCoins(Number(e.target.value))} style={field} /></label>
         <label style={lbl}>Max uses<input type="number" min={1} value={maxUses} onChange={(e) => setMaxUses(Number(e.target.value))} style={field} /></label>
         <label style={lbl}>Ends (optional)<input type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} style={field} /></label>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import Glyph from "@/components/Glyph";
 export type ParaComment = {
   id: number;
   para_index: number;
@@ -89,7 +90,7 @@ export default function CommentTray({
               <span style={{ fontFamily: "var(--sans)", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#12100E", background: "var(--gold)", borderRadius: 999, padding: "0.1rem 0.45rem" }}>Creator</span>
             ) : null}
             {c.pinned ? (
-              <span style={{ fontFamily: "var(--sans)", fontSize: "0.68rem", color: "var(--gold-hi)" }}>📌 Pinned</span>
+              <span style={{ fontFamily: "var(--sans)", fontSize: "0.68rem", color: "var(--gold-hi)" }}><Glyph e="📌" /> Pinned</span>
             ) : null}
           </span>
           <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.72rem" }}>{new Date(c.created_at).toLocaleDateString()}</span>
@@ -98,10 +99,10 @@ export default function CommentTray({
 
         <div style={{ display: "flex", alignItems: "center", gap: "0.9rem", flexWrap: "wrap", fontFamily: "var(--sans)", fontSize: "0.78rem" }}>
           <button type="button" onClick={() => onReact(c.id, 1)} disabled={!canComment} title="Like" style={rxStyle(my === 1)}>
-            👍 <span>{c.likes ?? 0}</span>
+            <Glyph e="👍" /> <span>{c.likes ?? 0}</span>
           </button>
           <button type="button" onClick={() => onReact(c.id, -1)} disabled={!canComment} title="Dislike" style={rxStyle(my === -1)}>
-            👎 <span>{c.dislikes ?? 0}</span>
+            <Glyph e="👎" /> <span>{c.dislikes ?? 0}</span>
           </button>
           {canComment && !isReply ? (
             <button type="button" onClick={() => { setReplyTo(replyTo === c.id ? null : c.id); setReplyDraft(""); }} style={linkBtn}>Reply</button>

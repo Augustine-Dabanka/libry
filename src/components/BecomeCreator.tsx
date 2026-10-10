@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { becomeCreator } from "@/app/actions/creator";
 
+import Glyph from "@/components/Glyph";
 // Upgrade prompt shown to readers. Turning it on unlocks the publishing tools.
 export default function BecomeCreator({ variant = "full" }: { variant?: "full" | "row" }) {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function BecomeCreator({ variant = "full" }: { variant?: "full" |
 
   return (
     <div style={{ background: "var(--stone)", border: "1px solid var(--gold)", borderRadius: 18, padding: "2rem 1.8rem", textAlign: "center", maxWidth: 560, margin: "2rem auto" }}>
-      <div style={{ fontSize: "2.2rem", marginBottom: "0.4rem" }}>✍️</div>
+      <div style={{ fontSize: "2.2rem", marginBottom: "0.4rem" }}><Glyph e="✍" /></div>
       <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.6rem", marginBottom: "0.5rem" }}>Become a creator</h2>
       <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.95rem", marginBottom: "1.4rem", lineHeight: 1.6 }}>
         You&apos;re signed in as a reader. Switch on a creator account to publish prose, comics and interactive stories —

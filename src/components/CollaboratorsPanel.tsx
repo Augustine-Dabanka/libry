@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addCollaborator, removeCollaborator } from "@/app/actions/collaboration";
 
+import Glyph from "@/components/Glyph";
 type Collab = { userId: string; name: string };
 
 export default function CollaboratorsPanel({
@@ -46,7 +47,7 @@ export default function CollaboratorsPanel({
         onClick={() => setOpen(true)}
         type="button"
       >
-        👥 Co-authors{collaborators.length ? ` (${collaborators.length})` : ""}
+        <Glyph e="👥" /> Co-authors{collaborators.length ? ` (${collaborators.length})` : ""}
       </button>
     );
   }

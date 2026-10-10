@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { computeStreak, goalMinutes, nextMilestone, type DayRow, type StreakInfo } from "@/lib/streak";
 
+import Glyph from "@/components/Glyph";
 // The hour-based reading streak. Fetches the reader's daily minutes + goal and
 // computes everything client-side. Fully guarded: if the reading_days table
 // isn't migrated yet, or the reader has no history, it renders nothing.
@@ -51,7 +52,7 @@ export default function StreakCard({ compact = false }: { compact?: boolean }) {
     return (
       <span title={`${info.current}-day reading streak`} aria-label={`${info.current} day reading streak`}
         style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--sans)", fontSize: "0.85rem", fontWeight: 700, color: "var(--gold)" }}>
-        🔥{info.current}
+        <Glyph e="🔥" />{info.current}
       </span>
     );
   }
@@ -60,7 +61,7 @@ export default function StreakCard({ compact = false }: { compact?: boolean }) {
     <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 18, padding: "1.4rem 1.5rem" }}>
       {!started ? (
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div style={flameStyle}>🔥</div>
+          <div style={flameStyle}><Glyph e="🔥" /></div>
           <div>
             <div style={{ fontFamily: "var(--serif)", fontSize: "1.3rem", color: "var(--ivory)" }}>Start your reading streak</div>
             <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginTop: 2 }}>
@@ -71,7 +72,7 @@ export default function StreakCard({ compact = false }: { compact?: boolean }) {
       ) : (
         <>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.1rem" }}>
-            <div style={flameStyle}>🔥</div>
+            <div style={flameStyle}><Glyph e="🔥" /></div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: "var(--serif)", fontSize: "1.9rem", lineHeight: 1, color: "var(--ivory)" }}>
                 {info.current}-day streak

@@ -1,4 +1,4 @@
-// Comic content format for Libry.
+// Comic content format for Leep.
 //
 // A comic's `content` is plain text (like interactive stories), one directive
 // per line, so it degrades gracefully and is easy to author or seed:

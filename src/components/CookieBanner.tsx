@@ -32,7 +32,7 @@ export default function CookieBanner() {
     <div className="cookie-banner" role="dialog" aria-label="Cookie consent" aria-live="polite">
       <div className="cookie-inner">
         <p>
-          Libry uses <strong>functional</strong> cookies to keep you signed in and remember your reading. With your OK we also use{" "}
+          Leep uses <strong>functional</strong> cookies to keep you signed in and remember your reading. With your OK we also use{" "}
           <strong>analytical &amp; performance</strong> cookies to improve the app. See our <a href="/cookies">Cookie Policy</a>.
         </p>
         <div className="cookie-actions">

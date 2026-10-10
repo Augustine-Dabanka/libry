@@ -24,8 +24,17 @@ export default function ThemeScheduleAdmin({ initial }: { initial: Season[] }) {
           <div key={s.key} style={{ display: "flex", alignItems: "center", gap: "0.8rem", flexWrap: "wrap", padding: "0.8rem 1rem", border: "1px solid var(--border)", borderRadius: 12, background: "var(--stone)" }}>
             <span style={{ width: 14, height: 14, borderRadius: "50%", background: s.accent, flexShrink: 0 }} />
             <span style={{ flex: "1 1 180px", fontFamily: "var(--sans)", fontWeight: 700 }}>{s.name}</span>
-            <label style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)" }}>From <input aria-label={`${s.name} start (MM-DD)`} value={s.start} onChange={(e) => set(i, { start: e.target.value })} style={input} /></label>
-            <label style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)" }}>To <input aria-label={`${s.name} end (MM-DD)`} value={s.end} onChange={(e) => set(i, { end: e.target.value })} style={input} /></label>
+            {s.key === "easter" ? (
+              <span style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)" }}>Good Friday to Easter Monday</span>
+            ) : (
+              <>
+                <label style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)" }}>From <input aria-label={`${s.name} start (MM-DD)`} value={s.start} onChange={(e) => set(i, { start: e.target.value })} style={input} /></label>
+                <label style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)" }}>To <input aria-label={`${s.name} end (MM-DD)`} value={s.end} onChange={(e) => set(i, { end: e.target.value })} style={input} /></label>
+              </>
+            )}
+            {s.key === "collab" ? (
+              <label style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)" }}>Partner / event <input aria-label="Collab partner or event name" maxLength={40} value={s.label || ""} onChange={(e) => set(i, { label: e.target.value })} style={{ ...input, width: 160 }} placeholder="e.g. Kumasi Book Fair" /></label>
+            ) : null}
             <button type="button" role="switch" aria-checked={s.enabled} aria-label={`${s.name} enabled`} onClick={() => set(i, { enabled: !s.enabled })}
               style={{ width: 52, height: 32, borderRadius: 16, border: "none", padding: 3, cursor: "pointer", background: s.enabled ? "var(--gold)" : "var(--border)", display: "flex" }}>
               <span style={{ width: 26, height: 26, borderRadius: "50%", background: "#fff", transform: s.enabled ? "translateX(20px)" : "none", transition: "transform 180ms ease" }} />

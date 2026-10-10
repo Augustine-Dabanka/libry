@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { splitIntoChapters, textToHtml } from "@/lib/chapters";
 
+import Glyph from "@/components/Glyph";
 const escTitle = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const PDF_WORKER = "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.3.289/build/pdf.worker.min.mjs";
@@ -164,7 +165,7 @@ export default function QuickUpload({ userId, authorName }: { userId: string; au
       />
       <div style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "center" }}>
         <button type="button" className="btn btn-outline" onClick={() => inputRef.current?.click()}>
-          {fileName ? `📄 ${fileName}` : "Choose a file…"}
+          {fileName ? <><Glyph e="📄" /> {fileName}</> : "Choose a file…"}
         </button>
         <button type="button" className="btn btn-gold" disabled={busy || !content} onClick={() => createDraft(content)}>
           {busy ? "Creating…" : "Create draft from manuscript"}

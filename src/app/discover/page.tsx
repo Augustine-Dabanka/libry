@@ -6,7 +6,8 @@ import ProductMini, { type ProductCard } from "@/components/ProductMini";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
-export const metadata = { title: "Discover — Libry" };
+import Glyph from "@/components/Glyph";
+export const metadata = { title: "Discover — Leep" };
 
 // Distinct discovery modes (spec §7/§20). Each is a SEPARATE, documented ranking
 // over real signals — never one universal score. Scoring rules are in code below.
@@ -164,7 +165,7 @@ export default async function Discover({ searchParams }: { searchParams: Promise
       <section className="section" style={{ maxWidth: 1100, marginInline: "auto" }}>
         <div className="section-header" style={{ marginBottom: "0.3rem" }}>
           <h1 style={{ fontSize: "clamp(1.7rem,4.5vw,2.4rem)" }}>Discover</h1>
-          <a href="/search" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>🔍 Search</a>
+          <a href="/search" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}><Glyph e="🔍" /> Search</a>
         </div>
 
         {spotlight.length > 0 ? (
@@ -205,7 +206,7 @@ export default async function Discover({ searchParams }: { searchParams: Promise
         {products.length > 0 ? (
           <div style={{ marginTop: "2.6rem" }}>
             <div className="section-header">
-              <h2>🎁 Digital products</h2>
+              <h2><Glyph e="🎁" /> Digital products</h2>
               <a href="/discover" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>From creators</a>
             </div>
             <div className="book-grid-mini">

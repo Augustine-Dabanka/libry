@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import CommunityFeed from "@/components/CommunityFeed";
 import { joinCommunity, leaveCommunity } from "@/app/actions/communities";
 
+import Glyph from "@/components/Glyph";
 export type LeaderRow = { user_id: string; name: string; score: number };
 
 const CHANNELS = [
@@ -71,7 +72,7 @@ export default function CommunityRoom({
           </div>
 
           <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.1rem 1.2rem" }}>
-            <div style={{ fontFamily: "var(--sans)", fontWeight: 700, color: "var(--ivory)", marginBottom: "0.7rem" }}>🏆 Leaderboard</div>
+            <div style={{ fontFamily: "var(--sans)", fontWeight: 700, color: "var(--ivory)", marginBottom: "0.7rem" }}><Glyph e="🏆" /> Leaderboard</div>
             {leaderboard.length === 0 ? (
               <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem" }}>No activity yet — post to get on the board.</p>
             ) : (

@@ -38,6 +38,18 @@ function clean(input: ProductInput) {
   };
 }
 
+// external_url (the paid video/course link) isn't readable by visitors after
+// migration 0043, so server code reads it with the service role, only after
+// checking the caller owns or bought the product.
+async function secretLink(id: number): Promise<string | null> {
+  // Two explicit branches: a union of two client types isn't callable in TS.
+  const svc = serviceClient();
+  const r = svc
+    ? await svc.from("products").select("external_url").eq("id", id).maybeSingle()
+    : await (await createClient()).from("products").select("external_url").eq("id", id).maybeSingle();
+  return (r.data as { external_url?: string | null } | null)?.external_url ?? null;
+}
+
 export async function createProduct(input: ProductInput) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -69,8 +81,8 @@ export async function publishProduct(id: number, publish: boolean) {
   if (!user) return { error: "Please sign in." };
   // A published product must be deliverable: a file or an external (video/course) URL.
   if (publish) {
-    const { data: p } = await supabase.from("products").select("file_path, external_url, price").eq("id", id).eq("user_id", user.id).maybeSingle();
-    if (p && !p.file_path && !p.external_url) return { error: "Add a file or a video/course link before publishing." };
+    const { data: p } = await supabase.from("products").select("file_path, price").eq("id", id).eq("user_id", user.id).maybeSingle();
+    if (p && !p.file_path && !(await secretLink(id))) return { error: "Add a file or a video/course link before publishing." };
   }
   const { error } = await supabase.from("products").update({ is_published: publish }).eq("id", id).eq("user_id", user.id);
   if (error) return { error: error.message };
@@ -148,7 +160,7 @@ export async function getDownloadUrl(productId: number): Promise<{ url?: string;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in." };
-  const { data: prod } = await supabase.from("products").select("file_path, file_name, external_url, price, user_id").eq("id", productId).maybeSingle();
+  const { data: prod } = await supabase.from("products").select("file_path, file_name, price, user_id").eq("id", productId).maybeSingle();
   if (!prod) return { error: "Product not found." };
 
   const owns = prod.user_id === user.id;
@@ -158,7 +170,8 @@ export async function getDownloadUrl(productId: number): Promise<{ url?: string;
       if (!pur) return { error: "Buy this product to access it." };
     }
   }
-  if (prod.external_url) return { external: prod.external_url, name: prod.file_name || undefined };
+  const external = await secretLink(productId);
+  if (external) return { external, name: prod.file_name || undefined };
   if (!prod.file_path) return { error: "This product has no file yet." };
 
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

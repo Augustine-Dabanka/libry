@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+import Glyph from "@/components/Glyph";
 // A touch-first, block-based chapter editor. Instead of a floating toolbar, each
 // block is its own tappable card (paragraph, heading, quote, image, divider) —
 // easy to write, reorder and delete on a phone. Compiles to the same HTML the
@@ -98,7 +99,7 @@ export default function MobileBlockEditor({ value, onChange }: { value: string; 
 
   const addMenu = (i: number) => (
     <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", padding: "0.5rem", background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 10, margin: "0.4rem 0" }}>
-      {([["p", "¶ Text"], ["h2", "H Heading"], ["quote", "❝ Quote"], ["img", "🖼 Image"], ["hr", "— Divider"]] as [BlockType, string][]).map(([t, label]) => (
+      {([["p", "¶ Text"], ["h2", "H Heading"], ["quote", "❝ Quote"], ["img", "▣ Image"], ["hr", "— Divider"]] as [BlockType, string][]).map(([t, label]) => (
         <button key={t} type="button" onClick={() => insert(i, t)} style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--ivory)", fontFamily: "var(--sans)", fontSize: "0.82rem", padding: "0.35rem 0.6rem", cursor: "pointer" }}>{label}</button>
       ))}
       <button type="button" onClick={() => setAddAt(null)} style={{ background: "transparent", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "0.82rem" }}>✕</button>
@@ -120,7 +121,7 @@ export default function MobileBlockEditor({ value, onChange }: { value: string; 
                     <img src={b.src} alt="" style={{ maxWidth: "100%", borderRadius: 8, marginBottom: "0.4rem" }} />
                   ) : (
                     <label style={{ display: "inline-block", background: "var(--stone)", border: "1px dashed var(--border)", borderRadius: 8, padding: "0.6rem 0.9rem", cursor: "pointer", fontFamily: "var(--sans)", fontSize: "0.85rem", color: "var(--ivory-muted)" }}>
-                      🖼 {b.caption === "Uploading…" ? "Uploading…" : "Choose image"}
+                      <Glyph e="🖼" /> {b.caption === "Uploading…" ? "Uploading…" : "Choose image"}
                       <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(b.id, f); }} />
                     </label>
                   )}

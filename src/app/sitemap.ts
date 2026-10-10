@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@/lib/supabase/server";
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL || "https://libry-sigma.vercel.app";
+import { BRAND } from "@/lib/brand";
+const BASE = BRAND.siteUrl;
 
 // Public sitemap: static marketing pages + every published book's shareable
 // page + author pages, all derived from real data (spec §40). Private app

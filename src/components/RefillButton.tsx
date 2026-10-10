@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { refillTokens } from "@/app/actions/gamification";
 
-export default function RefillButton({ label = "Refill now ⚡", small = false }: { label?: string; small?: boolean }) {
+export default function RefillButton({ label = "Refill now", small = false }: { label?: string; small?: boolean }) {
   const [pending, start] = useTransition();
   return (
     <button

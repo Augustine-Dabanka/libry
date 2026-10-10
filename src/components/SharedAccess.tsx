@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-// Shared access: grant other Libry readers access to your library by username.
+// Shared access: grant other Leep readers access to your library by username.
 // The list is stored on your profile (prefs.shared_with); enforcement of shared
 // reading is layered on later, but the sharing relationship is real and saved.
 export default function SharedAccess({
@@ -36,7 +36,7 @@ export default function SharedAccess({
     setBusy(true);
     const supabase = createClient();
     const { data } = await supabase.from("profiles").select("username").eq("username", u).maybeSingle();
-    if (!data) { setBusy(false); setMsg("No Libry reader with that username."); return; }
+    if (!data) { setBusy(false); setMsg("No Leep reader with that username."); return; }
     const next = [...list, u];
     setList(next);
     setInput("");

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { serviceClient } from "@/lib/supabase/service";
 import QuickUpload from "@/components/QuickUpload";
 import NewStoryButton from "@/components/NewStoryButton";
 import PublishToggle from "@/components/PublishToggle";
@@ -17,6 +18,7 @@ import { type ProductType } from "@/app/actions/products";
 import { isCreatorActive, creatorStatusMeta } from "@/lib/creatorStatus";
 import { formatPrice } from "@/lib/types";
 
+import Glyph from "@/components/Glyph";
 type MyBook = {
   id: number | string;
   title: string;
@@ -199,7 +201,12 @@ export default async function CreatorDashboard() {
   type ProdRow = { id: number; title: string; description: string | null; type: string; price: number | null; cover_url: string | null; file_path: string | null; file_name: string | null; file_size: number | null; external_url: string | null; category: string | null; is_published: boolean };
   let myProducts: (ProdRow & { sales: number })[] = [];
   {
-    const pr = await supabase.from("products").select("id, title, description, type, price, cover_url, file_path, file_name, file_size, external_url, category, is_published").eq("user_id", user.id).order("created_at", { ascending: false });
+    // Own products only; the service role can read external_url (hidden from visitors by 0043).
+    const PCOLS = "id, title, description, type, price, cover_url, file_path, file_name, file_size, external_url, category, is_published";
+    const psvc = serviceClient();
+    const pr = psvc
+      ? await psvc.from("products").select(PCOLS).eq("user_id", user.id).order("created_at", { ascending: false })
+      : await supabase.from("products").select(PCOLS).eq("user_id", user.id).order("created_at", { ascending: false });
     if (!pr.error && pr.data) {
       const rows = pr.data as ProdRow[];
       const ids = rows.map((r) => r.id);
@@ -232,7 +239,7 @@ export default async function CreatorDashboard() {
           </div>
           <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
             <a className="btn btn-outline" href="/creator/opportunities" style={{ padding: "0.45rem 1rem", fontSize: "0.85rem" }}>✦ Opportunities</a>
-            <a className="btn btn-outline" href="/creator-hub/docs?tab=guidelines" style={{ padding: "0.45rem 1rem", fontSize: "0.85rem" }}>📋 Guidelines</a>
+            <a className="btn btn-outline" href="/creator-hub/docs?tab=guidelines" style={{ padding: "0.45rem 1rem", fontSize: "0.85rem" }}><Glyph e="📋" /> Guidelines</a>
             {/* Steps back to reading without ending the session — this is not a
                 full sign-out (that lives in the account menu). */}
             <a className="btn btn-outline" href="/home" style={{ padding: "0.45rem 1rem", fontSize: "0.85rem" }}>← Leave studio</a>
@@ -247,7 +254,7 @@ export default async function CreatorDashboard() {
             {!active ? (
               <div style={{ marginBottom: "2rem", padding: "1.1rem 1.3rem", borderRadius: 14, border: `1px solid ${statusMeta.tone === "bad" ? "rgba(196,85,63,0.5)" : "rgba(217,164,65,0.5)"}`, background: statusMeta.tone === "bad" ? "rgba(196,85,63,0.10)" : "rgba(217,164,65,0.10)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.4rem" }}>
-                  <span style={{ fontSize: "1.1rem" }}>{statusMeta.tone === "bad" ? "⛔" : "⏸️"}</span>
+                  <span style={{ fontSize: "1.1rem" }}><Glyph e={statusMeta.tone === "bad" ? "⛔" : "⏸"} /></span>
                   <strong style={{ fontFamily: "var(--sans)", color: "var(--ivory)" }}>{statusMeta.heading}</strong>
                 </div>
                 <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.6, margin: 0 }}>{statusMeta.blurb}</p>
@@ -274,12 +281,12 @@ export default async function CreatorDashboard() {
                     </p>
                     <div style={{ display: "flex", height: 40, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem" }}>
                       <div style={{ flex: 65, background: "var(--gold)", color: "#12100E", display: "flex", alignItems: "center", justifyContent: "center" }}>You keep 65%</div>
-                      <div style={{ flex: 35, background: "var(--charcoal)", color: "var(--ivory-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>Libry 35%</div>
+                      <div style={{ flex: 35, background: "var(--charcoal)", color: "var(--ivory-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>Leep 35%</div>
                     </div>
                     <ul style={{ margin: "1.2rem 0 0", paddingLeft: "1.1rem", color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.7 }}>
                       <li>Every purchase of your book credits <strong style={{ color: "var(--ivory)" }}>65% of the price</strong> to you — the &ldquo;Projected earnings&rdquo; figure above.</li>
-                      <li>Libry keeps 35% to run the platform — a 30% platform cut plus a 5% platform &amp; infrastructure fee (hosting, payments, discovery).</li>
-                      <li>Payments are <strong style={{ color: "var(--ivory)" }}>live via Paystack</strong>. Earnings accrue on every sale; withdraw them once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Libry Partnership Program</a> (a quick verification of your identity and payout details).</li>
+                      <li>Leep keeps 35% to run the platform — a 30% platform cut plus a 5% platform &amp; infrastructure fee (hosting, payments, discovery).</li>
+                      <li>Payments are <strong style={{ color: "var(--ivory)" }}>live via Paystack</strong>. Earnings accrue on every sale; withdraw them once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Leep Partnership Program</a> (a quick verification of your identity and payout details).</li>
                       <li>You keep your readers — followers, reviews, and the relationship — always.</li>
                     </ul>
                   </div>
@@ -319,7 +326,7 @@ export default async function CreatorDashboard() {
                                     <DeleteBookButton bookId={Number(b.id)} title={b.title} />
                                   </div>
                                 ) : (
-                                  <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem" }}>🔒 Publishing paused</span>
+                                  <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem" }}><Glyph e="🔒" /> Publishing paused</span>
                                 )}
                               </td>
                             </tr>
@@ -358,14 +365,14 @@ export default async function CreatorDashboard() {
               const createNode = active ? (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem", alignItems: "start" }}>
                   <div style={{ background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.2rem 1.2rem 1.3rem" }}>
-                    <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.3rem" }}>✍️ Write in the Chapter Editor</div>
+                    <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.3rem" }}><Glyph e="✍" /> Write in the Chapter Editor</div>
                     <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", marginBottom: "1rem" }}>
                       Start a blank draft and build it chapter by chapter, with images and branching choices.
                     </p>
                     <NewStoryButton userId={user.id} authorName={authorName} />
                   </div>
                   <div style={{ background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.2rem" }}>
-                    <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.3rem" }}>📄 Upload a manuscript</div>
+                    <div style={{ fontFamily: "var(--sans)", fontWeight: 700, marginBottom: "0.3rem" }}><Glyph e="📄" /> Upload a manuscript</div>
                     <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", marginBottom: "1rem" }}>
                       Drop in a PDF, Word doc, or text file — we&apos;ll import it as a draft you can edit.
                     </p>
@@ -374,7 +381,7 @@ export default async function CreatorDashboard() {
                 </div>
               ) : (
                 <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "2rem 1.6rem", textAlign: "center" }}>
-                  <div style={{ fontSize: "1.6rem", marginBottom: "0.5rem" }}>🔒</div>
+                  <div style={{ fontSize: "1.6rem", marginBottom: "0.5rem" }}><Glyph e="🔒" /></div>
                   <h3 style={{ marginBottom: "0.4rem" }}>Publishing is paused</h3>
                   <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", maxWidth: 440, margin: "0 auto", lineHeight: 1.6 }}>{statusMeta.blurb}</p>
                 </div>

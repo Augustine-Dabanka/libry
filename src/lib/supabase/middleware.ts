@@ -95,6 +95,22 @@ const PUBLIC_PREFIXES = [
   '/privacy',
   '/cookies',
   '/refunds',
+  '/contact',
+  '/koala',
+  // Preview before signing up. Each page checks access itself and shows a
+  // "sign up to keep going" step instead of a hard wall:
+  //   /reader  first chapter of any book (paid: the usual sample)
+  //   /product digital products (buying asks for an account)
+  //   /c       community rooms (read the room's intro; posting needs an account)
+  //   /home, /community  send guests to /discover and /communities
+  '/reader',
+  '/product',
+  '/c',
+  '/home',
+  '/community',
+  '/search',
+  '/royalty-calculator',
+  '/creator-hub',
   '/book',
   '/b',
   '/author',

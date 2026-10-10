@@ -8,7 +8,7 @@ import { getThemeSchedule } from "@/lib/themeSchedule";
 import AdminPanel, { type PartnerApp, type PayoutReq } from "@/components/AdminPanel";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Admin · Libry", robots: { index: false, follow: false } };
+export const metadata = { title: "Admin · Leep", robots: { index: false, follow: false } };
 
 type PayAcct = { method: string; provider: string | null; account_name: string | null; account_number: string | null };
 

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import CoverMaker from "@/components/CoverMaker";
 
+import Glyph from "@/components/Glyph";
 // Downscale a chosen image to a compact JPEG data URL, preserving aspect ratio
 // (max width `maxW`). Stored inline in the DB column — no storage bucket needed,
 // same approach as the account avatar.
@@ -78,7 +79,7 @@ export default function ImagePicker({
         <span style={{ fontFamily: "var(--sans)", fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--muted)" }}>{label}</span>
         <div style={{ display: "flex", gap: "0.9rem", marginLeft: "auto" }}>
           <button type="button" onClick={() => setMode("upload")} style={tab(mode === "upload")}>Upload</button>
-          <button type="button" onClick={() => setMode("make")} style={tab(mode === "make")}>🎨 Make one</button>
+          <button type="button" onClick={() => setMode("make")} style={tab(mode === "make")}><Glyph e="🎨" /> Make one</button>
           <button type="button" onClick={() => setMode("url")} style={tab(mode === "url")}>Paste URL</button>
         </div>
       </div>
@@ -93,7 +94,7 @@ export default function ImagePicker({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={value} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
-            <span style={{ color: "var(--muted)", fontSize: "1.4rem" }}>🖼️</span>
+            <span style={{ color: "var(--muted)", fontSize: "1.4rem" }}><Glyph e="🖼" /></span>
           )}
         </div>
 

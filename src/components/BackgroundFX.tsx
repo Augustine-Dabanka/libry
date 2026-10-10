@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import Glyph from "@/components/Glyph";
 
 export type BgKind = "none" | "shapes" | "books" | "clouds";
 
 const GLYPHS: Record<Exclude<BgKind, "none">, string[]> = {
   shapes: ["◆", "●", "▲", "■", "✦", "◗"],
-  books: ["📖", "📕", "📗", "📘", "📚", "✒️"],
-  clouds: ["☁️", "☁", "✧", "·", "❃", "☾"],
+  books: ["📖", "📕", "📚", "✒", "📖", "📘"],
+  clouds: ["☁", "☁", "✧", "·", "❃", "☾"],
 };
 
 // Ambient, opt-in animated background. Low opacity, never captures pointer,
@@ -57,7 +58,7 @@ export default function BackgroundFX() {
             animationDelay: `${it.delay}s`,
           }}
         >
-          {it.glyph}
+          <Glyph e={it.glyph} fallback={null} size="1em" />
         </span>
       ))}
     </div>

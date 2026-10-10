@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import Glyph from "@/components/Glyph";
 type Node = {
   text: string;
   choices?: { label: string; to: string }[];
@@ -176,7 +177,7 @@ export default function StoryChoiceDemo() {
                 }}
               >
                 <span aria-hidden style={{ fontSize: "1.05rem", opacity: 0.9 }}>
-                  {isStart ? (i === 0 ? "⚔" : "🌙") : "→"}
+                  {isStart ? <Glyph e={i === 0 ? "⚔" : "🌙"} /> : "→"}
                 </span>
                 {c.label}
               </button>

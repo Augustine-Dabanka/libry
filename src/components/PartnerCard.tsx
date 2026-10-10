@@ -4,12 +4,13 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { applyForPartner, withdrawPartner } from "@/app/actions/partner";
 
+import Glyph from "@/components/Glyph";
 export type PartnerStatus = "none" | "pending" | "approved" | "rejected";
 
 const META: Record<PartnerStatus, { label: string; tone: string; heading: string; blurb: string }> = {
-  none: { label: "Not enrolled", tone: "var(--muted)", heading: "Join the Libry Partnership Program", blurb: "Earnings accrue from your first sale. To withdraw them, join the Partnership Program — a quick review of your identity and payout details, so we can send money safely and stay compliant." },
+  none: { label: "Not enrolled", tone: "var(--muted)", heading: "Join the Leep Partnership Program", blurb: "Earnings accrue from your first sale. To withdraw them, join the Partnership Program — a quick review of your identity and payout details, so we can send money safely and stay compliant." },
   pending: { label: "Under review", tone: "#D9A441", heading: "Your application is under review", blurb: "We're reviewing your account and payout details. This usually takes a few days. You'll keep earning in the meantime — payouts unlock the moment you're approved." },
-  approved: { label: "Partner", tone: "#7DBE86", heading: "You're a Libry Partner", blurb: "Your payouts are enabled. Once you request one, Libry processes it to your saved account via Paystack — no manual back-and-forth." },
+  approved: { label: "Partner", tone: "#7DBE86", heading: "You're a Leep Partner", blurb: "Your payouts are enabled. Once you request one, Leep processes it to your saved account via Paystack — no manual back-and-forth." },
   rejected: { label: "Needs attention", tone: "#E0836B", heading: "We couldn't approve you yet", blurb: "Something in your application needs another look — usually payout details. Update your payout account and re-apply, or contact support." },
 };
 
@@ -38,7 +39,7 @@ export default function PartnerCard({ status }: { status: PartnerStatus }) {
   return (
     <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.6rem" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.7rem", flexWrap: "wrap" }}>
-        <span style={{ fontSize: "1.3rem" }}>🤝</span>
+        <span style={{ fontSize: "1.3rem" }}><Glyph e="🤝" /></span>
         <strong style={{ fontFamily: "var(--sans)", color: "var(--ivory)", fontSize: "1.05rem" }}>{m.heading}</strong>
         <span className="badge" style={{ background: "rgba(255,255,255,0.06)", color: m.tone, fontWeight: 700 }}>{m.label}</span>
       </div>

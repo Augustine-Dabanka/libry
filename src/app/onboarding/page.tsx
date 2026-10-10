@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
+import Mascot from "@/components/Mascot";
 import styles from "./onboarding.module.css";
 
+import Glyph from "@/components/Glyph";
 type Option = { v: string; label: string; sub?: string; icon?: string };
 type Question = {
   key: string;
@@ -13,7 +15,7 @@ type Question = {
   options?: Option[];
 };
 
-// Interactive micro-trial: a 2-sentence taste of a Libry interactive story, so a
+// Interactive micro-trial: a 2-sentence taste of a Leep interactive story, so a
 // newcomer feels the "you choose" magic before they ever sign up. Every choice is
 // "right" — it just changes the wink you get back.
 const TRIAL = {
@@ -104,7 +106,7 @@ const QUESTIONS: Question[] = [
   {
     key: "source",
     line: "One quick thing.",
-    q: "How did you hear about Libry?",
+    q: "How did you hear about Leep?",
     options: [
       { v: "friend", label: "A friend or family", sub: "Word of mouth" },
       { v: "social", label: "Social media", sub: "TikTok, Instagram, X…" },
@@ -126,7 +128,7 @@ const QUESTIONS: Question[] = [
     ],
   },
   { key: "country", type: "country", line: "Nearly there.", q: "Where are you reading from?" },
-  { key: "trial", type: "trial", line: "Now — a tiny taste.", q: "Try a Libry interactive story" },
+  { key: "trial", type: "trial", line: "Now — a tiny taste.", q: "Try a Leep interactive story" },
 ];
 
 const COUNTRIES = [
@@ -157,46 +159,10 @@ type KoalaMood = "idle" | "think" | "cheer";
 // squash-and-stretch when you pick something, and breathes and blinks when idle.
 // All motion is CSS on SVG groups (see .k* in onboarding.module.css).
 function Koala({ mood = "idle" }: { mood?: KoalaMood }) {
-  const moodClass = mood === "cheer" ? styles.kCheer : mood === "think" ? styles.kThink : styles.kIdle;
   return (
-    <svg className={`${styles.owl} ${moodClass}`} viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <ellipse className={styles.kShadow} cx="60" cy="115" rx="30" ry="5" fill="rgba(28,25,23,0.10)" />
-      <g className={styles.kAll}>
-        <g className={styles.kHead}>
-          <circle cx="28" cy="36" r="19" fill="#8B8680" />
-          <circle cx="28" cy="36" r="10" fill="#D8B4BE" />
-          <circle cx="92" cy="36" r="19" fill="#8B8680" />
-          <circle cx="92" cy="36" r="10" fill="#D8B4BE" />
-          <ellipse cx="60" cy="58" rx="37" ry="32" fill="#948F8A" />
-          <ellipse cx="60" cy="60" rx="29" ry="25" fill="#ABA6A1" />
-          <g className={styles.kEyes}>
-            <circle cx="46" cy="54" r="6" fill="#1C1917" />
-            <circle cx="74" cy="54" r="6" fill="#1C1917" />
-            <circle cx="44" cy="52" r="2" fill="#fff" />
-            <circle cx="72" cy="52" r="2" fill="#fff" />
-          </g>
-          <circle cx="35" cy="66" r="5" fill="rgba(216,180,190,0.55)" />
-          <circle cx="85" cy="66" r="5" fill="rgba(216,180,190,0.55)" />
-          <ellipse cx="60" cy="70" rx="12" ry="9" fill="#3A3632" />
-          <ellipse cx="56" cy="67" rx="2.2" ry="2.8" fill="rgba(255,255,255,0.28)" />
-          <path d={mood === "cheer" ? "M50 81 q10 11 20 0" : "M51 83 q9 7 18 0"} stroke="#3A3632" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-        </g>
-        <g transform="rotate(-5 60 104)">
-          <rect x="43" y="92" width="34" height="27" rx="3" fill="#B45309" />
-          <rect x="43" y="92" width="7" height="27" rx="3" fill="#8F3F07" />
-          <rect x="55" y="99" width="17" height="2.6" rx="1.3" fill="rgba(250,247,242,0.9)" />
-          <rect x="55" y="104" width="13" height="2.2" rx="1.1" fill="rgba(250,247,242,0.6)" />
-          <circle cx="63" cy="112" r="3.2" fill="none" stroke="#C4A35A" strokeWidth="1.6" />
-        </g>
-        <ellipse cx="45" cy="111" rx="7" ry="6" fill="#8B8680" />
-        <ellipse cx="79" cy="111" rx="7" ry="6" fill="#8B8680" />
-      </g>
-      <g className={styles.kDots} fill="currentColor">
-        <circle cx="100" cy="22" r="3" />
-        <circle cx="108" cy="12" r="3.8" />
-        <circle cx="116" cy="3" r="4.4" />
-      </g>
-    </svg>
+    <div style={{ width: 120, margin: "0 auto 1.2rem" }}>
+      <Mascot mood={mood} size={120} follow interactive prop={mood === "idle" ? "book" : undefined} />
+    </div>
   );
 }
 
@@ -350,7 +316,7 @@ export default function OnboardingPage() {
             <h1 className={styles.introTitle}>
               Before you begin,
               <br />
-              let’s make Libry
+              let’s make Leep
               <br />
               <span>yours</span>.
             </h1>
@@ -388,7 +354,7 @@ export default function OnboardingPage() {
                   className={`${styles.genreCard} ${genreSel.includes(o.v) ? styles.selected : ""}`}
                   onClick={() => toggleGenre(o.v)}
                 >
-                  <span className={styles.genreIcon}>{o.icon}</span>
+                  <span className={styles.genreIcon}><Glyph e={o.icon} /></span>
                   <span>{o.label}</span>
                 </button>
               ))}
@@ -444,7 +410,7 @@ export default function OnboardingPage() {
                   className={styles.countryOpt}
                   onClick={() => pick("country", c)}
                 >
-                  <span aria-hidden="true">🌍</span> {c}
+                  <span aria-hidden="true"><Glyph e="🌍" /></span> {c}
                 </button>
               ))}
             </div>

@@ -7,6 +7,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+import Glyph from "@/components/Glyph";
 // Tiptap-based rich-text editor. Exposes the same value/onChange(html) contract
 // as the other editors, so it drops straight into the Chapter Editor. Note the
 // `immediatelyRender: false` — required under the Next App Router to avoid an
@@ -59,7 +60,7 @@ export default function TiptapEditor({ value, onChange }: { value: string; onCha
         {btn("•", editor.isActive("bulletList"), () => editor.chain().focus().toggleBulletList().run(), "Bullet list")}
         {btn("1.", editor.isActive("orderedList"), () => editor.chain().focus().toggleOrderedList().run(), "Numbered list")}
         {btn("―", false, () => editor.chain().focus().setHorizontalRule().run(), "Divider")}
-        <button type="button" title="Image" onClick={() => fileRef.current?.click()} style={{ background: "transparent", color: "var(--ivory-muted)", border: "1px solid var(--border)", borderRadius: 7, cursor: "pointer", fontSize: "0.9rem", padding: "0.3rem 0.55rem" }}>🖼</button>
+        <button type="button" title="Image" onClick={() => fileRef.current?.click()} style={{ background: "transparent", color: "var(--ivory-muted)", border: "1px solid var(--border)", borderRadius: 7, cursor: "pointer", fontSize: "0.9rem", padding: "0.3rem 0.55rem" }}><Glyph e="🖼" /></button>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onPickImage} />
       </div>
       <EditorContent editor={editor} />

@@ -3,6 +3,7 @@ import ClaimButton from "@/components/ClaimButton";
 import TokenBadge from "@/components/TokenBadge";
 import { TOKEN_CAP, type Stats, type Quest } from "@/lib/gamification";
 
+import Glyph from "@/components/Glyph";
 function pill(bg: string, color: string): React.CSSProperties {
   return {
     display: "inline-flex",
@@ -39,10 +40,10 @@ export default function StatsHUD({ stats, quests }: { stats: Stats; quests: Ques
 
       <div>
         <div style={{ display: "flex", gap: "0.7rem", flexWrap: "wrap", marginBottom: "0.9rem" }}>
-          <span className="lb-pop" style={{ ...pill("rgba(180,83,9,0.16)", "#E08A3C"), animationDelay: "0.05s" }}>🔥 {stats.streak_count}-day streak</span>
+          <span className="lb-pop" style={{ ...pill("rgba(180,83,9,0.16)", "#E08A3C"), animationDelay: "0.05s" }}><Glyph e="🔥" /> {stats.streak_count}-day streak</span>
           <TokenBadge tokens={stats.tokens} cap={TOKEN_CAP} updatedAt={stats.tokens_updated_at} />
           <span className="lb-pop" style={{ ...pill("rgba(124,124,180,0.16)", "#B7B7E6"), animationDelay: "0.19s" }}>✦ {stats.xp} XP</span>
-          <span className="lb-pop" style={{ ...pill("rgba(78,122,82,0.18)", "#7DBE86"), animationDelay: "0.26s" }}>🏆 {stats.league} League</span>
+          <span className="lb-pop" style={{ ...pill("rgba(78,122,82,0.18)", "#7DBE86"), animationDelay: "0.26s" }}><Glyph e="🏆" /> {stats.league} League</span>
         </div>
 
         {stats.streak_broken ? (
@@ -65,14 +66,14 @@ export default function StatsHUD({ stats, quests }: { stats: Stats; quests: Ques
                   fontSize: "0.9rem",
                 }}
               >
-                <span style={{ opacity: done ? 1 : 0.55 }}>{done ? "✅" : "⬜"}</span>
+                <span style={{ opacity: done ? 1 : 0.55 }}><Glyph e={done ? "✅" : "⬜"} /></span>
                 <span style={{ flex: 1, color: done ? "var(--ivory)" : "var(--muted)" }}>
                   {q.label}
                   {q.target > 1 ? (
                     <span style={{ color: "var(--muted)" }}> · {Math.min(q.progress, q.target)}/{q.target}</span>
                   ) : null}
                 </span>
-                <span style={{ color: "var(--gold)", fontSize: "0.82rem", fontWeight: 700 }}>+{q.reward_tokens}⚡</span>
+                <span style={{ color: "var(--gold)", fontSize: "0.82rem", fontWeight: 700 }}>+{q.reward_tokens}<Glyph e="⚡" /></span>
                 {done && !q.claimed ? (
                   <ClaimButton questId={q.id} reward={q.reward_tokens} />
                 ) : q.claimed ? (

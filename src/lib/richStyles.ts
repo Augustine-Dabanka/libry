@@ -1,6 +1,6 @@
 // Shared styling for rich book content — used by BOTH the editor surface and
 // the reader, so what a creator lays out is exactly what a reader sees. Class
-// names are prefixed `le-` (Libry editor) and survive the sanitizer's allowlist.
+// names are prefixed `le-` (Leep editor) and survive the sanitizer's allowlist.
 export const RICH_CSS = `
 .le-body{font-family:var(--serif,Georgia,serif);line-height:1.9;}
 .le-body section.ch{margin:0 0 2.6em;}

@@ -2,7 +2,7 @@ import { type Book, formatPrice, bookCover } from "@/lib/types";
 import Stars from "@/components/Stars";
 
 // Two-tone card: a real cover image when the book has one, otherwise a
-// gold-framed "LIBRY" inset (mark, serif title, author), above a compact info
+// gold-framed "LEEP" inset (mark, serif title, author), above a compact info
 // row (title, author, price, type).
 export default function BookCard({ book }: { book: Book }) {
   const cover = bookCover(book);
@@ -29,7 +29,7 @@ export default function BookCard({ book }: { book: Book }) {
             gap: "0.85rem",
           }}
         >
-          <span style={{ fontFamily: "var(--sans)", fontSize: "0.66rem", letterSpacing: "0.28em", color: "var(--gold-hi)", fontWeight: 600 }}>LIBRY</span>
+          <span style={{ fontFamily: "var(--sans)", fontSize: "0.66rem", letterSpacing: "0.28em", color: "var(--gold-hi)", fontWeight: 600 }}>LEEP</span>
           <h3 style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: "1.2rem", color: "var(--ivory)", lineHeight: 1.2, margin: 0 }}>{book.title}</h3>
           <span style={{ width: 34, height: 1, background: "var(--gold-hi)", opacity: 0.55 }} />
           <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.82rem", color: "var(--muted)" }}>{book.author || "Unknown author"}</span>

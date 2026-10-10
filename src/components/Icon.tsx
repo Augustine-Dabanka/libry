@@ -1,4 +1,6 @@
-// Libry's own icon set: 24px grid, 1.75 stroke, round caps. Replaces emoji
+import { LUCIDE, type LucideName } from "@/components/icons/lucide";
+
+// Leep's own icon set: 24px grid, 1.75 stroke, round caps. Replaces emoji
 // across the UI so icons look the same on every phone and computer.
 // Inline SVG: no extra requests, no icon font, inherits `color`.
 const PATHS = {
@@ -31,7 +33,8 @@ const PATHS = {
   target: "M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M7 12a5 5 0 1 0 10 0a5 5 0 1 0-10 0M11 12a1 1 0 1 0 2 0a1 1 0 1 0-2 0",
 } as const;
 
-export type IconName = keyof typeof PATHS;
+// Leep's hand-drawn set (above) wins where a name exists in both.
+export type IconName = keyof typeof PATHS | LucideName;
 
 export default function Icon({
   name,
@@ -42,7 +45,7 @@ export default function Icon({
   className,
 }: {
   name: IconName;
-  size?: number;
+  size?: number | string;
   strokeWidth?: number;
   /** Set only when the icon carries meaning on its own (no visible text next to it). */
   label?: string;
@@ -63,10 +66,17 @@ export default function Icon({
       aria-label={label}
       aria-hidden={label ? undefined : true}
       focusable="false"
-      className={className}
+      className={className ? `ic ${className}` : "ic"}
       style={{ flexShrink: 0, verticalAlign: "-0.15em", ...style }}
     >
-      <path d={PATHS[name]} />
+      {name in PATHS ? (
+        <path d={PATHS[name as keyof typeof PATHS]} />
+      ) : (
+        (LUCIDE[name as LucideName] ?? []).map(([tag, attrs], i) => {
+          const Tag = tag as "path";
+          return <Tag key={i} {...(attrs as unknown as React.SVGProps<SVGPathElement>)} />;
+        })
+      )}
     </svg>
   );
 }

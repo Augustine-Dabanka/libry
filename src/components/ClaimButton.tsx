@@ -4,6 +4,7 @@ import { useState, useTransition, type CSSProperties } from "react";
 import { claimQuest } from "@/app/actions/gamification";
 import { playPop } from "@/lib/sfx";
 
+import Glyph from "@/components/Glyph";
 const COLORS = ["#C4A35A", "#B45309", "#7DBE86", "#B7B7E6", "#E08A3C", "#FAF7F2"];
 // 12 particles fanned out in a circle.
 const PARTICLES = Array.from({ length: 12 }, (_, i) => {
@@ -43,7 +44,7 @@ export default function ClaimButton({ questId, reward }: { questId: number; rewa
               style={{ background: p.c, ["--tx" as string]: `${p.x}px`, ["--ty" as string]: `${p.y}px` } as CSSProperties}
             />
           ))}
-          <span className="lb-reward">+{reward}⚡</span>
+          <span className="lb-reward">+{reward}<Glyph e="⚡" /></span>
         </span>
       )}
     </span>

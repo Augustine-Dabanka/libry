@@ -6,17 +6,19 @@ import path from "path";
 const required = [
   "NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY",
   "ADMIN_EMAILS",
-  "NEXT_PUBLIC_LEGAL_ENTITY", "NEXT_PUBLIC_LEGAL_ADDRESS", "NEXT_PUBLIC_LEGAL_EFFECTIVE_DATE",
-  "NEXT_PUBLIC_CONTACT_EMAIL", "NEXT_PUBLIC_SUPPORT_EMAIL", "NEXT_PUBLIC_PRIVACY_EMAIL",
-  "NEXT_PUBLIC_TRUST_SAFETY_EMAIL", "NEXT_PUBLIC_GOVERNING_JURISDICTION", "NEXT_PUBLIC_LEGAL_VENUE",
-  "NEXT_PUBLIC_LIABILITY_PERIOD", "NEXT_PUBLIC_APPEAL_WINDOW", "NEXT_PUBLIC_PAYOUT_TERMS",
-  "NEXT_PUBLIC_REFUND_WINDOW", "NEXT_PUBLIC_SUPPORT_RESPONSE_TIME", "NEXT_PUBLIC_SUBSCRIPTION_TERMS",
-  "NEXT_PUBLIC_MINIMUM_AGE",
+];
+// Not blocking, but the site looks unfinished without them.
+const recommended = [
+  ["NEXT_PUBLIC_SITE_URL", "links in emails/sitemap fall back to the old vercel.app address"],
+  ["NEXT_PUBLIC_CONTACT_EMAIL", "contact goes only through the /contact form"],
+  ["NEXT_PUBLIC_SOCIAL_HANDLE", "no social icons are shown"],
+  ["RESEND_API_KEY", "contact messages and waitlist emails are not emailed"],
 ];
 const payments = ["PAYSTACK_SECRET_KEY", "NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY", "NEXT_PUBLIC_PAYSTACK_ENABLED", "NEXT_PUBLIC_PAYSTACK_CURRENCY"];
 const problems = [];
 
 for (const k of required) if (!process.env[k]) problems.push(`missing env: ${k}`);
+for (const [k, why] of recommended) if (!process.env[k]) console.warn(`(optional) ${k} not set: ${why}`);
 for (const k of payments) if (!process.env[k]) console.warn(`(payments off) env not set: ${k}`);
 if (process.env.ADMIN_PASSCODE) problems.push("remove ADMIN_PASSCODE (no longer used)");
 for (const k of Object.keys(process.env)) {

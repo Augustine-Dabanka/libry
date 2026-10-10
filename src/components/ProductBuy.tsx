@@ -5,6 +5,7 @@ import { buyProduct, getDownloadUrl } from "@/app/actions/products";
 import { paystackReady } from "@/app/actions/purchases";
 import { formatPrice } from "@/lib/types";
 
+import Glyph from "@/components/Glyph";
 const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "";
 const PAYSTACK_CURRENCY = process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY || "USD";
 const PAYSTACK_RATE = Number(process.env.NEXT_PUBLIC_PAYSTACK_USD_RATE || "1") || 1;
@@ -59,7 +60,7 @@ export default function ProductBuy({
           key: PAYSTACK_KEY, email,
           amount: Math.round(price * PAYSTACK_RATE * 100),
           currency: PAYSTACK_CURRENCY,
-          ref: `libry-p${productId}-${Date.now()}`,
+          ref: `leep-p${productId}-${Date.now()}`,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           callback: (resp: any) => grant(resp.reference || `paystack-${Date.now()}`),
           onClose: () => setBusy(false),
@@ -109,7 +110,7 @@ export default function ProductBuy({
         showTerms ? (
           <div style={{ border: "1px solid var(--border)", borderRadius: 14, padding: "1rem 1.1rem", background: "var(--charcoal)" }}>
             <p style={{ fontFamily: "var(--sans)", fontSize: "0.86rem", color: "var(--ivory-muted)", lineHeight: 1.6, margin: "0 0 0.9rem" }}>
-              This file is saved in your library. By downloading it you accept that <strong style={{ color: "var(--ivory)" }}>you are responsible for how you store and use it</strong>, that downloads are non-refundable, and that Libry is not liable for anything that happens to the file once it leaves the platform.
+              This file is saved in your library. By downloading it you accept that <strong style={{ color: "var(--ivory)" }}>you are responsible for how you store and use it</strong>, that downloads are non-refundable, and that Leep is not liable for anything that happens to the file once it leaves the platform.
             </p>
             <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
               <button type="button" onClick={acceptAndDownload} disabled={busy} style={{ ...btn, width: "auto", flex: "1 1 auto" }}>{busy ? "Preparing…" : "I understand — download"}</button>
@@ -130,7 +131,7 @@ export default function ProductBuy({
         <p style={{ color: "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem", textAlign: "center" }}>{err}</p>
       ) : (
         <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "0.7rem", textAlign: "center", lineHeight: 1.5 }}>
-          {has ? "In your library — access anytime." : price > 0 ? (live ? "🔒 Secured by Paystack" : "🔒 Instant access") : "Free — added to your library."}
+          {has ? "In your library — access anytime." : price > 0 ? <><Glyph e="🔒" /> {live ? "Secured by Paystack" : "Instant access"}</> : "Free — added to your library."}
         </p>
       )}
     </div>

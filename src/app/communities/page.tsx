@@ -3,7 +3,8 @@ import AppNav from "@/components/AppNav";
 import CommunityCreate from "@/components/CommunityCreate";
 import CommunityCover from "@/components/CommunityCover";
 
-export const metadata = { title: "Discover communities — Libry" };
+import Glyph from "@/components/Glyph";
+export const metadata = { title: "Discover communities — Leep" };
 
 type Community = { id: number; slug: string; name: string; description: string | null; emoji: string | null; cover_url: string | null; category: string | null; price: number | null; price_period: string | null; member_count: number };
 
@@ -83,7 +84,7 @@ export default async function CommunitiesPage({ searchParams }: { searchParams: 
                       <div style={{ padding: "0.9rem 1rem 1.1rem" }}>
                         <div style={{ fontFamily: "var(--serif)", color: "var(--ivory)", fontSize: "1.02rem", marginBottom: "0.25rem" }}>{c.name}</div>
                         {c.description ? <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.84rem", lineHeight: 1.45, margin: "0 0 0.6rem", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{c.description}</p> : null}
-                        <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.78rem" }}>👥 {c.member_count.toLocaleString()} member{c.member_count === 1 ? "" : "s"}</div>
+                        <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.78rem" }}><Glyph e="👥" /> {c.member_count.toLocaleString()} member{c.member_count === 1 ? "" : "s"}</div>
                       </div>
                     </a>
                   );
@@ -94,12 +95,12 @@ export default async function CommunitiesPage({ searchParams }: { searchParams: 
 
           {/* Trending sidebar */}
           <aside style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.2rem 1.3rem", position: "sticky", top: "1.5rem" }} className="communities-trending">
-            <div style={{ fontFamily: "var(--sans)", fontWeight: 700, color: "var(--ivory)", marginBottom: "0.9rem" }}>🔥 Trending now</div>
+            <div style={{ fontFamily: "var(--sans)", fontWeight: 700, color: "var(--ivory)", marginBottom: "0.9rem" }}><Glyph e="🔥" /> Trending now</div>
             <div style={{ display: "grid", gap: "0.9rem" }}>
               {trending.map((c, i) => (
                 <a key={c.id} href={`/c/${c.slug}`} style={{ display: "flex", alignItems: "center", gap: "0.7rem", textDecoration: "none" }}>
                   <span style={{ width: 22, color: i < 3 ? "var(--gold)" : "var(--muted)", fontFamily: "var(--serif)", fontWeight: 700, textAlign: "center", flexShrink: 0 }}>{i + 1}</span>
-                  <span style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--charcoal)", border: "1px solid var(--border)", display: "grid", placeItems: "center", fontSize: "1.05rem", flexShrink: 0 }}>{c.emoji || "📚"}</span>
+                  <span style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--charcoal)", border: "1px solid var(--border)", display: "grid", placeItems: "center", fontSize: "1.05rem", flexShrink: 0 }}><Glyph e={c.emoji || "📚"} /></span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: "var(--sans)", fontWeight: 600, color: "var(--ivory)", fontSize: "0.88rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
                     <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.74rem" }}>{c.category || "Stories"}</div>
