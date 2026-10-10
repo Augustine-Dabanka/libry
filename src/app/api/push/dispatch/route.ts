@@ -25,6 +25,6 @@ export async function POST(req: Request) {
   const rec = payload.record;
   if (!rec?.user_id || !rec.summary) return new Response("ignored", { status: 200 });
 
-  await sendPushToUser(rec.user_id, { title: "Libry", body: rec.summary, url: rec.link || "/notifications", tag: rec.kind });
+  await sendPushToUser(rec.user_id, { title: "Leep", body: rec.summary, url: rec.link || "/notifications", tag: rec.kind });
   return new Response("ok", { status: 200 });
 }

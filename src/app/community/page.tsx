@@ -3,14 +3,15 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import CommunityFeed from "@/components/CommunityFeed";
 
-export const metadata = { title: "Community — Libry" };
+import Glyph from "@/components/Glyph";
+export const metadata = { title: "Community — Leep" };
 
 export default async function CommunityPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=/community");
+  if (!user) redirect("/communities"); // guests see the public directory
 
   const { data: profile } = await supabase.from("profiles").select("full_name, username, avatar_url").eq("id", user.id).maybeSingle();
   const name = profile?.full_name || profile?.username || user.email?.split("@")[0] || "Reader";
@@ -27,7 +28,7 @@ export default async function CommunityPage() {
         <div className="dashboard-header" style={{ marginBottom: "1.2rem" }}>
           <h1>Community</h1>
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)" }}>
-            Jump into a room, or share to the whole of Libry below.
+            Jump into a room, or share to the whole of Leep below.
           </p>
         </div>
 
@@ -40,14 +41,14 @@ export default async function CommunityPage() {
             <div style={{ display: "flex", gap: "0.6rem", overflowX: "auto", paddingBottom: "0.3rem" }}>
               {rooms.map((r) => (
                 <a key={r.id} href={`/c/${r.slug}`} style={{ flexShrink: 0, textDecoration: "none", display: "flex", alignItems: "center", gap: "0.45rem", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 999, padding: "0.5rem 0.9rem", color: "var(--ivory)", fontFamily: "var(--sans)", fontSize: "0.88rem", fontWeight: 600, whiteSpace: "nowrap" }}>
-                  <span>{r.emoji || "📚"}</span> {r.name}
+                  <span><Glyph e={r.emoji || "📚"} /></span> {r.name}
                 </a>
               ))}
             </div>
           </div>
         ) : null}
 
-        <h2 style={{ fontSize: "1.05rem", marginBottom: "0.8rem" }}>Everyone on Libry</h2>
+        <h2 style={{ fontSize: "1.05rem", marginBottom: "0.8rem" }}>Everyone on Leep</h2>
         <CommunityFeed userId={user.id} userName={name} avatarUrl={profile?.avatar_url ?? null} />
       </section>
     </>

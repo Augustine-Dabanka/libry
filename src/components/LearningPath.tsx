@@ -1,5 +1,6 @@
 import { type Book } from "@/lib/types";
 
+import Glyph from "@/components/Glyph";
 function coverGradient(title: string): string {
   let h = 0;
   for (let i = 0; i < title.length; i++) h = (h * 31 + title.charCodeAt(i)) % 360;
@@ -87,7 +88,7 @@ export default function LearningPath({ books }: { books: Book[] }) {
                       fontSize: "1.6rem",
                     }}
                   >
-                    📖
+                    <Glyph e="📖" />
                   </span>
                   <span
                     style={{
@@ -118,7 +119,7 @@ export default function LearningPath({ books }: { books: Book[] }) {
                   }}
                   title="Reward chest"
                 >
-                  🎁
+                  <Glyph e="🎁" />
                 </span>
               )}
             </div>

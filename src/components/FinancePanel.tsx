@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { savePayoutAccount, requestPayout } from "@/app/actions/finance";
 import { formatPrice } from "@/lib/types";
 
+import Glyph from "@/components/Glyph";
 type Account = { method: string; provider: string | null; account_name: string | null; account_number: string | null } | null;
 type Payout = { id: number; amount: number; status: string; requested_at: string; paid_at: string | null };
 
@@ -87,7 +88,7 @@ export default function FinancePanel({
         </div>
         {!isPartner ? (
           <p style={{ color: "var(--gold-hi)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem" }}>
-            🤝 Payouts unlock once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Libry Partnership Program</a>{partner === "pending" ? " — your application is under review." : "."} You keep earning in the meantime.
+            <Glyph e="🤝" /> Payouts unlock once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Leep Partnership Program</a>{partner === "pending" ? " — your application is under review." : "."} You keep earning in the meantime.
           </p>
         ) : null}
         {isPartner && !hasAccount ? <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem" }}>Add your payout details below first.</p> : null}

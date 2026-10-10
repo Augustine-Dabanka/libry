@@ -4,7 +4,8 @@ import BookMini from "@/components/BookMini";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
-export const metadata = { title: "Comics — Libry" };
+import Glyph from "@/components/Glyph";
+export const metadata = { title: "Comics — Leep" };
 
 // First-class Comics browse surface. Comics are ordinary books with a comic
 // `type`; the reader routes them to the panel/webtoon ComicReader.
@@ -36,7 +37,7 @@ export default async function ComicsPage() {
     <>
       <AppNav />
       <section className="section" style={{ maxWidth: 1040, marginInline: "auto" }}>
-        <div style={{ fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "0.5rem" }}>💥 Comics</div>
+        <div style={{ fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "0.5rem" }}><Glyph e="💥" /> Comics</div>
         <h1 style={{ fontSize: "clamp(2rem, 5.5vw, 3rem)", lineHeight: 1.08, marginBottom: "0.6rem" }}>Visual stories, infinite worlds.</h1>
         <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "1.05rem", marginBottom: "2rem", maxWidth: 560 }}>
           Read panel by panel, or scroll the whole thing webtoon-style — your place is kept either way.
@@ -44,7 +45,7 @@ export default async function ComicsPage() {
 
         {comics.length === 0 ? (
           <div style={{ border: "1px solid var(--border)", borderRadius: 16, padding: "3rem 2rem", textAlign: "center", background: "var(--stone)" }}>
-            <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}>💥</div>
+            <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}><Glyph e="💥" /></div>
             <p style={{ fontSize: "1.15rem", marginBottom: "0.4rem", color: "var(--ivory)" }}>No comics published yet.</p>
             <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", maxWidth: 440, margin: "0 auto 1.3rem" }}>
               Comics land here the moment a creator publishes one. Want to be first?

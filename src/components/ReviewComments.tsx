@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+import Glyph from "@/components/Glyph";
 type RC = { id: number; user_id: string; user_name: string | null; body: string; created_at: string };
 
 export default function ReviewComments({ reviewId, signedIn }: { reviewId: string; signedIn: boolean }) {
@@ -60,7 +61,7 @@ export default function ReviewComments({ reviewId, signedIn }: { reviewId: strin
   return (
     <div style={{ marginTop: "0.7rem" }}>
       <button type="button" onClick={toggle} style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", fontWeight: 600, padding: 0 }}>
-        💬 {open ? "Hide" : "Reply"}{count != null && count > 0 ? ` · ${count}` : ""}
+        <Glyph e="💬" /> {open ? "Hide" : "Reply"}{count != null && count > 0 ? ` · ${count}` : ""}
       </button>
 
       {open ? (

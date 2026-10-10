@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { BgKind } from "@/components/BackgroundFX";
 
+import Glyph from "@/components/Glyph";
 const OPTS: { v: BgKind; label: string; icon: string }[] = [
   { v: "none", label: "None", icon: "—" },
   { v: "shapes", label: "Floating shapes", icon: "◆" },
@@ -46,7 +47,7 @@ export default function BackgroundPicker() {
             color: kind === o.v ? "var(--gold)" : "var(--ivory-muted)",
           }}
         >
-          <span style={{ marginRight: "0.4rem" }}>{o.icon}</span>
+          <span style={{ marginRight: "0.4rem", display: "inline-flex", verticalAlign: "middle" }}><Glyph e={o.icon} /></span>
           {o.label}
         </button>
       ))}

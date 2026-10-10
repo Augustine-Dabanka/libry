@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { serviceClient } from "@/lib/supabase/service";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 
 const RATE = Number(process.env.NEXT_PUBLIC_PAYSTACK_USD_RATE || "1") || 1;
@@ -37,6 +38,18 @@ function clean(input: ProductInput) {
   };
 }
 
+// external_url (the paid video/course link) isn't readable by visitors after
+// migration 0043, so server code reads it with the service role, only after
+// checking the caller owns or bought the product.
+async function secretLink(id: number): Promise<string | null> {
+  // Two explicit branches: a union of two client types isn't callable in TS.
+  const svc = serviceClient();
+  const r = svc
+    ? await svc.from("products").select("external_url").eq("id", id).maybeSingle()
+    : await (await createClient()).from("products").select("external_url").eq("id", id).maybeSingle();
+  return (r.data as { external_url?: string | null } | null)?.external_url ?? null;
+}
+
 export async function createProduct(input: ProductInput) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -68,8 +81,8 @@ export async function publishProduct(id: number, publish: boolean) {
   if (!user) return { error: "Please sign in." };
   // A published product must be deliverable: a file or an external (video/course) URL.
   if (publish) {
-    const { data: p } = await supabase.from("products").select("file_path, external_url, price").eq("id", id).eq("user_id", user.id).maybeSingle();
-    if (p && !p.file_path && !p.external_url) return { error: "Add a file or a video/course link before publishing." };
+    const { data: p } = await supabase.from("products").select("file_path, price").eq("id", id).eq("user_id", user.id).maybeSingle();
+    if (p && !p.file_path && !(await secretLink(id))) return { error: "Add a file or a video/course link before publishing." };
   }
   const { error } = await supabase.from("products").update({ is_published: publish }).eq("id", id).eq("user_id", user.id);
   if (error) return { error: error.message };
@@ -100,6 +113,7 @@ async function verifyPaystack(reference: string, expectedMinor: number): Promise
     });
     const j = await r.json();
     if (!j?.status || j?.data?.status !== "success") return { ok: false, error: "Payment wasn't completed." };
+    if (process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY && j?.data?.currency && j.data.currency !== process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY) return { ok: false, error: "Payment currency didn't match." };
     if (Number(j.data.amount) + 1 < expectedMinor) return { ok: false, error: "Payment amount didn't match." };
     return { ok: true };
   } catch {
@@ -117,16 +131,24 @@ export async function buyProduct(productId: number, reference: string) {
   if (!prod.is_published && prod.user_id !== user.id) return { error: "This product isn't available." };
   const price = Number(prod.price) || 0;
 
+  // Demo references only while real payments are off, and they record no revenue.
+  const live = !!process.env.PAYSTACK_SECRET_KEY && process.env.NEXT_PUBLIC_PAYSTACK_ENABLED === "true";
   const isSimulated = /^(demo|free)-/.test(reference);
+  if (price > 0 && isSimulated && live) return { error: "Please complete payment to continue." };
+  const svc = serviceClient();
+  if (!svc) return { error: "Checkout isn't configured yet." };
   if (price > 0 && !isSimulated) {
-    const v = await verifyPaystack(reference, Math.round(price * RATE * 100));
+    const expectedMinor = Math.round(price * RATE * 100);
+    const v = await verifyPaystack(reference, expectedMinor);
     if (!v.ok) return { error: v.error };
+    const claim = await svc.from("payment_references").insert({ reference, user_id: user.id, purpose: "product", amount_minor: expectedMinor });
+    if (claim.error) return { error: "This payment was already used for another order." };
   }
-  const { error } = await supabase.from("product_purchases").upsert(
-    { user_id: user.id, product_id: productId, amount: price, reference },
+  const { error } = await svc.from("product_purchases").upsert(
+    { user_id: user.id, product_id: productId, amount: isSimulated ? 0 : price, simulated: isSimulated, reference },
     { onConflict: "user_id,product_id", ignoreDuplicates: true }
   );
-  if (error) return { error: error.message };
+  if (error) return { error: "Couldn't record the purchase. If you were charged, contact support." };
   revalidatePath("/my-library");
   revalidatePath("/creator");
   return { ok: true };
@@ -138,7 +160,7 @@ export async function getDownloadUrl(productId: number): Promise<{ url?: string;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in." };
-  const { data: prod } = await supabase.from("products").select("file_path, file_name, external_url, price, user_id").eq("id", productId).maybeSingle();
+  const { data: prod } = await supabase.from("products").select("file_path, file_name, price, user_id").eq("id", productId).maybeSingle();
   if (!prod) return { error: "Product not found." };
 
   const owns = prod.user_id === user.id;
@@ -148,7 +170,8 @@ export async function getDownloadUrl(productId: number): Promise<{ url?: string;
       if (!pur) return { error: "Buy this product to access it." };
     }
   }
-  if (prod.external_url) return { external: prod.external_url, name: prod.file_name || undefined };
+  const external = await secretLink(productId);
+  if (external) return { external, name: prod.file_name || undefined };
   if (!prod.file_path) return { error: "This product has no file yet." };
 
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

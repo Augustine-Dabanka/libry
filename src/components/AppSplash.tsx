@@ -1,51 +1,79 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LibryLoader from "@/components/LibryLoader";
+import Mascot from "@/components/Mascot";
+import SeasonalScene, { useSeason } from "@/components/SeasonalScene";
 
-// First-load splash: a branded intro shown the moment the app opens (typing the
-// URL / a full reload), so the very first thing a visitor sees is Libry rather
-// than a blank page. Rotates a few "sneak peek" tips, then fades out. It renders
-// in the initial HTML (so it appears before hydration) and a CSS animation also
-// auto-hides it, so it disappears even if JS is slow. It does NOT re-show on
-// in-app navigation (the root layout persists).
+// Welcome splash. Shows ONLY right after someone signs up or logs in (never on
+// the landing page or ordinary visits): LoginGate and /auth/callback set a
+// short-lived `leep_splash` cookie, and the inline script in layout.tsx turns
+// it into <html class="leep-splash"> before the first paint, so the overlay is
+// there instantly. It then stays exactly as long as the page really takes to
+// load (window load + fonts + first paint), at least ~0.9s so it doesn't
+// flash, at most 7s. A CSS failsafe hides it after 9s even if JS never runs.
 
 const TIPS = [
-  "✦ Sneak peek — interactive stories that branch with every choice",
-  "Tip: build a community around a story you love",
-  "Sneak peek — comics you can read panel by panel",
-  "Creators keep 65%, shown openly on a live dashboard",
-  "Your place is saved on every device you read on",
+  "Setting up your library…",
+  "Interactive stories branch with every choice",
+  "Your place is saved on every device",
+  "Creators keep 65%, shown openly",
 ];
 
+export const SPLASH_COOKIE = "leep_splash";
+
+// Call right before navigating into the app after sign-up / log-in.
+export function armWelcomeSplash() {
+  try { document.cookie = `${SPLASH_COOKIE}=1; Max-Age=60; Path=/; SameSite=Lax`; } catch { /* ignore */ }
+}
+
+function SplashHero() {
+  const { season } = useSeason();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return <div style={{ height: 150 }} />;
+  if (season) return <SeasonalScene />;
+  return <Mascot mood="wave" size={130} />;
+}
+
 export default function AppSplash() {
-  const [gone, setGone] = useState(false);
+  const [active, setActive] = useState(false);
   const [tip, setTip] = useState(0);
 
   useEffect(() => {
-    // Skip the intro on repeat loads within the same session.
-    let already = false;
-    try { already = sessionStorage.getItem("libry-splashed") === "1"; } catch { already = false; }
-    if (already) { setGone(true); return; }
-    try { sessionStorage.setItem("libry-splashed", "1"); } catch { /* private mode */ }
+    const html = document.documentElement;
+    if (!html.classList.contains("leep-splash")) return;
+    setActive(true);
+    let done = false;
+    const started = performance.now();
+    const MIN = 900, MAX = 7000;
 
-    // The visual fade is a CSS animation (so it hides even if JS is slow); this
-    // just unmounts the node once that animation has finished.
-    const rot = setInterval(() => setTip((t) => (t + 1) % TIPS.length), 1100);
-    const end = setTimeout(() => setGone(true), 2500);
-    return () => { clearInterval(rot); clearTimeout(end); };
+    const hide = () => {
+      if (done) return;
+      done = true;
+      html.classList.add("leep-splash-out");
+      window.setTimeout(() => html.classList.remove("leep-splash", "leep-splash-out"), 420);
+    };
+    const loaded = document.readyState === "complete"
+      ? Promise.resolve()
+      : new Promise<void>((r) => window.addEventListener("load", () => r(), { once: true }));
+    const fonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready ?? Promise.resolve();
+    const painted = new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+
+    Promise.all([loaded, fonts, painted]).then(() => {
+      const wait = Math.max(0, MIN - (performance.now() - started));
+      window.setTimeout(hide, wait);
+    });
+    const cap = window.setTimeout(hide, MAX);
+    const rot = window.setInterval(() => setTip((t) => (t + 1) % TIPS.length), 1400);
+    return () => { clearTimeout(cap); clearInterval(rot); };
   }, []);
 
-  if (gone) return null;
-
   return (
-    <div className="app-splash" role="status" aria-label="Loading Libry">
+    <div className="app-splash" role="status" aria-label="Loading Leep" aria-hidden={active ? undefined : true}>
       <div className="as-inner">
-        <div className="as-mark" aria-hidden="true">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 4h12a1 1 0 0 1 1 1v15l-7-3.2L5 20V5a1 1 0 0 1 1-1Z" />
-          </svg>
-          <span>Libry<i>.</i></span>
-        </div>
+        {active ? <SplashHero /> : null}
+        <LibryLoader size={46} label="Loading Leep" />
         <div className="libry-bar" aria-hidden="true" />
         <div className="as-tip" key={tip}>{TIPS[tip]}</div>
       </div>

@@ -1,8 +1,10 @@
 import { Skeleton, RailSkeleton } from "@/components/Skeleton";
+import LibryLoader from "@/components/LibryLoader";
 
 export default function Loading() {
   return (
     <div className="section" style={{ paddingTop: "2rem" }}>
+      <div className="ll-loading"><LibryLoader size={44} label="Loading your library" /></div>
       <Skeleton w="min(420px, 80%)" h={34} r={8} />
       <Skeleton w="min(320px, 60%)" h={14} style={{ marginTop: "0.8rem", marginBottom: "2rem" }} />
       {[0, 1, 2].map((i) => (

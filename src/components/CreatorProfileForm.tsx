@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+import Glyph from "@/components/Glyph";
 // The creator's public author profile — pen name + bio. This is what readers
 // see under "About the Author" on every book. Saving also marks the account as
 // a creator.
@@ -71,7 +72,7 @@ export default function CreatorProfileForm({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
-            <span style={{ color: "var(--muted)", fontSize: "1.4rem" }}>👤</span>
+            <span style={{ color: "var(--muted)", fontSize: "1.4rem" }}><Glyph e="👤" /></span>
           )}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>

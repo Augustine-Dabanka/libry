@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, BookOpen, Check, Dices, Eye, EyeOff, Lock, Mail, QrCode, Sparkles, User } from "lucide-react";
+import { armWelcomeSplash } from "@/components/AppSplash";
 import { createClient } from "@/lib/supabase/client";
 import { persistOnboardingPrefs } from "@/app/actions/auth";
 import GoogleButton from "@/components/GoogleButton";
 import DiscordButton from "@/components/DiscordButton";
 
+import Glyph from "@/components/Glyph";
 type Tab = "login" | "signup";
 type View = "LOGIN" | "REGISTER" | "FORGOT" | "QR";
 
@@ -119,6 +121,7 @@ export default function LoginGate({
   // Flash a success checkmark, then navigate.
   function finish(to: string) {
     setDone(true);
+    armWelcomeSplash();
     setTimeout(() => window.location.assign(to), 720);
   }
 
@@ -393,7 +396,7 @@ export default function LoginGate({
             type="button"
             onClick={() => (view === "FORGOT" || view === "QR" ? switchView("LOGIN") : window.location.assign("/"))}
             style={{ position: "absolute", top: "1.1rem", left: "1.1rem", display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", background: "transparent", border: "none", cursor: "pointer" }}
-            aria-label={view === "FORGOT" || view === "QR" ? "Back to sign in" : "Back to the Libry home page"}
+            aria-label={view === "FORGOT" || view === "QR" ? "Back to sign in" : "Back to the Leep home page"}
           >
             <ArrowLeft size={15} /> {view === "FORGOT" || view === "QR" ? "Back" : "Home"}
           </button>
@@ -401,7 +404,7 @@ export default function LoginGate({
 
         <motion.div layout="position" style={{ textAlign: "center", marginBottom: "1.2rem", marginTop: "0.4rem" }}>
           <span className="logo" style={{ fontSize: "2rem" }}>
-            Libry<span>.</span>
+            Leep<span>.</span>
           </span>
           <p style={{ color: "var(--muted)", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.92rem", marginTop: "0.25rem" }}>
             Stories worth lingering in
@@ -466,7 +469,7 @@ export default function LoginGate({
                   transition={{ duration: 0.3 }}
                   style={{ color: "var(--ivory)", fontFamily: "var(--sans)", fontWeight: 600, fontSize: "1rem", margin: 0 }}
                 >
-                  {done ? "Welcome to Libry!" : LOADING_LINES[statusIdx]}
+                  {done ? "Welcome to Leep!" : LOADING_LINES[statusIdx]}
                 </motion.p>
               </AnimatePresence>
             </motion.div>
@@ -504,7 +507,7 @@ export default function LoginGate({
                   </div>
                   <p style={{ color: "var(--ivory)", fontFamily: "var(--sans)", fontWeight: 600, fontSize: "0.95rem", margin: "0 0 0.3rem" }}>Sign in from your phone</p>
                   <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", margin: "0 auto", maxWidth: 300, lineHeight: 1.55 }}>
-                    Point-and-scan device sign-in is rolling out with the Libry mobile app. For now, continue with email or a provider below.
+                    Point-and-scan device sign-in is rolling out with the Leep mobile app. For now, continue with email or a provider below.
                   </p>
                   <button type="button" onClick={() => switchView("LOGIN")} style={{ display: "block", margin: "1.1rem auto 0", background: "transparent", border: "none", color: "var(--gold)", fontFamily: "var(--sans)", fontSize: "0.85rem", fontWeight: 600, cursor: "pointer" }}>
                     ← Back to sign in
@@ -522,7 +525,7 @@ export default function LoginGate({
                             onClick={() => setAccountType(r)}
                             style={{ flex: 1, borderRadius: 12, padding: "0.6rem", cursor: "pointer", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem", border: `1px solid ${accountType === r ? "var(--gold)" : "var(--border)"}`, background: accountType === r ? "rgba(95,160,104,0.12)" : "transparent", color: accountType === r ? "var(--ivory)" : "var(--muted)" }}
                           >
-                            {r === "reader" ? "📖 I'm a reader" : "✍️ I'm a writer"}
+                            <Glyph e={r === "reader" ? "📖" : "✍"} /> {r === "reader" ? "I'm a reader" : "I'm a writer"}
                           </button>
                         ))}
                       </div>
@@ -584,7 +587,7 @@ export default function LoginGate({
                       <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", marginTop: "0.6rem", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", cursor: "pointer", lineHeight: 1.5 }}>
                         <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} style={{ accentColor: "var(--gold)", width: 15, height: 15, marginTop: 2, flexShrink: 0 }} />
                         <span>
-                          Email me occasional Libry updates and offers — opt in and get a <strong style={{ color: "var(--ivory)" }}>free month of Libry Unlimited</strong> when it launches.
+                          Email me occasional Leep updates and offers — opt in and get a <strong style={{ color: "var(--ivory)" }}>free month of Leep Unlimited</strong> when it launches.
                         </span>
                       </label>
                     </>
@@ -653,7 +656,7 @@ export default function LoginGate({
 
         {!busy ? (
           <p style={{ color: "var(--muted)", textAlign: "center", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "1.3rem" }}>
-            By continuing you agree to explore beautiful stories.
+            By continuing you agree to our <a href="/terms" style={{ color: "inherit", textDecoration: "underline" }}>Terms of Service</a> and <a href="/privacy" style={{ color: "inherit", textDecoration: "underline" }}>Privacy Policy</a>.
           </p>
         ) : null}
       </motion.div>

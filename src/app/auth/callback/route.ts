@@ -8,7 +8,10 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
+  // Only same-site paths. "@evil.com" or ".evil.com" would otherwise be glued
+  // onto our domain and send people to another site after signing in.
+  const rawNext = searchParams.get("next") ?? "/";
+  const next = /^\/(?![\/\\])[^\s]*$/.test(rawNext) ? rawNext : "/";
 
   if (code) {
     const supabase = await createClient();
@@ -17,6 +20,8 @@ export async function GET(request: Request) {
       await persistOnboardingPrefs();
       await persistReferral();
       await persistRole();
+      // One-shot flag for the welcome splash (read before paint by layout.tsx).
+      (await cookies()).set("leep_splash", "1", { maxAge: 60, path: "/", sameSite: "lax", httpOnly: false });
 
       const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";

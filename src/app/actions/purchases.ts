@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { serviceClient } from "@/lib/supabase/service";
 
 export type CheckoutItem = { id: number; price: number };
 
@@ -29,6 +30,7 @@ async function verifyPaystack(reference: string, expectedMinor: number): Promise
     });
     const j = await r.json();
     if (!j?.status || j?.data?.status !== "success") return { ok: false, error: "Payment wasn't completed." };
+    if (process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY && j?.data?.currency && j.data.currency !== process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY) return { ok: false, error: "Payment currency didn't match." };
     // Allow a 1-minor-unit rounding slack; never accept an underpayment.
     if (Number(j.data.amount) + 1 < expectedMinor) return { ok: false, error: "Payment amount didn't match the order." };
     return { ok: true };
@@ -55,19 +57,34 @@ export async function checkoutCart(items: CheckoutItem[], reference: string) {
   const priceById = new Map<number, number>((books ?? []).map((b: { id: number; price: number | null }) => [Number(b.id), Number(b.price) || 0]));
   const realTotalUsd = ids.reduce((s, id) => s + (priceById.get(id) ?? 0), 0);
 
-  // A real (non-simulated) reference on a paid order must be verified with
-  // Paystack before we grant anything.
+  // Pre-launch demo checkout ("demo-"/"free-" references) is only honoured while
+  // real payments are switched off, and it records NO revenue (amount 0,
+  // simulated), so it can never turn into a creator payout. Once Paystack is
+  // live, every paid order must be verified, and each reference pays once.
+  const live = await paystackReady();
   const isSimulated = /^(demo|free)-/.test(reference);
+  if (realTotalUsd > 0 && isSimulated && live) return { error: "Please complete payment to continue." };
+  const svc = serviceClient();
+  if (!svc) return { error: "Checkout isn't configured yet." };
   if (realTotalUsd > 0 && !isSimulated) {
     const expectedMinor = Math.round(realTotalUsd * RATE * 100);
     const v = await verifyPaystack(reference, expectedMinor);
     if (!v.ok) return { error: v.error };
+    const claim = await svc.from("payment_references").insert({ reference, user_id: user.id, purpose: "books", amount_minor: expectedMinor });
+    if (claim.error) return { error: "This payment was already used for another order." };
   }
 
-  const rows = ids.map((id) => ({ user_id: user.id, book_id: id, amount: priceById.get(id) ?? 0, reference }));
+  const rows = ids.map((id) => ({
+    user_id: user.id,
+    book_id: id,
+    amount: isSimulated ? 0 : priceById.get(id) ?? 0,
+    simulated: isSimulated,
+    reference,
+  }));
+  // Recorded by the server (readers can't insert purchases directly any more).
   // Upsert so re-buying an owned book is a no-op rather than an error.
-  const { error } = await supabase.from("purchases").upsert(rows, { onConflict: "user_id,book_id", ignoreDuplicates: true });
-  if (error) return { error: error.message };
+  const { error } = await svc.from("purchases").upsert(rows, { onConflict: "user_id,book_id", ignoreDuplicates: true });
+  if (error) return { error: "Couldn't record the purchase. If you were charged, contact support." };
 
   revalidatePath("/my-library");
   revalidatePath("/creator");

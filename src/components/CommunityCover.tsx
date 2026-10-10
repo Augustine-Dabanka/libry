@@ -1,3 +1,4 @@
+import Glyph from "@/components/Glyph";
 // A community cover that reads as "designed", not placeholder. Uses the real
 // cover_url when a creator has uploaded one; otherwise paints a deterministic
 // duotone from a cohesive on-brand palette with a soft glow and a small emoji
@@ -44,7 +45,7 @@ export default function CommunityCover({
   return (
     <div className={`ccov ccov-gen ${className ?? ""}`} style={{ background: bg, borderRadius: radius || undefined }} aria-hidden="true">
       <span className="ccov-glow" />
-      <span className="ccov-glyph">{emoji || "📚"}</span>
+      <span className="ccov-glyph"><Glyph e={emoji || "📚"} /></span>
     </div>
   );
 }

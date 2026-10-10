@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BookMini from "@/components/BookMini";
@@ -101,10 +100,13 @@ export default async function Catalog({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
-  const allowed = allowedRatings(sm.data?.show_mature ?? false);
+  // Guests can browse; mature titles stay hidden unless a signed-in reader opts in.
+  let showMature = false;
+  if (user) {
+    const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+    showMature = sm.data?.show_mature ?? false;
+  }
+  const allowed = allowedRatings(showMature);
 
   const term = (q ?? "").trim();
   const safe = term.replace(/[,()*]/g, " ").trim();

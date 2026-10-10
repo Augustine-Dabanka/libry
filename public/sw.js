@@ -1,4 +1,4 @@
-/* Libry Web Push service worker. Kept minimal and push-only — it does NOT cache
+/* Leep Web Push service worker. Kept minimal and push-only — it does NOT cache
    or intercept navigation (offline caching, if added later, lives elsewhere). */
 
 self.addEventListener("push", (event) => {
@@ -6,9 +6,9 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch (_e) {
-    data = { title: "Libry", body: event.data ? event.data.text() : "" };
+    data = { title: "Leep", body: event.data ? event.data.text() : "" };
   }
-  const title = data.title || "Libry";
+  const title = data.title || "Leep";
   const options = {
     body: data.body || "",
     icon: data.icon || "/icon.jpg",

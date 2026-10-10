@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import Glyph from "@/components/Glyph";
 // A spoiler-safe interactive result card + share (spec §16/§17). The reader sees
 // their own ending on screen, but the SHARE payload only reveals the ending
 // NUMBER ("Ending 3 of 9") and the story — never the ending's name or content —
@@ -22,13 +23,13 @@ export default function EndingShare({
 
   const url = typeof window !== "undefined" ? `${window.location.origin}/book/${bookId}` : `/book/${bookId}`;
   const nLabel = totalEndings > 1 ? `Ending ${endingNumber} of ${totalEndings}` : "an ending";
-  const shareText = `I reached ${nLabel} in "${title}" on Libry. Which ending will you get?`;
+  const shareText = `I reached ${nLabel} in "${title}" on Leep. Which ending will you get?`;
 
   async function share() {
     const nav = typeof navigator !== "undefined" ? navigator : undefined;
     if (nav && typeof nav.share === "function") {
       try {
-        await nav.share({ title: `${title} — Libry`, text: shareText, url });
+        await nav.share({ title: `${title} — Leep`, text: shareText, url });
         return;
       } catch {
         /* user dismissed — fall through to copy */
@@ -66,7 +67,7 @@ export default function EndingShare({
 
       <div style={{ display: "flex", gap: "0.6rem", justifyContent: "center", flexWrap: "wrap" }}>
         <button type="button" onClick={share} className="btn btn-gold">{copied ? "✓ Link copied" : "↗ Share your ending"}</button>
-        <a href={`/book/${bookId}#reviews`} className="btn btn-outline">💬 Discuss this ending</a>
+        <a href={`/book/${bookId}#reviews`} className="btn btn-outline"><Glyph e="💬" /> Discuss this ending</a>
       </div>
       <p style={{ fontFamily: "var(--sans)", fontSize: "0.74rem", color: "#8a7d70", textAlign: "center", marginTop: "0.7rem" }}>
         Spoiler-safe — friends see the story, not your ending.

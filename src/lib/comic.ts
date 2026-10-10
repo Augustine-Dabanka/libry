@@ -1,4 +1,4 @@
-// Comic content format for Libry.
+// Comic content format for Leep.
 //
 // A comic's `content` is plain text (like interactive stories), one directive
 // per line, so it degrades gracefully and is easy to author or seed:
@@ -74,4 +74,17 @@ export function parseComic(content: string): Comic {
 
 export function comicPageCount(c: Comic): number {
   return c.pages.filter((p) => p.kind === "image").length;
+}
+
+
+// Comic reading layouts. "manga" = right to left, page by page.
+export type ComicMode = "scroll" | "pages" | "manga";
+
+// Default layout by format: manga reads right to left page by page; manhwa,
+// webtoons and other comics scroll top to bottom. Readers can always switch.
+// (Lives here, not in the client component, so server pages can call it.)
+export function defaultComicMode(category?: string | null): ComicMode {
+  const c = (category || "").toLowerCase();
+  if (c.includes("manga")) return "manga";
+  return "scroll";
 }

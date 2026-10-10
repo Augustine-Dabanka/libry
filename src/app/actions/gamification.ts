@@ -4,18 +4,10 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { TOKEN_CAP } from "@/lib/gamification";
 
-// Instant token refill (simulated purchase — real payment comes with monetization).
+// Free unlimited refills are disabled (anyone could call this). Refills return
+// with the coin system, through a server-side function.
 export async function refillTokens() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
-  await supabase
-    .from("user_stats")
-    .update({ tokens: TOKEN_CAP, tokens_updated_at: new Date().toISOString() })
-    .eq("user_id", user.id);
-  revalidatePath("/home");
+  return { error: "Refills are coming with the coin system." };
 }
 
 // Called once per minute of active reading; advances the "read 10 minutes" quest.

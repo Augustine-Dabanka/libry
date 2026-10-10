@@ -4,6 +4,7 @@ import AppNav from "@/components/AppNav";
 import StreakCard from "@/components/StreakCard";
 import { computeStreak, goalMinutes, type DayRow } from "@/lib/streak";
 
+import Glyph from "@/components/Glyph";
 type ProgRow = { book_id: number; progress_percentage: number | null };
 
 // Badge catalogue. `unlock` reads the live tallies and returns whether it's
@@ -109,8 +110,16 @@ export default async function Achievements() {
   const tally: Tally = { finished, inLibrary, inProgress, challenges, reviews: reviewsCount, streak, products: productsOwned };
   const completion = inLibrary ? Math.round((finished / inLibrary) * 100) : 0;
 
-  // XP: 25 per finished book, plus a little for progress.
-  const xp = finished * 25 + inProgress * 5;
+  // XP = reading XP (25 per finished book, 5 per book in progress) plus activity
+  // XP from the ledger (onboarding welcome bonus, challenges). The welcome bonus
+  // promised at the end of onboarding is credited here, once per account.
+  let activityXp = 0;
+  {
+    await supabase.rpc("award_xp", { p_reason: "welcome" });
+    const st = await supabase.from("user_stats").select("xp").eq("user_id", user.id).maybeSingle();
+    if (!st.error) activityXp = Number(st.data?.xp ?? 0);
+  }
+  const xp = finished * 25 + inProgress * 5 + activityXp;
   // Level from books finished.
   let li = 0;
   for (let i = 0; i < LEVELS.length; i++) if (finished >= LEVELS[i].at) li = i;
@@ -141,7 +150,7 @@ export default async function Achievements() {
   // Grand prize: unlock every badge → grant a one-time reward (idempotent).
   let reward: { code: string | null; detail: string | null; redeemed: boolean } | null = null;
   if (allUnlocked) {
-    const code = "LIBRY-LEGEND-" + user.id.slice(0, 6).toUpperCase();
+    const code = "LEEP-LEGEND-" + user.id.slice(0, 6).toUpperCase();
     try {
       await supabase.from("rewards").upsert(
         { user_id: user.id, kind: "all_badges", code, detail: "2 free books (one-time)" },
@@ -160,7 +169,7 @@ export default async function Achievements() {
           <h2>Achievements</h2>
         </div>
         <p style={{ color: "var(--muted)", marginTop: "-1.5rem", marginBottom: "2rem" }}>
-          Your reading journey on Libry — level up by finishing books and completing challenges.
+          Your reading journey on Leep — level up by finishing books and completing challenges.
         </p>
 
         {/* Level card */}
@@ -183,6 +192,7 @@ export default async function Achievements() {
         {/* Reading streak */}
         <div style={{ marginBottom: "2.5rem" }}>
           <StreakCard />
+          <a href="/leaderboard" className="btn btn-outline" style={{ marginTop: "0.8rem" }}>See this week&apos;s leaderboard</a>
         </div>
 
         {/* Stat tiles */}
@@ -198,7 +208,7 @@ export default async function Achievements() {
         {/* Grand prize — every badge unlocked */}
         {allUnlocked ? (
           <div style={{ background: "linear-gradient(135deg, rgba(197,160,89,0.22), rgba(95,160,104,0.16))", border: "1px solid var(--gold)", borderRadius: 18, padding: "1.6rem 1.8rem", marginBottom: "2.5rem", textAlign: "center" }}>
-            <div style={{ fontSize: "2.4rem", marginBottom: "0.3rem" }}>🎁</div>
+            <div style={{ fontSize: "2.4rem", marginBottom: "0.3rem" }}><Glyph e="🎁" /></div>
             <h3 style={{ fontFamily: "var(--serif)", fontSize: "1.5rem", marginBottom: "0.3rem" }}>Every badge unlocked — you legend.</h3>
             <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.95rem", marginBottom: "1rem" }}>
               You&apos;ve earned the grand prize: <strong style={{ color: "var(--ivory)" }}>{reward?.detail || "2 free books (one-time)"}</strong>.
@@ -223,7 +233,7 @@ export default async function Achievements() {
             const on = unlockedKeys.has(b.key);
             return (
               <div key={b.key} style={{ ...tile, opacity: on ? 1 : 0.55 }}>
-                <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>{on ? "🏅" : "🔒"}</div>
+                <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}><Glyph e={on ? "🏅" : "🔒"} /></div>
                 <div style={{ fontFamily: "var(--sans)", fontWeight: 700, color: on ? "var(--gold)" : "var(--ivory)", fontSize: "0.95rem" }}>{b.name}</div>
                 <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", margin: "0.35rem 0 0.5rem" }}>{b.need}</div>
                 <div style={{ fontSize: "0.72rem", letterSpacing: "0.1em", color: on ? "#7DBE86" : "var(--muted)", fontFamily: "var(--sans)" }}>

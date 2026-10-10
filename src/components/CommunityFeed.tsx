@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+import Glyph from "@/components/Glyph";
 type Post = { id: number; user_id: string; author_name: string | null; body: string; image_url?: string | null; created_at: string; likes: number; liked: boolean; comments: number };
 type Comment = { id: number; post_id: number; user_id: string; author_name: string | null; body: string; created_at: string };
 type Meta = { creator: boolean; avatar: string | null };
@@ -202,7 +203,7 @@ export default function CommunityFeed({ userId, userName, avatarUrl, communityId
             ) : null}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.6rem", gap: "0.6rem" }}>
               <label style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-                🖼 {imgBusy ? "Uploading…" : "Photo"}
+                <Glyph e="🖼" /> {imgBusy ? "Uploading…" : "Photo"}
                 <input type="file" accept="image/*" onChange={uploadImage} style={{ display: "none" }} disabled={pending || imgBusy} />
               </label>
               <button type="button" onClick={submitPost} disabled={busy || pending || imgBusy || (!draft.trim() && !image)} className="btn btn-gold" style={{ opacity: busy || pending || (!draft.trim() && !image) ? 0.6 : 1 }}>{busy ? "Posting…" : "Post"}</button>
@@ -249,7 +250,7 @@ export default function CommunityFeed({ userId, userName, avatarUrl, communityId
                         {p.liked ? "♥" : "♡"} {p.likes > 0 ? p.likes : ""}
                       </button>
                       <button type="button" onClick={() => openComments(p.id)} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", background: "transparent", border: "none", cursor: "pointer", color: "var(--muted)", fontWeight: 600 }}>
-                        💬 {p.comments > 0 ? p.comments : "Reply"}
+                        <Glyph e="💬" /> {p.comments > 0 ? p.comments : "Reply"}
                       </button>
                       {p.user_id === userId ? (
                         <button type="button" onClick={() => deletePost(p.id)} style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--muted)", fontWeight: 600, marginLeft: "auto" }}>Delete</button>

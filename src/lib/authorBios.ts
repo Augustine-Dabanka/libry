@@ -1,9 +1,9 @@
 // Factual bios for public-domain classic authors. They're long deceased and
-// have no Libry account, so "About the Author" reads from this map instead of
+// have no Leep account, so "About the Author" reads from this map instead of
 // showing "no bio yet". Keyed by the exact author name stored on the book.
 export const AUTHOR_BIOS: Record<string, string> = {
-  "Libry Originals":
-    "Libry Originals is our in-house studio — the imprint behind Libry's own short fiction and interactive, choose-your-path stories. Written and shaped by the Libry team, these are calm, character-first reads made to be lingered in: no cliffhanger traps, no coins, just stories worth your evening. New Originals arrive regularly, and many branch on the choices you make.",
+  "Leep Originals":
+    "Leep Originals is our in-house studio — the imprint behind Leep's own short fiction and interactive, choose-your-path stories. Written and shaped by the Leep team, these are calm, character-first reads made to be lingered in: no cliffhanger traps, no coins, just stories worth your evening. New Originals arrive regularly, and many branch on the choices you make.",
   "Jane Austen":
     "Jane Austen (1775–1817) was an English novelist whose sharp, witty comedies of manners — including Pride and Prejudice, Emma and Sense and Sensibility — remain among the most beloved works in the English language.",
   "Mary Shelley":
@@ -93,29 +93,33 @@ export const AUTHOR_BIOS: Record<string, string> = {
   "Winsor McCay":
     "Winsor McCay (c. 1866–1934) was an American cartoonist and animator whose comic strip Little Nemo in Slumberland pushed the art form to dazzling new heights.",
   "Aria Sinclair":
-    "Aria Sinclair writes warm, slow-burn romance for Libry Originals — small towns, second chances, and rivals who never saw it coming.",
+    "Aria Sinclair writes warm, slow-burn romance for Leep Originals — small towns, second chances, and rivals who never saw it coming.",
   "Nadia Serrano":
-    "Nadia Serrano is a Libry Originals author of sharp, sparkling contemporary romance about clever people who hate to lose.",
+    "Nadia Serrano is a Leep Originals author of sharp, sparkling contemporary romance about clever people who hate to lose.",
   "Elena Marsh":
-    "Elena Marsh writes ambitious, workplace-set romance for Libry Originals, where the tension is as high as the stakes.",
+    "Elena Marsh writes ambitious, workplace-set romance for Leep Originals, where the tension is as high as the stakes.",
   "Marcus Vale":
-    "Marcus Vale is a Libry Originals author of steamy, high-heat contemporary romance for readers who like it bold.",
+    "Marcus Vale is a Leep Originals author of steamy, high-heat contemporary romance for readers who like it bold.",
   "Sofia Lang":
-    "Sofia Lang writes after-dark contemporary romance for Libry Originals — intimate, modern, and unafraid.",
+    "Sofia Lang writes after-dark contemporary romance for Leep Originals — intimate, modern, and unafraid.",
   "Viktor Reynolds":
-    "Viktor Reynolds is a Libry Originals author of dark, atmospheric fantasy romance built on oaths, courts and consequence.",
+    "Viktor Reynolds is a Leep Originals author of dark, atmospheric fantasy romance built on oaths, courts and consequence.",
   "Thomas Reed":
-    "Thomas Reed writes literary adventure for Libry Originals — maps, mysteries, and the pull of the unknown.",
+    "Thomas Reed writes literary adventure for Leep Originals — maps, mysteries, and the pull of the unknown.",
   "Kai Reynolds":
-    "Kai Reynolds is a Libry Originals author of neon-lit science fiction about cities, machines, and the people caught between them.",
+    "Kai Reynolds is a Leep Originals author of neon-lit science fiction about cities, machines, and the people caught between them.",
   "Maya Chen":
-    "Maya Chen writes lush, character-first fantasy for Libry Originals, where every crown comes with a cost.",
+    "Maya Chen writes lush, character-first fantasy for Leep Originals, where every crown comes with a cost.",
   "Ines Marchetti":
-    "Ines Marchetti is a Libry Originals author of quiet, tide-soaked mysteries set in small coastal towns.",
+    "Ines Marchetti is a Leep Originals author of quiet, tide-soaked mysteries set in small coastal towns.",
   "Jonathan Reyes":
-    "Jonathan Reyes writes taut, eerie thrillers for Libry Originals — remote places, strange signals, and mounting dread.",
+    "Jonathan Reyes writes taut, eerie thrillers for Leep Originals — remote places, strange signals, and mounting dread.",
   "Grace Yeung":
-    "Grace Yeung is a Libry Originals poet writing on cities, longing, and the small hours of the night.",
+    "Grace Yeung is a Leep Originals poet writing on cities, longing, and the small hours of the night.",
   "Samuel Okoro":
-    "Samuel Okoro writes memoir and essay for Libry Originals on belonging, migration, and the long road home.",
+    "Samuel Okoro writes memoir and essay for Leep Originals on belonging, migration, and the long road home.",
 };
+
+// The house imprint was renamed from "Libry Originals". Books stored before
+// migration 0040 runs still carry the old name, so both resolve to one bio.
+AUTHOR_BIOS["Libry Originals"] = AUTHOR_BIOS["Leep Originals"];

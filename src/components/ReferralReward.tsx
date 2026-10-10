@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 
+import Glyph from "@/components/Glyph";
 // Referral reward ladder — invite readers with your link, hit a milestone,
 // earn a perk. Rewards are permanent (they never expire) and granted once via
 // the rewards table. This rewards the *referrer*; it does not gate anyone's
@@ -21,7 +22,7 @@ export default async function ReferralReward() {
   const earned = new Map<string, { code: string | null; redeemed: boolean }>();
   for (const t of TIERS) {
     if (count < t.at) continue;
-    const code = `LIBRY-${t.kind.toUpperCase()}-${user.id.slice(0, 5).toUpperCase()}`;
+    const code = `LEEP-${t.kind.toUpperCase()}-${user.id.slice(0, 5).toUpperCase()}`;
     try {
       await supabase.from("rewards").upsert(
         { user_id: user.id, kind: t.kind, code, detail: t.detail },
@@ -45,7 +46,7 @@ export default async function ReferralReward() {
 
       <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "var(--sans)", fontSize: "0.9rem", marginBottom: "0.4rem" }}>
         <span style={{ color: "var(--ivory)" }}>{count} referral{count === 1 ? "" : "s"}</span>
-        <span style={{ color: "var(--muted)" }}>{next ? `${goal - count} to go for "${next.short}"` : "All rewards unlocked 🎉"}</span>
+        <span style={{ color: "var(--muted)" }}>{next ? `${goal - count} to go for "${next.short}"` : "All rewards unlocked"}</span>
       </div>
       <div style={{ height: 10, background: "rgba(250,247,242,0.08)", borderRadius: 6, overflow: "hidden", marginBottom: "1.3rem" }}>
         <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,var(--gold),var(--gold-hi))", borderRadius: 6 }} />
@@ -57,7 +58,7 @@ export default async function ReferralReward() {
           const r = earned.get(t.kind);
           return (
             <div key={t.kind} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.7rem 0.9rem", border: "1px solid var(--border)", borderRadius: 12, background: on ? "rgba(197,160,89,0.08)" : "var(--charcoal)", opacity: on ? 1 : 0.7 }}>
-              <span style={{ fontSize: "1.1rem" }}>{on ? "🎁" : "🔒"}</span>
+              <span style={{ fontSize: "1.1rem" }}><Glyph e={on ? "🎁" : "🔒"} /></span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.92rem", color: "var(--ivory)" }}>Refer {t.at} · {t.detail}</div>
                 {on && r?.code ? (

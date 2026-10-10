@@ -1,6 +1,6 @@
 import JSZip from "jszip";
 
-// Minimal, valid EPUB 3 generator for Libry's "download your copy" perk. Text-
+// Minimal, valid EPUB 3 generator for Leep's "download your copy" perk. Text-
 // focused (novels/classics) with a soft, personalised watermark — no hard DRM,
 // which fits the calm brand.
 
@@ -53,7 +53,7 @@ function xhtml(title: string, body: string): string {
 export async function buildEpub(input: EpubInput): Promise<Uint8Array> {
   const { title, author, chapters, watermark, bookId } = input;
   const zip = new JSZip();
-  const uid = `urn:libry:book:${bookId}`;
+  const uid = `urn:leep:book:${bookId}`;
 
   // mimetype MUST be first and stored (uncompressed).
   zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
@@ -121,7 +121,7 @@ p.first{text-indent:0}
     <dc:title>${esc(title)}</dc:title>
     <dc:creator>${esc(author || "Unknown author")}</dc:creator>
     <dc:language>en</dc:language>
-    <dc:publisher>Libry</dc:publisher>
+    <dc:publisher>Leep</dc:publisher>
     <meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, "Z")}</meta>
   </metadata>
   <manifest>${manifest}</manifest>
@@ -133,6 +133,6 @@ p.first{text-indent:0}
 }
 
 export function bookFilename(title: string): string {
-  const slug = (title || "libry-book").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "book";
-  return `${slug}-libry.epub`;
+  const slug = (title || "leep-book").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "book";
+  return `${slug}-leep.epub`;
 }

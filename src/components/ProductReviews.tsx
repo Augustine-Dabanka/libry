@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { submitProductReview, deleteProductReview } from "@/app/actions/productReviews";
 import Stars from "@/components/Stars";
 
+import Glyph from "@/components/Glyph";
 export type PReview = { id?: number; user_name: string | null; rating: number; body: string | null; user_id?: string };
 
 export default function ProductReviews({
@@ -94,7 +95,7 @@ export default function ProductReviews({
                   <>
                     <button type="button" onClick={() => { setMenuOpen(false); setEditing(true); setTimeout(() => taRef.current?.focus(), 60); }} style={menuItem}>✎ Edit</button>
                     <button type="button" onClick={async () => { setMenuOpen(false); try { await navigator.clipboard.writeText(myReview.body || ""); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {} }} disabled={!myReview.body} style={menuItem}>⧉ {copied ? "Copied" : "Copy"}</button>
-                    <button type="button" onClick={() => setConfirmDel(true)} style={{ ...menuItem, color: "var(--terracotta)" }}>🗑 Delete</button>
+                    <button type="button" onClick={() => setConfirmDel(true)} style={{ ...menuItem, color: "var(--terracotta)" }}><Glyph e="🗑" /> Delete</button>
                   </>
                 )}
               </div>

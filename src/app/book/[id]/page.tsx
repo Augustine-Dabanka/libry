@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BackButton from "@/components/BackButton";
 import AddToCartButton from "@/components/AddToCartButton";
+import CoinUnlockButton from "@/components/CoinUnlockButton";
+import { coinCost } from "@/lib/coins";
 import WishlistButton from "@/components/WishlistButton";
 import LikeButton from "@/components/LikeButton";
 import BookMini from "@/components/BookMini";
@@ -15,6 +17,7 @@ import { formatPrice, bookCover, genCover, bookFormat, type Book } from "@/lib/t
 import { AGE_LABEL, agePill, isMatureRating } from "@/lib/content";
 import { AUTHOR_BIOS } from "@/lib/authorBios";
 
+import Glyph from "@/components/Glyph";
 type BookDetail = {
   id: number | string;
   title: string;
@@ -41,14 +44,14 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 
   const primary = await supabase
     .from("books")
-    .select("id, title, author, description, content, price, type, status, age_rating, category, rating, cover_url, tags, user_id")
+    .select("id, title, author, description, content:has_content, price, type, status, age_rating, category, rating, cover_url, tags, user_id")
     .eq("id", id)
     .maybeSingle();
   let data = primary.data;
   if (primary.error) {
     const alt = await supabase
       .from("books")
-      .select("id, title, author, description, content, price, type, status, category, rating, cover_url")
+      .select("id, title, author, description, content:has_content, price, type, status, category, rating, cover_url")
       .eq("id", id)
       .maybeSingle();
     data = alt.data ? { ...alt.data, age_rating: null, tags: [], user_id: null } : null;
@@ -84,7 +87,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         <>
           <AppNav />
           <section className="section" style={{ textAlign: "center", maxWidth: 460, margin: "0 auto" }}>
-            <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}>🔞</div>
+            <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}><Glyph e="🔞" /></div>
             <h2>This is an 18+ title</h2>
             <p style={{ color: "var(--muted)", margin: "0.6rem 0 1.4rem" }}>
               Mature content is off by default. Turn on <strong>Show mature content</strong> in Settings to view it.
@@ -136,6 +139,12 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   }
   const isInteractive = (book.type || "").toLowerCase() === "interactive";
   const hasProgress = owned && progressPct > 3 && progressPct < 100;
+  // Coin balance for the "Unlock for N coins" option (null = wallet not set up yet).
+  let coinBalance: number | null = null;
+  if (user && !owned && (book.price ?? 0) > 0) {
+    const w = await supabase.from("coin_wallets").select("bonus, paid").eq("user_id", user.id).maybeSingle();
+    if (!w.error) coinBalance = Number(w.data?.bonus ?? 0) + Number(w.data?.paid ?? 0);
+  }
 
   // Likes (public read; guarded).
   let likeCount = 0;
@@ -286,6 +295,9 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
               {(book.price ?? 0) > 0 && !owned ? (
                 <AddToCartButton item={{ id: book.id, title: book.title, author: book.author, price: book.price }} />
               ) : null}
+              {(book.price ?? 0) > 0 && !owned && user && coinBalance !== null && book.user_id !== user.id ? (
+                <CoinUnlockButton bookId={Number(book.id)} cost={coinCost(book.price)} balance={coinBalance} />
+              ) : null}
               {user ? <WishlistButton bookId={Number(book.id)} userId={user.id} initial={wishlisted} /> : null}
               <LikeButton bookId={Number(book.id)} userId={user?.id ?? null} initialLiked={liked} initialCount={likeCount} />
               <ShareButton path={`/book/${book.id}`} title={book.title} />
@@ -326,10 +338,10 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
           <div style={{ marginBottom: "2.5rem" }}>
             <h2 style={{ fontSize: "1.4rem", marginBottom: "0.8rem" }}>Community</h2>
             <a href={`/c/${storyCommunity.slug}`} style={{ display: "flex", alignItems: "center", gap: "1rem", textDecoration: "none", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1rem 1.2rem" }}>
-              <span style={{ fontSize: "1.6rem" }}>📖</span>
+              <span style={{ fontSize: "1.6rem" }}><Glyph e="📖" /></span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: "var(--serif)", color: "var(--ivory)", fontSize: "1.08rem" }}>{storyCommunity.name}</div>
-                <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem" }}>👥 {storyCommunity.member_count.toLocaleString()} member{storyCommunity.member_count === 1 ? "" : "s"} · theories, chapter chat &amp; more</div>
+                <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem" }}><Glyph e="👥" /> {storyCommunity.member_count.toLocaleString()} member{storyCommunity.member_count === 1 ? "" : "s"} · theories, chapter chat &amp; more</div>
               </div>
               <span style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontWeight: 700, flexShrink: 0 }}>Open →</span>
             </a>

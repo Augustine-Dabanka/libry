@@ -14,6 +14,7 @@ import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 import { rankBooks, type BookSignals } from "@/lib/ranking";
 
+import Glyph from "@/components/Glyph";
 // Shelves are horizontal carousels now (compact cards, snap-scroll) so several
 // categories fit on one mobile screen. The .section wrapper keeps the gutter.
 function Shelf({ title, books, href = "/catalog" }: { title: string; books: Book[]; href?: string }) {
@@ -30,7 +31,7 @@ export default async function Home() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/discover"); // guests browse Discover; /home is the signed-in feed
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -73,7 +74,7 @@ export default async function Home() {
     for (let i = 0; i < Math.min(5, books.length); i++) featured.push(books[(start + i) % books.length]);
   }
 
-  // --- Trending on Libry: our own ranking algorithm over real signals ---
+  // --- Trending on Leep: our own ranking algorithm over real signals ---
   let trending: Book[] = [];
   {
     // Global reading signals (all readers) → reach + completion per book.
@@ -286,7 +287,7 @@ export default async function Home() {
 
       {/* Trending tropes — the hooky genres readers chase. */}
       <div className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
-        <div className="section-header"><h2>🔥 Trending tropes</h2></div>
+        <div className="section-header"><h2><Glyph e="🔥" /> Trending tropes</h2></div>
         <div style={{ display: "flex", gap: "0.55rem", overflowX: "auto", paddingBottom: "0.4rem" }}>
           {[
             { g: "Comics", e: "💥", href: "/comics" },
@@ -299,7 +300,7 @@ export default async function Home() {
               href={t.href ? t.href : t.q ? `/catalog?q=${encodeURIComponent(t.g)}` : `/catalog?genre=${encodeURIComponent(t.g)}`}
               style={{ flexShrink: 0, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 999, padding: "0.5rem 0.95rem", color: "var(--ivory)", fontFamily: "var(--sans)", fontSize: "0.88rem", fontWeight: 600, whiteSpace: "nowrap" }}
             >
-              <span aria-hidden="true">{t.e}</span> {t.g}
+              <span aria-hidden="true" style={{ display: "inline-flex" }}><Glyph e={t.e} /></span> {t.g}
             </a>
           ))}
         </div>
@@ -317,7 +318,7 @@ export default async function Home() {
       {products.length > 0 ? (
         <Reveal className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
           <div className="section-header">
-            <h2 className="tw-tracking-tight">🎁 Digital products</h2>
+            <h2 className="tw-tracking-tight"><Glyph e="🎁" /> Digital products</h2>
             <a href="/discover" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>View all →</a>
           </div>
           <div className="book-grid-mini">
@@ -333,14 +334,14 @@ export default async function Home() {
       {becauseBooks.length > 0 ? (
         <Shelf title={`Because you read ${becauseTitle}`} books={becauseBooks} />
       ) : null}
-      <Shelf title="Top Rated on Libry" books={topRated} href="/catalog?sort=rating" />
+      <Shelf title="Top Rated on Leep" books={topRated} href="/catalog?sort=rating" />
       <Shelf title="Free to Read" books={freeBooks} href="/catalog?free=1" />
       <Shelf title="Premium Reads" books={premiumBooks} href="/catalog?paid=1" />
 
       {communities.length > 0 ? (
         <Reveal className="section" style={{ paddingTop: "1.4rem", paddingBottom: 0 }}>
           <div className="section-header">
-            <h2>👥 Popular communities</h2>
+            <h2><Glyph e="👥" /> Popular communities</h2>
             <a href="/communities" style={{ color: "var(--gold)", fontFamily: "var(--sans)" }}>View all →</a>
           </div>
           <div style={{ display: "flex", gap: "0.8rem", overflowX: "auto", paddingBottom: "0.5rem" }}>
@@ -356,7 +357,7 @@ export default async function Home() {
                 </div>
                 <div style={{ padding: "0.6rem 0.7rem 0.75rem" }}>
                   <div style={{ fontFamily: "var(--sans)", fontWeight: 700, color: "var(--ivory)", fontSize: "0.85rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
-                  <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.72rem", marginTop: "0.15rem" }}>👥 {c.member_count.toLocaleString()}</div>
+                  <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.72rem", marginTop: "0.15rem" }}><Glyph e="👥" /> {c.member_count.toLocaleString()}</div>
                 </div>
               </a>
             ))}

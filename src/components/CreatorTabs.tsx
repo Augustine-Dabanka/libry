@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import Glyph from "@/components/Glyph";
 export type CreatorTab = { id: string; label: string; icon: string; node: React.ReactNode };
 
 // A tabbed shell for the creator dashboard — turns the old single long scroll
@@ -41,7 +42,7 @@ export default function CreatorTabs({ tabs }: { tabs: CreatorTab[] }) {
             className={`ct-tab${active === t.id ? " active" : ""}`}
             onClick={() => go(t.id)}
           >
-            <span aria-hidden="true" style={{ fontSize: "1rem" }}>{t.icon}</span>
+            <span aria-hidden="true" style={{ fontSize: "1rem", display: "inline-flex" }}><Glyph e={t.icon} /></span>
             <span>{t.label}</span>
           </button>
         ))}
@@ -50,7 +51,7 @@ export default function CreatorTabs({ tabs }: { tabs: CreatorTab[] }) {
       {/* Mobile: a compact dropdown so the (many) tabs stay tidy. */}
       <select className="ct-tabselect" aria-label="Creator section" value={active} onChange={(e) => go(e.target.value)}>
         {tabs.map((t) => (
-          <option key={t.id} value={t.id}>{t.icon} {t.label}</option>
+          <option key={t.id} value={t.id}>{t.label}</option>
         ))}
       </select>
       {tabs.map((t) => (

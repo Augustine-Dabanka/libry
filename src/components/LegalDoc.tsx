@@ -1,5 +1,15 @@
 import type { ReactNode } from "react";
 import AppNav from "@/components/AppNav";
+import { LEGAL, operatorLine } from "@/lib/legal";
+
+// "hello@yourdomain" when an inbox is configured, otherwise a link to /contact.
+export function ContactLink() {
+  return LEGAL.contactEmail ? (
+    <a href={`mailto:${LEGAL.contactEmail}`}><strong>{LEGAL.contactEmail}</strong></a>
+  ) : (
+    <a href="/contact"><strong>our contact page</strong></a>
+  );
+}
 
 const PAGES = [
   { href: "/terms", label: "Terms of Service" },
@@ -8,7 +18,7 @@ const PAGES = [
   { href: "/refunds", label: "Refund Policy" },
 ];
 
-// Shared shell for Libry's legal pages: consistent nav, title, "last updated",
+// Shared shell for Leep's legal pages: consistent nav, title, "last updated",
 // prose styling, and cross-links between the four documents.
 export default function LegalDoc({
   title,
@@ -28,7 +38,7 @@ export default function LegalDoc({
       <AppNav />
       <section className="section" style={{ maxWidth: 780, margin: "0 auto" }}>
         <a href="/" style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", textDecoration: "none" }}>
-          ← Back to Libry
+          ← Back to Leep
         </a>
         <h1 style={{ fontFamily: "var(--serif)", fontSize: "clamp(1.9rem, 4vw, 2.7rem)", marginTop: "1.1rem", marginBottom: "0.3rem" }}>{title}</h1>
         <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.84rem" }}>Last updated: {updated}</p>
@@ -46,9 +56,7 @@ export default function LegalDoc({
         <div className="legal-body">{children}</div>
 
         <p className="legal-note">
-          This document is provided for transparency. The binding legal terms are those adopted by{" "}
-          <strong>[CRAFT &amp; ANCHOR — REGISTERED LEGAL NAME]</strong> (&ldquo;Craft &amp; Anchor&rdquo;, the operator of Libry).
-          Placeholder details marked in <strong>[brackets]</strong> are to be completed with counsel before launch.
+          Leep is operated by {operatorLine()}. Questions about any of these documents: <ContactLink />.
         </p>
       </section>
     </>

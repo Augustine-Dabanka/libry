@@ -4,6 +4,7 @@ import AppNav from "@/components/AppNav";
 import LibraryTabs, { type LibBook } from "@/components/LibraryTabs";
 import ProductMini, { type ProductCard } from "@/components/ProductMini";
 
+import Glyph from "@/components/Glyph";
 type BookRow = { id: number; title: string; author: string | null; price: number | null; type: string | null };
 
 async function booksByIds(
@@ -91,7 +92,7 @@ export default async function MyLibrary({
         {myProducts.length > 0 ? (
           <div style={{ marginTop: "2.6rem" }}>
             <div className="section-header">
-              <h2>🎁 Your products</h2>
+              <h2><Glyph e="🎁" /> Your products</h2>
             </div>
             <div className="book-grid-mini">
               {myProducts.map((p) => (

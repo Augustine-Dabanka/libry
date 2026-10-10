@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { RICH_CSS } from "@/lib/richStyles";
 
+import Glyph from "@/components/Glyph";
 // Heavy canvas designer (Fabric.js) — only loaded when the creator opens it.
 const PageDesigner = dynamic(() => import("@/components/PageDesigner"), { ssr: false });
 
@@ -214,14 +215,14 @@ export default function RichDocEditor({
           <B onDown={() => exec("justifyFull")} title="Justify">☰</B>
         </Group>
         <Group>
-          <B onClick={() => pickImage()} title="Insert image">🖼 Image</B>
+          <B onClick={() => pickImage()} title="Insert image"><Glyph e="🖼" /> Image</B>
           <div style={{ position: "relative" }}>
             <B onClick={() => setMenu(menu === "insert" ? null : "insert")} title="Insert…">＋ Insert ▾</B>
             {menu === "insert" ? (
               <div style={pop}>
-                <MI onClick={imageByUrl}>🔗 Image from URL</MI>
-                <MI onClick={() => { setMenu(null); setDesigner(true); }}>🎨 Design a page (comic)</MI>
-                <MI onClick={insertCallout}>💬 Callout box</MI>
+                <MI onClick={imageByUrl}><Glyph e="🔗" /> Image from URL</MI>
+                <MI onClick={() => { setMenu(null); setDesigner(true); }}><Glyph e="🎨" /> Design a page (comic)</MI>
+                <MI onClick={insertCallout}><Glyph e="💬" /> Callout box</MI>
                 <MI onClick={() => exec("insertHorizontalRule")}>— Divider</MI>
                 <div style={popLabel}>Comic panels</div>
                 <MI onClick={() => insertComic(2)}>▭▭ 2 panels</MI>

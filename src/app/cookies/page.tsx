@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
 import LegalDoc from "@/components/LegalDoc";
+import { LEGAL } from "@/lib/legal";
+import { ContactLink } from "@/components/LegalDoc";
 
-export const metadata: Metadata = { title: "Cookie Policy — Libry" };
+export const metadata: Metadata = { title: "Cookie Policy — Leep" };
 
 export default function CookiesPage() {
   return (
     <LegalDoc
       title="Cookie Policy"
-      updated="[EFFECTIVE DATE]"
+      updated={LEGAL.effectiveDate}
       current="/cookies"
-      intro="Cookies and similar technologies keep Libry working and help us improve it. This page explains what we use and how you control them."
+      intro="Cookies and similar technologies keep Leep working and help us improve it. This page explains what we use and how you control them."
     >
       <h2>1. What cookies are</h2>
-      <p>Cookies are small files stored on your device. We also use similar browser storage (for example, to remember your theme or reading position). Below is what Libry uses, grouped by purpose.</p>
+      <p>Cookies are small files stored on your device. We also use similar browser storage (for example, to remember your theme or reading position). Below is what Leep uses, grouped by purpose.</p>
 
       <h2>2. Functional (always on)</h2>
-      <p>Needed for Libry to work — you can&apos;t turn these off without breaking core features.</p>
+      <p>Needed for Leep to work — you can&apos;t turn these off without breaking core features.</p>
       <ul>
         <li>Keeping you signed in (secure session cookies).</li>
         <li>Remembering your theme, type size, and last reading position.</li>
@@ -29,7 +31,7 @@ export default function CookiesPage() {
       </ul>
 
       <h2>4. Performance</h2>
-      <p>Help us keep Libry fast and reliable.</p>
+      <p>Help us keep Leep fast and reliable.</p>
       <ul>
         <li>Error diagnostics and load-time measurements.</li>
       </ul>
@@ -40,7 +42,7 @@ export default function CookiesPage() {
       </p>
 
       <h2>6. Contact</h2>
-      <p>Questions about cookies: <strong>[CONTACT EMAIL]</strong>. See also our <a href="/privacy">Privacy Policy</a>.</p>
+      <p>Questions about cookies: <ContactLink />. See also our <a href="/privacy">Privacy Policy</a>.</p>
     </LegalDoc>
   );
 }

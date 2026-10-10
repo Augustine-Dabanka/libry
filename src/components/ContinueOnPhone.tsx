@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 
+import Glyph from "@/components/Glyph";
 // "Continue on your phone" — a real, scannable QR of the reader URL. Scan it on
 // a phone (signed in) and the reader opens and resumes from your saved spot,
 // since reading progress already syncs cross-device. Reuses the QR idea from
@@ -31,7 +32,7 @@ export default function ContinueOnPhone({ path, label = "Read on your phone" }: 
   return (
     <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
       <button type="button" className="btn btn-outline" onClick={() => setOpen((v) => !v)} aria-expanded={open} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-        📱 {label}
+        <Glyph e="📱" /> {label}
       </button>
       {open ? (
         <div role="dialog" aria-label="Continue on your phone" style={{ position: "absolute", zIndex: 60, bottom: "calc(100% + 10px)", left: 0, width: 240, padding: "1rem", background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, boxShadow: "var(--shadow)", textAlign: "center" }}>

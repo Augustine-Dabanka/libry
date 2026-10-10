@@ -90,7 +90,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
     }
     const priceNum = Math.max(0, parseFloat(price) || 0);
     // Price floor: paid books must clear the payment-processor fee (~5% + $0.50)
-    // so both the writer and Libry actually profit. Free (0) is always allowed.
+    // so both the writer and Leep actually profit. Free (0) is always allowed.
     if (priceNum > 0 && priceNum < MIN_PRICE) {
       setErr(`Paid books must be free or at least $${MIN_PRICE.toFixed(2)} — below that, payment fees eat the sale.`);
       return;
@@ -152,7 +152,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={cover} alt="Cover preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
-            <span style={{ fontFamily: "var(--sans)", fontSize: "0.6rem", letterSpacing: "0.2em", color: "var(--gold-hi)", fontWeight: 700 }}>LIBRY</span>
+            <span style={{ fontFamily: "var(--sans)", fontSize: "0.6rem", letterSpacing: "0.2em", color: "var(--gold-hi)", fontWeight: 700 }}>LEEP</span>
           )}
         </div>
         <div style={{ flex: 1, minWidth: 200 }}>
@@ -168,7 +168,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
           <label style={{ ...label, marginTop: "0.8rem", fontSize: "0.78rem" }}>…or paste an image URL</label>
           <input style={field} value={cover} onChange={(e) => setCover(e.target.value)} placeholder="https://…/cover.jpg" />
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "0.4rem" }}>
-            Portrait works best (2:3). Leave empty to use the generated Libry cover.
+            Portrait works best (2:3). Leave empty to use the generated Leep cover.
           </p>
           {coverErr ? <p style={{ color: "var(--terracotta)", fontSize: "0.82rem", marginTop: "0.4rem" }}>{coverErr}</p> : null}
         </div>

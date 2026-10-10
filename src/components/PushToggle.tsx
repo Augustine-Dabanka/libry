@@ -40,7 +40,7 @@ export default function PushToggle({ userId }: { userId: string }) {
       <div style={{ minWidth: 0 }}>
         <div style={{ fontFamily: "var(--sans)", fontWeight: 700, color: "var(--ivory)", fontSize: "0.95rem" }}>Push notifications</div>
         <div style={{ fontFamily: "var(--sans)", fontSize: "0.82rem", color: "var(--muted)" }}>
-          {state === "denied" ? "Blocked in your browser settings — enable them there to turn this on." : "Get replies, likes and follows on this device, even when Libry is closed."}
+          {state === "denied" ? "Blocked in your browser settings — enable them there to turn this on." : "Get replies, likes and follows on this device, even when Leep is closed."}
         </div>
         {msg ? <div style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--gold)", marginTop: "0.3rem" }}>{msg}</div> : null}
       </div>

@@ -6,6 +6,7 @@ import { submitReview, deleteReview } from "@/app/actions/reviews";
 import Stars from "@/components/Stars";
 import ReviewComments from "@/components/ReviewComments";
 
+import Glyph from "@/components/Glyph";
 export type Review = { id?: string; user_name: string | null; rating: number; body: string | null; created_at?: string | null; user_id?: string };
 
 export default function ReviewsSection({
@@ -133,7 +134,7 @@ export default function ReviewsSection({
                   <>
                     <button type="button" role="menuitem" onClick={startEdit} style={menuItem}>✎ Edit</button>
                     <button type="button" role="menuitem" onClick={() => copyReview(myReview.body || "")} disabled={!myReview.body} style={menuItem}>⧉ {copied ? "Copied" : "Copy"}</button>
-                    <button type="button" role="menuitem" onClick={() => setConfirmDel(true)} style={{ ...menuItem, color: "var(--terracotta)" }}>🗑 Delete</button>
+                    <button type="button" role="menuitem" onClick={() => setConfirmDel(true)} style={{ ...menuItem, color: "var(--terracotta)" }}><Glyph e="🗑" /> Delete</button>
                   </>
                 )}
               </div>

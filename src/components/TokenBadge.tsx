@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { refillTokens } from "@/app/actions/gamification";
 
+import Glyph from "@/components/Glyph";
 const REGEN_MS = 30 * 60 * 1000; // 30 min per token
 
 // Live token meter: ticks a countdown to the next token and auto-refreshes when
@@ -57,7 +58,7 @@ export default function TokenBadge({
         animationDelay: "0.12s",
       }}
     >
-      ⚡ {tokens}/{cap}
+      <Glyph e="⚡" /> {tokens}/{cap}
       {tokens < cap ? (
         <>
           <span style={{ color: "var(--muted)", fontWeight: 600, fontSize: "0.8rem" }}>

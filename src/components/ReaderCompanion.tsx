@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import Glyph from "@/components/Glyph";
 /*
   The reading companion — a small, opt-in avatar at the bottom-right of the
   reader. The reader can name it, give it an avatar and a role, ask it for a
@@ -173,7 +174,7 @@ export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
       {open ? (
         <div role="dialog" aria-label="Reading companion" style={{ position: "fixed", right: "clamp(0.8rem,3vw,1.4rem)", bottom: "5.2rem", zIndex: 1350, width: "min(340px, calc(100vw - 1.6rem))", maxHeight: "min(70vh, 560px)", display: "flex", flexDirection: "column", background: bg, color: fg, border: `1px solid ${border}`, borderRadius: 18, boxShadow: "0 24px 70px rgba(0,0,0,0.5)", backdropFilter: "blur(14px)", overflow: "hidden", animation: "rc-rise 0.24s cubic-bezier(0.22,1,0.36,1)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.85rem 1rem", borderBottom: `1px solid ${border}` }}>
-            <span style={{ fontSize: "1.4rem", lineHeight: 1 }}>{comp.avatar}</span>
+            <span style={{ fontSize: "1.4rem", lineHeight: 1, display: "inline-flex" }}><Glyph e={comp.avatar} /></span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.95rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{comp.setup ? comp.name || "Companion" : "Your companion"}</div>
               <div style={{ fontFamily: "var(--sans)", fontSize: "0.74rem", color: muted }}>{comp.role}</div>
@@ -192,7 +193,7 @@ export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
               <label style={{ display: "block", fontFamily: "var(--sans)", fontSize: "0.78rem", color: muted, margin: "0.9rem 0 0.4rem" }}>Avatar</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
                 {AVATARS.map((a) => (
-                  <button key={a} type="button" onClick={() => setComp({ ...comp, avatar: a })} style={{ fontSize: "1.25rem", width: 40, height: 40, borderRadius: 10, cursor: "pointer", background: comp.avatar === a ? "rgba(95,160,104,0.2)" : "transparent", border: `1px solid ${comp.avatar === a ? accent : border}` }}>{a}</button>
+                  <button key={a} type="button" onClick={() => setComp({ ...comp, avatar: a })} style={{ fontSize: "1.25rem", width: 40, height: 40, borderRadius: 10, cursor: "pointer", background: comp.avatar === a ? "rgba(95,160,104,0.2)" : "transparent", border: `1px solid ${comp.avatar === a ? accent : border}`, display: "grid", placeItems: "center", color: "inherit" }} aria-label="Pick avatar"><Glyph e={a} /></button>
                 ))}
               </div>
               <label style={{ display: "block", fontFamily: "var(--sans)", fontSize: "0.78rem", color: muted, margin: "0.9rem 0 0.4rem" }}>Role</label>
@@ -242,7 +243,7 @@ export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
           transition: "transform 0.18s ease",
         }}
       >
-        <span style={{ transform: open ? "scale(0.9)" : "none" }}>{comp.avatar}</span>
+        <span style={{ transform: open ? "scale(0.9)" : "none", display: "inline-flex" }}><Glyph e={comp.avatar} /></span>
       </button>
 
       <style>{`

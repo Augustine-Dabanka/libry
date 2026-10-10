@@ -1,7 +1,8 @@
+import { BRAND } from "@/lib/brand";
 import PromoAd from "@/components/PromoAd";
 
 export const metadata = {
-  title: "Libry — the library, in your pocket",
+  title: "Leep — the library, in your pocket",
   description: "Read interactive stories, comics and books, join communities, and get paid to create. Creators keep 65%.",
 };
 
@@ -26,12 +27,14 @@ export default function AdPage() {
             Start reading free →
           </a>
           <a href="/" style={{ background: "transparent", color: "#FAF7F2", fontWeight: 700, textDecoration: "none", padding: "0.85rem 1.7rem", borderRadius: 999, border: "1.5px solid rgba(250,247,242,0.16)" }}>
-            Explore Libry
+            Explore Leep
           </a>
         </div>
-        <p style={{ color: "#6b625a", fontSize: "0.8rem", marginTop: "1.4rem", letterSpacing: "0.04em" }}>
-          Follow <a href="https://www.instagram.com/officially_libry" target="_blank" rel="noopener noreferrer" style={{ color: "#C4A35A" }}>@officially_libry</a>
-        </p>
+        {BRAND.socialHandle ? (
+          <p style={{ color: "#6b625a", fontSize: "0.8rem", marginTop: "1.4rem", letterSpacing: "0.04em" }}>
+            Follow <a href={`https://www.instagram.com/${BRAND.socialHandle}`} target="_blank" rel="noopener noreferrer" style={{ color: "#C4A35A" }}>@{BRAND.socialHandle}</a>
+          </p>
+        ) : null}
       </div>
     </main>
   );

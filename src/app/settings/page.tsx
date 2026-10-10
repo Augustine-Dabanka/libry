@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import AppearanceMode from "@/components/AppearanceMode";
 import ThemePicker from "@/components/ThemePicker";
+import LookPicker from "@/components/LookPicker";
+import InterfaceStylePicker from "@/components/InterfaceStylePicker";
 import SharedAccess from "@/components/SharedAccess";
 import AvatarSettings from "@/components/AvatarSettings";
 import AccountSettings from "@/components/AccountSettings";
@@ -72,8 +74,15 @@ export default async function Settings() {
         {/* Appearance */}
         <div style={card}>
           <h3 style={cardTitle}>Appearance</h3>
-          <p style={cardLead}>Choose how Libry looks. Saved on this device.</p>
+          <p style={cardLead}>Choose how Leep looks. Saved on this device.</p>
           <AppearanceMode />
+        </div>
+
+        {/* Interface style (Classic / Glass / Soft / Outline / Pop) + icon weight */}
+        <div style={card}>
+          <h3 style={cardTitle}>Interface style</h3>
+          <p style={cardLead}>Change how panels, buttons and icons are drawn. Saved on this device.</p>
+          <InterfaceStylePicker />
         </div>
 
         {/* Luxury theme (accent) */}
@@ -81,6 +90,13 @@ export default async function Settings() {
           <h3 style={cardTitle}>Luxury theme</h3>
           <p style={cardLead}>Recolour the app&apos;s accent with a premium palette. Saved on this device.</p>
           <ThemePicker />
+        </div>
+
+        {/* Genre looks + holiday themes */}
+        <div style={card}>
+          <h3 style={cardTitle}>Genre looks</h3>
+          <p style={cardLead}>Give Leep the mood of what you read. Full palette in dark mode. Saved on this device.</p>
+          <LookPicker />
         </div>
 
         {/* Profile photo */}
@@ -101,7 +117,7 @@ export default async function Settings() {
         <div style={card}>
           <h3 style={cardTitle}>Creator account</h3>
           <p style={cardLead}>
-            {isCreator ? "You can publish stories on Libry." : "You have a reader account. Become a creator to publish."}
+            {isCreator ? "You can publish stories on Leep." : "You have a reader account. Become a creator to publish."}
           </p>
           {isCreator ? (
             <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
@@ -116,7 +132,7 @@ export default async function Settings() {
         {/* Language */}
         <div style={card}>
           <h3 style={cardTitle}>Language</h3>
-          <p style={cardLead}>Your preferred language for Libry.</p>
+          <p style={cardLead}>Your preferred language for Leep.</p>
           <LanguagePref userId={user.id} initial="en" />
         </div>
 
@@ -141,7 +157,7 @@ export default async function Settings() {
         {/* Shared access */}
         <div style={card}>
           <h3 style={cardTitle}>Shared access</h3>
-          <p style={cardLead}>Invite another reader to share your Libry — reading together, one library.</p>
+          <p style={cardLead}>Invite another reader to share your Leep — reading together, one library.</p>
           <SharedAccess userId={user.id} myUsername={profile?.username || ""} initial={sharedWith} />
         </div>
 

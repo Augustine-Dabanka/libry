@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { TOKEN_CAP } from "@/lib/gamification";
 
 // Records a completed post-reading challenge for a book (once per book) and
 // awards XP + tokens. Best-effort: returns whether it was newly recorded so the
@@ -24,15 +23,8 @@ export async function completeReadingChallenge(bookId: number): Promise<{ ok: bo
     const ins = await supabase.from("reading_challenges").insert({ user_id: user.id, book_id: bookId });
     if (ins.error) return { ok: false, already: false };
 
-    // Reward: +30 XP, +6 tokens (capped).
-    const { data: st } = await supabase.from("user_stats").select("tokens, xp, weekly_xp").eq("user_id", user.id).maybeSingle();
-    if (st) {
-      await supabase.from("user_stats").update({
-        tokens: Math.min(TOKEN_CAP, (st.tokens ?? 0) + 6),
-        xp: (st.xp ?? 0) + 30,
-        weekly_xp: (st.weekly_xp ?? 0) + 30,
-      }).eq("user_id", user.id);
-    }
+    // Reward (+30 XP, +6 energy) is granted by the database, once per book.
+    await supabase.rpc("award_xp", { p_reason: "challenge", p_ref: String(bookId) });
     return { ok: true, already: false };
   } catch {
     return { ok: false, already: false };

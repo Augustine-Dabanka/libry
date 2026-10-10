@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { completeReadingChallenge } from "@/app/actions/challenge";
 
+import Glyph from "@/components/Glyph";
 // Shown once when a reader reaches the end of a book. A light "reflection"
 // challenge that records completion (→ achievements) and awards XP + tokens.
 export default function FinishChallenge({
@@ -48,7 +49,7 @@ export default function FinishChallenge({
       >
         {state === "ask" ? (
           <>
-            <div style={{ fontSize: "2.4rem", marginBottom: "0.4rem" }}>🎉</div>
+            <div style={{ fontSize: "2.4rem", marginBottom: "0.4rem" }}><Glyph e="🎉" /></div>
             <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.5rem", marginBottom: "0.3rem" }}>You finished it!</h2>
             <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.92rem", marginBottom: "1.3rem" }}>
               A quick reflection on <em style={{ color: "var(--ivory)" }}>{title}</em> — then claim your reward.
@@ -90,7 +91,7 @@ export default function FinishChallenge({
           </>
         ) : (
           <>
-            <div style={{ fontSize: "2.6rem", marginBottom: "0.4rem" }}>{state === "already" ? "✓" : "🏅"}</div>
+            <div style={{ fontSize: "2.6rem", marginBottom: "0.4rem" }}><Glyph e={state === "already" ? "✅" : "🏅"} /></div>
             <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.5rem", marginBottom: "0.5rem" }}>
               {state === "already" ? "Already claimed" : "Challenge complete!"}
             </h2>

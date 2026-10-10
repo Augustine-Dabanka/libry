@@ -1,5 +1,6 @@
 import AppNav from "@/components/AppNav";
 
+import Glyph from "@/components/Glyph";
 const feature = (icon: string, title: string, body: string) => (
   <div
     style={{
@@ -9,7 +10,7 @@ const feature = (icon: string, title: string, body: string) => (
       padding: "1.4rem 1.4rem 1.5rem",
     }}
   >
-    <div style={{ fontSize: "1.6rem", marginBottom: "0.6rem" }}>{icon}</div>
+    <div style={{ fontSize: "1.6rem", marginBottom: "0.6rem", color: "var(--gold)" }}><Glyph e={icon} /></div>
     <h3 style={{ fontFamily: "var(--serif)", fontSize: "1.2rem", marginBottom: "0.4rem" }}>{title}</h3>
     <p style={{ fontFamily: "var(--sans)", color: "var(--ivory-muted)", fontSize: "0.92rem", lineHeight: 1.6, margin: 0 }}>
       {body}
@@ -69,7 +70,7 @@ export default function About() {
             maxWidth: 640,
           }}
         >
-          Libry was created for readers who still believe in the quiet power of a good story, and for writers who
+          Leep was created for readers who still believe in the quiet power of a good story, and for writers who
           deserve to be seen, supported, and fairly rewarded.
         </p>
 
@@ -94,13 +95,13 @@ export default function About() {
             }}
           >
             “We believe the future of reading is not louder, faster, or more distracted. It is deeper, more
-            intentional, and more human. Libry exists to protect that future.”
+            intentional, and more human. Leep exists to protect that future.”
           </p>
         </blockquote>
 
-        {/* Why we built Libry */}
+        {/* Why we built Leep */}
         <div style={{ marginTop: "3.2rem" }}>
-          <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.7rem", marginBottom: "1.1rem" }}>Why we built Libry</h2>
+          <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.7rem", marginBottom: "1.1rem" }}>Why we built Leep</h2>
           <div
             style={{
               fontFamily: "var(--sans)",
@@ -116,7 +117,7 @@ export default function About() {
               that feels closer to a well-loved independent bookstore than a massive marketplace.
             </p>
             <p>
-              Whether you are here to lose yourself in an interactive adventure or to publish your own work, Libry is
+              Whether you are here to lose yourself in an interactive adventure or to publish your own work, Leep is
               built to serve the relationship between reader and story — nothing more, nothing less.
             </p>
           </div>
@@ -159,7 +160,7 @@ export default function About() {
           {[
             { big: "65%", small: "kept by creators on every sale" },
             { big: "3", small: "endings in every interactive tale" },
-            { big: "0", small: "ads, ever — reading comes first" },
+            { big: "0", small: "ads unless you choose one — reading comes first" },
           ].map((s) => (
             <div key={s.small} style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.6rem 1.2rem" }}>
               <div style={{ fontFamily: "var(--serif)", fontSize: "2.2rem", color: "var(--gold)" }}>{s.big}</div>

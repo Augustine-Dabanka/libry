@@ -3,15 +3,18 @@ import type { ReactNode } from "react";
 import "./globals.css";
 import BackgroundFX from "@/components/BackgroundFX";
 import AppFooter from "@/components/AppFooter";
+import HelpButton from "@/components/HelpButton";
 import CookieBanner from "@/components/CookieBanner";
 import AppSplash from "@/components/AppSplash";
+import { getThemeSchedule } from "@/lib/themeSchedule";
+import { themeBootScript } from "@/lib/themes";
 
 export const metadata: Metadata = {
-  title: "Libry — Stories worth lingering in",
+  title: "Leep — Stories worth lingering in",
   description:
     "Curated books and interactive, choose-your-path storybooks. Free classics, honest reviews, and 65% to the creators you love.",
-  applicationName: "Libry",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Libry" },
+  applicationName: "Leep",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Leep" },
 };
 
 // Dark app chrome + safe-area-aware viewport so the installed PWA feels native.
@@ -22,7 +25,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const seasons = await getThemeSchedule();
   // Bare :root in globals.css is the dark theme; [data-theme="light"] flips it.
   // suppressHydrationWarning: the inline script below sets data-brand on <html>
   // from localStorage before React hydrates, so the server/client attributes
@@ -33,13 +37,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body suppressHydrationWarning>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var r=document.documentElement;var t=localStorage.getItem('libry-theme')||'system';var d=t==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;r.setAttribute('data-theme',d);var b=localStorage.getItem('libry-brand');if(b)r.setAttribute('data-brand',b);}catch(e){}`,
+            __html: `try{var r=document.documentElement;var t=localStorage.getItem('libry-theme')||'system';var d=t==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t;r.setAttribute('data-theme',d);var b=localStorage.getItem('libry-brand');if(b)r.setAttribute('data-brand',b);var u=localStorage.getItem('leep-ui');if(u&&u!=='classic')r.setAttribute('data-ui',u);var ic=localStorage.getItem('leep-icons');if(ic&&ic!=='line')r.setAttribute('data-icons',ic);}catch(e){}try{if(document.cookie.indexOf('leep_splash=1')>-1){document.documentElement.classList.add('leep-splash');document.cookie='leep_splash=; Max-Age=0; Path=/';}}catch(e){}`,
           }}
         />
+        {/* Genre look + seasonal theme (by date, from the admin schedule). */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript(seasons) }} />
         <AppSplash />
         <BackgroundFX />
         {children}
         <AppFooter />
+        <HelpButton />
         <CookieBanner />
       </body>
     </html>

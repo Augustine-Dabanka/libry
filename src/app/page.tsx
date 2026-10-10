@@ -1,7 +1,13 @@
 import { redirect } from "next/navigation";
+import SocialIcons from "@/components/SocialIcons";
+import { operatorLine } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
 import StoryChoiceDemo from "@/components/StoryChoiceDemo";
 import CommunityCover from "@/components/CommunityCover";
+import Icon from "@/components/Icon";
+import MovingShelf from "@/components/MovingShelf";
+import { allowedRatings } from "@/lib/content";
+import { type Book } from "@/lib/types";
 import s from "./landing.module.css";
 
 // Public marketing landing. Signed-in users are sent straight to their app home.
@@ -22,6 +28,20 @@ export default async function Landing() {
     freeCount = free.count ?? 0;
   }
 
+  // Free, all-ages books for the moving shelf (guests can open any of them).
+  let shelf: Book[] = [];
+  {
+    const { data } = await supabase
+      .from("books")
+      .select("id, title, author, price, type, is_free, age_rating, rating, category, cover_url")
+      .eq("is_published", true)
+      .in("age_rating", allowedRatings(false))
+      .or("price.is.null,price.lte.0")
+      .order("rating", { ascending: false })
+      .limit(14);
+    if (data) shelf = data as Book[];
+  }
+
   // Popular communities for the marketing showcase (public read).
   type Comm = { id: number; slug: string; name: string; description: string | null; emoji: string | null; cover_url: string | null; member_count: number };
   let communities: Comm[] = [];
@@ -38,14 +58,14 @@ export default async function Landing() {
   return (
     <div className={s.page}>
       <div className={s.topbar}>
-        ✦ <b>Libry is live in early access</b> — reading is free to start.{" "}
+        <b>Leep is live in early access</b> — reading is free to start.{" "}
         <a href="/onboarding">Create your free account →</a>
       </div>
 
       <nav className={s.nav}>
         <div className={s.navIn}>
           <a href="/" className={s.logo}>
-            Libry<span>.</span>
+            Leep<span>.</span>
           </a>
           <div className={s.navLinks}>
             <a href="#features">Features</a>
@@ -74,13 +94,13 @@ export default async function Landing() {
               Stories worth <em>lingering</em> in.
             </h1>
             <p className={s.sub}>
-              Libry is the home of interactive stories, creator voices, and
+              Leep is the home of interactive stories, creator voices, and
               communities that keep the story going — where readers come first
               and creators keep 65%.
             </p>
             <div className={s.heroCta} style={{ marginTop: "1.7rem" }}>
               <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding">
-                ✦ Start your story
+                Start your story
               </a>
               <a className={`${s.btn} ${s.btnGhost} ${s.btnLg}`} href="#interactive">
                 ▶ See how it works
@@ -116,17 +136,29 @@ export default async function Landing() {
         </div>
       </div>
 
+      {shelf.length >= 4 ? (
+        <section className={s.band} aria-label="Free books">
+          <div className={s.wrap}>
+            <div className={s.secHead} style={{ marginBottom: "1.4rem" }}>
+              <span className={s.eyebrow}>Free to read</span>
+              <h2 style={{ margin: "0.4rem 0 0" }}>Open any of these tonight.</h2>
+            </div>
+            <MovingShelf books={shelf} />
+          </div>
+        </section>
+      ) : null}
+
       {/* Explore rail: Store + Comics as cover-topped cards (mockup) */}
       <section id="comics" className={s.band} style={{ scrollMarginTop: 70 }}>
         <div className={s.wrap}>
           <div className={s.secHead} style={{ marginBottom: "1.4rem" }}>
-            <span className={s.eyebrow}>Explore Libry</span>
+            <span className={s.eyebrow}>Explore Leep</span>
             <h2 style={{ margin: "0.4rem 0 0" }}>More than books.</h2>
           </div>
           <div className={s.exploreGrid}>
-            <a href="/onboarding" className={s.xcard}>
+            <a href="/discover" className={s.xcard}>
               <div className={s.xcover} style={{ background: "linear-gradient(150deg,#2f2233,#4a2d52 55%,#1c1017)" }}>
-                <span className={s.xemoji}>🎨</span>
+                <span className={s.xemoji}><Icon name="store" size={48} strokeWidth={1.4} /></span>
                 <span className={s.xtag}>Store</span>
               </div>
               <div className={s.xbody}>
@@ -135,9 +167,9 @@ export default async function Landing() {
                 <span className={s.xlink}>Browse the store →</span>
               </div>
             </a>
-            <a href="/onboarding" className={s.xcard}>
+            <a href="/comics" className={s.xcard}>
               <div className={s.xcover} style={{ background: "linear-gradient(150deg,#2a3340,#1f4a55 55%,#10222a)" }}>
-                <span className={s.xemoji}>💥</span>
+                <span className={s.xemoji}><Icon name="comics" size={48} strokeWidth={1.4} /></span>
                 <span className={s.xtag}>Comics</span>
               </div>
               <div className={s.xbody}>
@@ -146,9 +178,9 @@ export default async function Landing() {
                 <span className={s.xlink}>Explore comics →</span>
               </div>
             </a>
-            <a href="/onboarding" className={s.xcard}>
+            <a href="/catalog?type=Interactive" className={s.xcard}>
               <div className={s.xcover} style={{ background: "linear-gradient(150deg,#3a2c1a,#7a5230 55%,#241a10)" }}>
-                <span className={s.xemoji}>🌿</span>
+                <span className={s.xemoji}><Icon name="interactive" size={48} strokeWidth={1.4} /></span>
                 <span className={s.xtag}>Interactive</span>
               </div>
               <div className={s.xbody}>
@@ -169,7 +201,7 @@ export default async function Landing() {
                 <span className={s.eyebrow}>Find your people</span>
                 <h2 style={{ margin: "0.4rem 0 0" }}>Communities that keep the story going.</h2>
               </div>
-              <a href="/onboarding" style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>View all →</a>
+              <a href="/communities" style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>View all →</a>
             </div>
             <div className={s.commGrid}>
               {communities.map((c) => (
@@ -180,7 +212,8 @@ export default async function Landing() {
                   <div className={s.commBody}>
                     <div className={s.commName}>{c.name}</div>
                     {c.description ? <p className={s.commDesc}>{c.description}</p> : null}
-                    <div className={s.commMeta}>👥 {c.member_count.toLocaleString()} member{c.member_count === 1 ? "" : "s"}</div>
+                    {/* Small counts read as empty rooms: show the number only from 25 members. */}
+                    <div className={s.commMeta}>{c.member_count >= 25 ? <><Icon name="members" size={15} /> {c.member_count.toLocaleString()} members</> : "New community, join early"}</div>
                   </div>
                 </a>
               ))}
@@ -192,25 +225,25 @@ export default async function Landing() {
       <section className={`${s.band} ${s.cardBg}`}>
         <div className={s.wrap}>
           <div className={s.secHead} style={{ textAlign: "center", marginInline: "auto" }}>
-            <span className={s.eyebrow}>Why Libry</span>
+            <span className={s.eyebrow}>Why Leep</span>
             <h2>The bookstore that actually pays its writers.</h2>
             <p>Big platforms treat readers like a feed and writers like inventory. We built the opposite.</p>
           </div>
           <div className={s.cards}>
             <div className={s.fcard}>
-              <div className={s.ic}>💛</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="coins" size={24} /></div>
               <h3>Writers get paid, openly</h3>
               <p>65% of every sale, shown on a live dashboard, open to everyone from day one — not an invite-only trickle.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>🤝</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="members" size={24} /></div>
               <h3>You own your readers</h3>
               <p>Keep your followers — and actually see them, in a private subscriber list on your dashboard. Never a marketplace that quietly owns your audience.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>🌙</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="calm" size={24} /></div>
               <h3>Calm, not a casino</h3>
-              <p>A quiet, curated place to read — no doomscroll, no ads, just the next good story.</p>
+              <p>A quiet, curated place to read — no doomscroll, and no ads unless you choose to watch one for coins. Just the next good story.</p>
             </div>
           </div>
         </div>
@@ -225,22 +258,22 @@ export default async function Landing() {
           </div>
           <div className={s.cards}>
             <div className={s.fcard}>
-              <div className={s.ic}>🔍</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="search" size={24} /></div>
               <h3>Search &amp; shelves</h3>
               <p>Search every title and author, filter by genre, and browse curated shelves — with a “readers also read” shelf on every book.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>⭐</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="star" size={24} /></div>
               <h3>Reviews &amp; ratings</h3>
               <p>Star ratings and honest reader reviews on every book, so you know what&apos;s worth your evening before you start.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>📖</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="read" size={24} /></div>
               <h3>Read it, then keep it</h3>
               <p>A calm, page-turning reader — themes, type size, and your place kept on any device. A reading companion you can name helps with tricky words and synonyms, and you can download your own EPUB to read offline.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>🫶</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="chat" size={24} /></div>
               <h3>A calm community</h3>
               <p>Share what you&apos;re reading, follow the authors you love, and swap thoughts in a newest-first community feed — no algorithm, no doomscroll, just readers and writers.</p>
             </div>
@@ -257,17 +290,17 @@ export default async function Landing() {
           </div>
           <div className={s.cards}>
             <div className={s.fcard}>
-              <div className={s.ic}>🌿</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="interactive" size={24} /></div>
               <h3>Branch the story</h3>
               <p>Tap a choice and the plot forks — try the live demo up in the hero.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>💬</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="chat" size={24} /></div>
               <h3>Talk in the margins</h3>
               <p>Comment on any passage, like or reply to other readers, and watch the author join in — they wear a Creator badge and can pin the best thread.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>🔖</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="save" size={24} /></div>
               <h3>Never lose your place</h3>
               <p>The reader saves your spot as you go and picks up right where you left off, on any device.</p>
             </div>
@@ -284,17 +317,17 @@ export default async function Landing() {
           </div>
           <div className={s.cards}>
             <div className={s.fcard}>
-              <div className={s.ic}>✍️</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="write" size={24} /></div>
               <h3>A real writing editor</h3>
               <p>Headings, images, callouts and shapes — lay your story out the way you picture it, then publish in a click.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>🎨</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="comics" size={24} /></div>
               <h3>Comics &amp; handcrafted pages</h3>
               <p>Drop art, text and panels anywhere on a page and arrange them by hand — not just walls of text.</p>
             </div>
             <div className={s.fcard}>
-              <div className={s.ic}>🌿</div>
+              <div className={s.ic} style={{ color: "var(--gold)" }}><Icon name="interactive" size={24} /></div>
               <h3>Branching stories</h3>
               <p>Build choose-your-path tales with real forks and multiple endings — no code required.</p>
             </div>
@@ -333,7 +366,7 @@ export default async function Landing() {
             <div className={s.step}>
               <b>3</b>
               <span>
-                <strong>Publish</strong> — it goes live instantly. Keep 65%; withdraw once you join the Libry Partnership Program.
+                <strong>Publish</strong> — it goes live instantly. Keep 65%; withdraw once you join the Leep Partnership Program.
               </span>
             </div>
           </div>
@@ -359,30 +392,17 @@ export default async function Landing() {
           <div className={s.footGrid}>
             <div>
               <div className={s.footLogo}>
-                Libry<span>.</span>
+                Leep<span>.</span>
               </div>
               <p className={s.footTag}>Stories worth lingering in.</p>
               <div className={s.news}>
-                <span className={s.newsLabel}>✦ Stay in the story</span>
+                <span className={s.newsLabel}>Stay in the story</span>
                 <p className={s.newsText}>New releases, interactive drops and creator spotlights — a quiet note, now and then.</p>
                 <a className={`${s.btn} ${s.btnGold}`} href="/waitlist" style={{ marginTop: "0.7rem" }}>
                   Join the list →
                 </a>
               </div>
-              <div className={s.footSocial}>
-                <a href="https://www.youtube.com/@officially_libry" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.8-1.8C19.3 5 12 5 12 5s-7.3 0-8.8.5A2.5 2.5 0 0 0 1.4 7.3C1 8.8 1 12 1 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.8 1.8C4.7 19 12 19 12 19s7.3 0 8.8-.5a2.5 2.5 0 0 0 1.8-1.8C23 15.2 23 12 23 12zM9.8 15.3V8.7l5.7 3.3z" /></svg>
-                </a>
-                <a href="https://x.com/officially_libry" target="_blank" rel="noopener noreferrer" aria-label="X">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.2 2h3.3l-7.2 8.3L23 22h-6.6l-5.2-6.8L5.3 22H2l7.7-8.8L1.5 2h6.8l4.7 6.2zm-1.2 18h1.8L7.1 3.9H5.2z" /></svg>
-                </a>
-                <a href="https://www.instagram.com/officially_libry" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>
-                </a>
-                <a href="https://www.tiktok.com/@officially_libry" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 3c.3 2.1 1.6 3.7 3.7 4.1v2.7c-1.4 0-2.7-.4-3.7-1.1v5.9a5.6 5.6 0 1 1-5.6-5.6c.3 0 .6 0 .9.1v2.8a2.8 2.8 0 1 0 2 2.7V3z" /></svg>
-                </a>
-              </div>
+              <SocialIcons className={s.footSocial} />
             </div>
             <div>
               <h4>Read</h4>
@@ -401,6 +421,7 @@ export default async function Landing() {
             </div>
             <div>
               <h4>Legal</h4>
+              <a className="fx" href="/contact">Contact</a>
               <a className="fx" href="/terms">Terms of Service</a>
               <a className="fx" href="/privacy">Privacy Policy</a>
               <a className="fx" href="/cookies">Cookie Policy</a>
@@ -409,7 +430,7 @@ export default async function Landing() {
           </div>
 
           <div className={s.footBar}>
-            <span>© 2026 Libry. Operated by Craft &amp; Anchor [registered legal name], [registered address].</span>
+            <span>© 2026 Leep. Operated by {operatorLine()}.</span>
             <span>Crafted with care for readers &amp; writers.</span>
           </div>
         </div>

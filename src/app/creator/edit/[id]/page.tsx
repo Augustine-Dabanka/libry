@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { serviceClient } from "@/lib/supabase/service";
 import EditBookForm from "@/components/EditBookForm";
 import ChapterEditor, { type Chapter } from "@/components/ChapterEditor";
 import CollaboratorsPanel from "@/components/CollaboratorsPanel";
@@ -18,7 +19,7 @@ export default async function EditBook({
 
   const primary = await supabase
     .from("books")
-    .select("id, title, description, content, price, type, age_rating, category, cover_url, user_id")
+    .select("id, title, description, price, type, age_rating, category, cover_url, user_id")
     .eq("id", id)
     .maybeSingle();
   let book = primary.data;
@@ -26,7 +27,7 @@ export default async function EditBook({
     // age_rating/category not migrated yet — retry without them.
     const alt = await supabase
       .from("books")
-      .select("id, title, description, content, price, type, cover_url, user_id")
+      .select("id, title, description, price, type, cover_url, user_id")
       .eq("id", id)
       .maybeSingle();
     book = alt.data ? { ...alt.data, age_rating: "Everyday", category: null } : null;
@@ -48,22 +49,31 @@ export default async function EditBook({
     }
   }
 
+  // Book text is only readable server-side now; load it for owners and
+  // collaborators after the check above.
+  const svc = serviceClient();
+  let bookContent: string | null = null;
+  if (book && allowed) {
+    const c = svc
+      ? await svc.from("books").select("content").eq("id", book.id).maybeSingle()
+      : await supabase.from("books").select("content").eq("id", book.id).maybeSingle();
+    bookContent = (c.data as { content?: string | null } | null)?.content ?? null;
+  }
+
   // Chapters for the chapter editor: existing chapter rows, else the book body
   // as a single chapter, else one empty chapter to start.
   let initialChapters: Chapter[] = [];
   if (book && allowed) {
-    const { data: chs } = await supabase
-      .from("chapters")
-      .select("title, content, chapter_number")
-      .eq("book_id", book.id)
-      .order("chapter_number", { ascending: true });
+    const { data: chs } = svc
+      ? await svc.from("chapters").select("title, content, chapter_number").eq("book_id", book.id).order("chapter_number", { ascending: true })
+      : await supabase.from("chapters").select("title, content, chapter_number").eq("book_id", book.id).order("chapter_number", { ascending: true });
     if (chs && chs.length) {
       initialChapters = chs.map((c: { title: string | null; content: string | null }) => ({
         title: c.title || "Untitled chapter",
         content: c.content || "",
       }));
-    } else if (book.content) {
-      initialChapters = [{ title: "Chapter One", content: book.content }];
+    } else if (bookContent) {
+      initialChapters = [{ title: "Chapter One", content: bookContent }];
     }
   }
 
@@ -96,7 +106,7 @@ export default async function EditBook({
         </div>
         {book && allowed ? (
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.86rem", margin: "-0.4rem 0 1.2rem" }}>
-            You keep <strong style={{ color: "var(--ivory)" }}>65%</strong> of every sale · Libry keeps 35% (30% platform + 5% infra fee).
+            You keep <strong style={{ color: "var(--ivory)" }}>65%</strong> of every sale · Leep keeps 35% (30% platform + 5% infra fee).
           </p>
         ) : null}
         {!book ? (
@@ -108,7 +118,7 @@ export default async function EditBook({
         ) : (
           <>
             <ChapterEditor bookId={Number(book.id)} initial={initialChapters} />
-            <EditBookForm book={book} />
+            <EditBookForm book={{ ...book, content: bookContent }} />
             {isOwner ? (
               <div style={{ marginTop: "2.5rem", maxWidth: 640 }}>
                 <h3 style={{ marginBottom: "0.3rem" }}>Project settings · Co-authors</h3>

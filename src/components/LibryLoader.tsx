@@ -1,17 +1,39 @@
-// A branded, on-brand loading state — the Libry wordmark gently pulsing above an
-// indeterminate gold progress bar — shown while a route's data loads so the
-// reader never stares at a blank screen. Pure CSS (see .libry-loader in
-// globals.css), reduced-motion safe.
-export default function LibryLoader({ label = "Loading…", minHeight = "60vh" }: { label?: string; minHeight?: string }) {
+// The Leep loader: L-E-E-P fly in, collide into the "L", and the dot drops
+// and bounces into place, then it repeats. Pure CSS (see .ll-* in globals.css):
+// no JS, no image, about 1 KB, transform/opacity only, so it never slows the
+// page loading underneath it. Honors prefers-reduced-motion.
+//
+// Two ways to use it (both existed before, so every loading.tsx keeps working):
+//   <LibryLoader size={44} label="..." />        inline mark only (label is for screen readers)
+//   <LibryLoader label="..." minHeight="60vh" /> full loading screen with a visible label
+import SeasonalScene from "@/components/SeasonalScene";
+
+export default function LibryLoader({
+  size,
+  label = "Loading…",
+  minHeight = "60vh",
+}: {
+  size?: number;
+  label?: string;
+  minHeight?: string;
+}) {
+  const mark = (px: number, a11yLabel?: string) => (
+    <span className="ll" style={{ fontSize: px }} role={a11yLabel ? "status" : undefined} aria-label={a11yLabel} aria-hidden={a11yLabel ? undefined : true}>
+      <span className="ll-ch ll-i" aria-hidden="true">E</span>
+      <span className="ll-ch ll-b" aria-hidden="true">E</span>
+      <span className="ll-ch ll-y" aria-hidden="true">P</span>
+      <span className="ll-ch ll-l" aria-hidden="true">L</span>
+      <span className="ll-dot" aria-hidden="true" />
+    </span>
+  );
+
+  if (typeof size === "number") return mark(size, label);
+
   return (
     <div className="libry-loader" style={{ minHeight }} role="status" aria-live="polite">
-      <div className="ll-mark" aria-hidden="true">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 4h12a1 1 0 0 1 1 1v15l-7-3.2L5 20V5a1 1 0 0 1 1-1Z" />
-        </svg>
-        <span>Libry<i>.</i></span>
-      </div>
-      <div className="libry-bar" aria-hidden="true" />
+      {/* Holiday scene (Christmas sleigh, Halloween bats, ...) only during an event. */}
+      <SeasonalScene compact />
+      {mark(56)}
       <span className="ll-label">{label}</span>
     </div>
   );

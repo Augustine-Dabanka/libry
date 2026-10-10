@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { sendWaitlistWelcome } from "@/app/actions/email";
 
+import Glyph from "@/components/Glyph";
 type Joined = { ref_code: string; position: number; total: number; referrals: number };
 const STORE = "libry_waitlist";
 
@@ -67,13 +68,13 @@ export default function WaitlistForm({ initialRef, role = "reader", cta = "Join 
     // signup type a distinct subject line in your inbox.
     if (FORMSPREE_ENDPOINT) {
       const subject =
-        role === "unlimited" ? "🔓 New Libry Unlimited interest"
-        : role === "investor" ? "💼 New Libry investor signup"
-        : "✨ New Libry waitlist signup";
+        role === "unlimited" ? "New Leep Unlimited interest"
+        : role === "investor" ? "New Leep investor signup"
+        : "New Leep waitlist signup";
       fetch(FORMSPREE_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ email: email.trim(), role, position: j.position, source: "libry/waitlist", _subject: subject }),
+        body: JSON.stringify({ email: email.trim(), role, position: j.position, source: "leep/waitlist", _subject: subject }),
       }).catch(() => {});
     }
   }
@@ -136,7 +137,7 @@ export default function WaitlistForm({ initialRef, role = "reader", cta = "Join 
       </div>
       {initialRef ? (
         <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", marginTop: "0.7rem" }}>
-          🎉 A friend invited you — joining bumps them up the list.
+          <Glyph e="🎉" /> A friend invited you — joining bumps them up the list.
         </p>
       ) : null}
       {err ? <p style={{ color: "var(--terracotta, #b5533f)", fontFamily: "var(--sans)", fontSize: "0.85rem", marginTop: "0.7rem" }}>{err}</p> : null}

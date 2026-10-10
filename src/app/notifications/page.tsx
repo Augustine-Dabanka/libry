@@ -4,7 +4,8 @@ import AppNav from "@/components/AppNav";
 import MarkNotificationsRead from "@/components/MarkNotificationsRead";
 import PushToggle from "@/components/PushToggle";
 
-export const metadata = { title: "Notifications — Libry" };
+import Glyph from "@/components/Glyph";
+export const metadata = { title: "Notifications — Leep" };
 
 type Notif = { id: number; actor_name: string | null; kind: string; summary: string; link: string | null; read: boolean; created_at: string };
 
@@ -57,7 +58,7 @@ export default async function NotificationsPage() {
             {notifs.map((n) => {
               const inner = (
                 <>
-                  <span style={{ fontSize: "1.15rem", width: 30, textAlign: "center", flexShrink: 0, color: n.kind === "post_like" ? "var(--gold)" : undefined }}>{ICON[n.kind] || "🔔"}</span>
+                  <span style={{ fontSize: "1.15rem", width: 30, textAlign: "center", flexShrink: 0, color: n.kind === "post_like" ? "var(--gold)" : undefined }}><Glyph e={ICON[n.kind] || "🔔"} /></span>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontFamily: "var(--sans)", fontSize: "0.95rem", color: "var(--ivory)" }}>{n.summary}</span>
                     <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.15rem" }}>{timeAgo(n.created_at)}</span>

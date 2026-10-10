@@ -1,4 +1,5 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { serviceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import ProductBuy from "@/components/ProductBuy";
@@ -15,28 +16,36 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const pid = Number(id);
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect(`/login?next=/product/${id}`);
+  const { data: { user } } = await supabase.auth.getUser(); // guests can look; buying needs an account
 
   const { data: p } = await supabase
     .from("products")
-    .select("id, user_id, title, description, type, price, cover_url, external_url, category, is_published")
+    .select("id, user_id, title, description, type, price, cover_url, category, is_published")
     .eq("id", pid)
     .maybeSingle();
   if (!p) notFound();
 
-  const isOwner = p.user_id === user.id;
+  const isOwner = !!user && p.user_id === user.id;
   if (!p.is_published && !isOwner) notFound();
 
   // Creator name.
   const { data: prof } = await supabase.from("profiles").select("username, full_name, pen_name").eq("id", p.user_id).maybeSingle();
-  const creatorName = prof?.pen_name || prof?.full_name || prof?.username || "A Libry creator";
+  const creatorName = prof?.pen_name || prof?.full_name || prof?.username || "A Leep creator";
 
   // Ownership.
   let owned = isOwner;
-  if (!isOwner) {
+  if (user && !isOwner) {
     const { data: pur } = await supabase.from("product_purchases").select("id").eq("product_id", pid).eq("user_id", user.id).maybeSingle();
     owned = !!pur;
+  }
+  // The hosted video link is only fetched for people who own it.
+  let externalUrl: string | null = null;
+  if (owned) {
+    const svc = serviceClient();
+    const ex = svc
+      ? await svc.from("products").select("external_url").eq("id", pid).maybeSingle()
+      : await supabase.from("products").select("external_url").eq("id", pid).maybeSingle();
+    externalUrl = (ex.data as { external_url?: string | null } | null)?.external_url ?? null;
   }
   const isVideo = p.type === "video" || p.type === "course";
   const price = Number(p.price) || 0;
@@ -44,7 +53,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   // Reviews.
   const { data: rv } = await supabase.from("product_reviews").select("id, user_name, rating, body, user_id").eq("product_id", pid).order("created_at", { ascending: false });
   const reviews = (rv ?? []) as PReview[];
-  const myReview = reviews.find((r) => r.user_id === user.id) ?? null;
+  const myReview = user ? reviews.find((r) => r.user_id === user.id) ?? null : null;
   const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
 
   return (
@@ -81,13 +90,19 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               </div>
 
               <div style={{ maxWidth: 340, marginBottom: "1.6rem" }}>
-                <ProductBuy productId={p.id} price={price} owned={owned} email={user.email ?? undefined} isVideo={isVideo} />
+                {user ? (
+                  <ProductBuy productId={p.id} price={price} owned={owned} email={user.email ?? undefined} isVideo={isVideo} />
+                ) : (
+                  <a className="btn btn-gold" href={`/login?next=/product/${p.id}`} style={{ display: "block", textAlign: "center" }}>
+                    {price > 0 ? "Sign up free to buy" : "Sign up free to get it"}
+                  </a>
+                )}
               </div>
 
               {/* Video preview once owned. */}
-              {isVideo && owned && p.external_url ? (
+              {isVideo && owned && externalUrl ? (
                 <div style={{ aspectRatio: "16 / 9", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)", marginBottom: "1.6rem" }}>
-                  <iframe src={p.external_url} allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowFullScreen style={{ width: "100%", height: "100%", border: "none" }} title={p.title} />
+                  <iframe src={externalUrl} allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowFullScreen style={{ width: "100%", height: "100%", border: "none" }} title={p.title} />
                 </div>
               ) : null}
 
@@ -95,7 +110,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 <div style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.95rem", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{p.description}</div>
               ) : null}
 
-              <ProductReviews productId={p.id} reviews={reviews} myReview={myReview} canReview={owned} signedIn={true} />
+              <ProductReviews productId={p.id} reviews={reviews} myReview={myReview} canReview={owned} signedIn={!!user} />
             </div>
           </div>
         </div>

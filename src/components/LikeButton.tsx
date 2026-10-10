@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+import Glyph from "@/components/Glyph";
 // Like a story. Public read (count), authed write. Optimistic; degrades to a
 // friendly message if the book_likes table isn't migrated yet.
 export default function LikeButton({
@@ -50,7 +51,7 @@ export default function LikeButton({
         aria-pressed={liked}
         title={liked ? "Unlike" : "Like this story"}
       >
-        {liked ? "❤" : "🤍"} {count > 0 ? count : "Like"}
+        <Glyph e="❤" style={liked ? { fill: "currentColor" } : undefined} /> {count > 0 ? count : "Like"}
       </button>
       {err ? <span style={{ color: "var(--terracotta)", fontSize: "0.8rem", marginLeft: "0.6rem" }}>{err}</span> : null}
     </>
