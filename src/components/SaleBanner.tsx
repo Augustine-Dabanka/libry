@@ -21,7 +21,7 @@ export default async function SaleBanner() {
 
   return (
     <a
-      href="/shop"
+      href="/catalog"
       className="lb-float-in"
       style={{
         display: "flex",
@@ -29,8 +29,8 @@ export default async function SaleBanner() {
         gap: "0.7rem",
         flexWrap: "wrap",
         textDecoration: "none",
-        background: "linear-gradient(90deg, rgba(196,163,90,0.18), rgba(180,83,9,0.16))",
-        border: "1px solid rgba(196,163,90,0.35)",
+        background: "linear-gradient(90deg, color-mix(in srgb, var(--gold) 18%, transparent), rgba(180,83,9,0.16))",
+        border: "1px solid color-mix(in srgb, var(--gold) 35%, transparent)",
         borderRadius: 14,
         padding: "0.85rem 1.2rem",
         marginBottom: "1.4rem",

@@ -49,11 +49,11 @@ export default function StoryChoiceDemo() {
         maxWidth: 440,
         borderRadius: 24,
         overflow: "hidden",
-        border: "1px solid rgba(196,163,90,0.28)",
-        boxShadow: "0 30px 70px rgba(0,0,0,0.55)",
+        border: "none",
+        boxShadow: "0 8px 0 #8F2F12, 0 24px 48px rgba(143,47,18,0.28)",
         // Cinematic light-into-shadow gradient ground.
         background:
-          "radial-gradient(120% 80% at 78% 0%, rgba(220,192,136,0.22), transparent 60%), linear-gradient(160deg, #2a2118 0%, #1a1410 55%, #120d0a 100%)",
+          "#C8471F",
       }}
     >
       {/* Ambient glow */}
@@ -66,7 +66,7 @@ export default function StoryChoiceDemo() {
           width: 220,
           height: 220,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(220,192,136,0.28), transparent 70%)",
+          background: "radial-gradient(circle, rgba(255,214,190,0.35), transparent 70%)",
           filter: "blur(6px)",
           pointerEvents: "none",
         }}
@@ -80,7 +80,7 @@ export default function StoryChoiceDemo() {
               fontWeight: 800,
               letterSpacing: "0.16em",
               textTransform: "uppercase",
-              color: "#DCC088",
+              color: "#FFFFFF",
               fontFamily: "var(--sans, 'Plus Jakarta Sans', sans-serif)",
             }}
           >
@@ -91,17 +91,17 @@ export default function StoryChoiceDemo() {
               display: "inline-flex",
               alignItems: "center",
               gap: "0.35rem",
-              background: "rgba(250,247,242,0.08)",
-              border: "1px solid rgba(250,247,242,0.12)",
+              background: "rgba(255,255,255,0.16)",
+              border: "1px solid rgba(255,255,255,0.28)",
               borderRadius: 999,
               padding: "0.22rem 0.6rem",
               fontSize: "0.68rem",
               fontWeight: 700,
-              color: "#C6BEB2",
+              color: "#FFFFFF",
               fontFamily: "var(--sans, 'Plus Jakarta Sans', sans-serif)",
             }}
           >
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4E9A6B", boxShadow: "0 0 0 3px rgba(78,154,107,0.2)" }} />
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#FFFFFF", boxShadow: "0 0 0 3px rgba(255,255,255,0.25)" }} />
             Live demo · try it
           </span>
         </div>
@@ -112,7 +112,7 @@ export default function StoryChoiceDemo() {
             fontStyle: "italic",
             fontSize: isStart ? "1.5rem" : "1.18rem",
             lineHeight: 1.35,
-            color: "#FAF7F2",
+            color: "#FFFFFF",
             minHeight: "4.6em",
             margin: 0,
           }}
@@ -121,7 +121,7 @@ export default function StoryChoiceDemo() {
         </p>
 
         {isStart ? (
-          <p style={{ margin: "0.6rem 0 0", color: "#C6BEB2", fontFamily: "var(--sans, 'Plus Jakarta Sans', sans-serif)", fontSize: "0.9rem" }}>
+          <p style={{ margin: "0.6rem 0 0", color: "#FFF3EC", fontFamily: "var(--sans, 'Nunito', sans-serif)", fontSize: "0.9rem" }}>
             Your choices shape the story. Live. Breathe. Decide.
           </p>
         ) : null}
@@ -133,8 +133,8 @@ export default function StoryChoiceDemo() {
               style={{
                 display: "block",
                 textAlign: "center",
-                background: "#C4A35A",
-                color: "#20180a",
+                background: "#FFFFFF",
+                color: "#C8471F",
                 borderRadius: 999,
                 padding: "0.85rem",
                 fontWeight: 800,
@@ -147,7 +147,7 @@ export default function StoryChoiceDemo() {
             <button
               type="button"
               onClick={() => setId("start")}
-              style={{ background: "transparent", border: "none", color: "#A8A29E", cursor: "pointer", fontFamily: "var(--sans)", fontSize: "0.85rem" }}
+              style={{ background: "transparent", border: "none", color: "#FFF3EC", cursor: "pointer", fontFamily: "var(--sans)", fontSize: "0.85rem" }}
             >
               ↺ Start over
             </button>
@@ -161,11 +161,12 @@ export default function StoryChoiceDemo() {
                 onClick={() => setId(c.to)}
                 style={{
                   textAlign: "left",
-                  background: "rgba(250,247,242,0.05)",
-                  border: "1px solid rgba(250,247,242,0.12)",
+                  background: "#FFFFFF",
+                  border: "none",
+                  boxShadow: "0 4px 0 #8F2F12",
                   borderRadius: 14,
                   padding: "0.9rem 1.1rem",
-                  color: "#FAF7F2",
+                  color: "#1D1A17",
                   fontFamily: "var(--sans, 'Plus Jakarta Sans', sans-serif)",
                   fontWeight: 700,
                   fontSize: "0.98rem",

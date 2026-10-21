@@ -1,6 +1,6 @@
 import { LUCIDE, type LucideName } from "@/components/icons/lucide";
 
-// Leep's own icon set: 24px grid, 1.75 stroke, round caps. Replaces emoji
+// Lybry's own icon set: 24px grid, 1.75 stroke, round caps. Replaces emoji
 // across the UI so icons look the same on every phone and computer.
 // Inline SVG: no extra requests, no icon font, inherits `color`.
 const PATHS = {
@@ -33,7 +33,7 @@ const PATHS = {
   target: "M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M7 12a5 5 0 1 0 10 0a5 5 0 1 0-10 0M11 12a1 1 0 1 0 2 0a1 1 0 1 0-2 0",
 } as const;
 
-// Leep's hand-drawn set (above) wins where a name exists in both.
+// Lybry's hand-drawn set (above) wins where a name exists in both.
 export type IconName = keyof typeof PATHS | LucideName;
 
 export default function Icon({

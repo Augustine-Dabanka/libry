@@ -83,7 +83,7 @@ export function computeStreak(rows: DayRow[], goalMin: number, today: string = t
   };
 }
 
-// Milestone ladder — hours read, badges only (no coins, per Leep's no-casino rule).
+// Milestone ladder — hours read, badges only (no coins, per Lybry's no-casino rule).
 export const STREAK_MILESTONES = [
   { hours: 5, name: "Kindling" },
   { hours: 25, name: "Gold Reader" },

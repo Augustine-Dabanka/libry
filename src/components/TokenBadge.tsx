@@ -48,7 +48,7 @@ export default function TokenBadge({
         display: "inline-flex",
         alignItems: "center",
         gap: "0.45rem",
-        background: "rgba(196,163,90,0.16)",
+        background: "color-mix(in srgb, var(--gold) 16%, transparent)",
         color: "var(--gold)",
         borderRadius: 999,
         padding: "0.4rem 0.9rem",

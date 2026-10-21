@@ -1,4 +1,4 @@
--- Leep: let signed-out visitors preview products safely.
+-- Lybry: let signed-out visitors preview products safely.
 -- 1) The hosted video/course link (products.external_url) is what buyers pay
 --    for, so visitors and other users can no longer read it straight from the
 --    API. The app reads it on the server after checking ownership.

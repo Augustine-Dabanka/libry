@@ -1,21 +1,21 @@
 /* ============================================================
-   Leep onboarding — warm "cream" tactile design.
+   Lybry onboarding — warm "cream" tactile design.
    Elegant + gently gamified (koala, confetti, progress) in the
    brand's literary palette. Theme knobs live on .root.
    ============================================================ */
 .root {
-  --bg: #F6F1E7;          /* warm cream base */
-  --bg-2: #EFE7D6;
+  --bg: #FFFCF7;          /* warm paper (Laterite palette) */
+  --bg-2: #FFFCF7;
   --surface: #FFFFFF;     /* option cards */
-  --surface-2: #FBF6EC;
-  --text: #2B2622;        /* near-charcoal ink */
-  --muted: #9B9188;
-  --gold: #B98A46;        /* primary accent */
-  --gold-soft: #C4A35A;
-  --gold-dark: #97692F;
-  --gold-tint: rgba(196, 163, 90, 0.16);
-  --line: rgba(43, 38, 34, 0.12);
-  --shadow-tactile: rgba(43, 38, 34, 0.16);
+  --surface-2: #F4EEE6;
+  --text: #1D1A17;        /* ink */
+  --muted: #6B625A;
+  --gold: #C8471F;        /* laterite */
+  --gold-soft: #C8471F;
+  --gold-dark: #8F2F12;
+  --gold-tint: #FDEDE5;
+  --line: #EDE6DC;
+  --shadow-tactile: #E3DAD0;
   --radius: 16px;
   --depth: 4px;           /* tactile bottom-border thickness */
 
@@ -24,7 +24,7 @@
   overflow-y: auto;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--sans, "Plus Jakarta Sans", system-ui, sans-serif);
+  font-family: var(--sans, "Nunito", system-ui, sans-serif);
 }
 
 .bg {
@@ -32,10 +32,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background:
-    radial-gradient(circle at 20% 8%, rgba(196, 163, 90, 0.16), transparent 44%),
-    radial-gradient(circle at 82% 88%, rgba(180, 83, 9, 0.10), transparent 46%),
-    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+  background: var(--bg);
 }
 
 /* ---------- status header (progress + % complete) ---------- */
@@ -56,7 +53,8 @@
   height: 10px;
   background: rgba(43, 38, 34, 0.09);
   border-radius: 999px;
-  overflow: hidden;
+  overflow: visible;
+  margin: 0 9px;
 }
 .progressFill {
   height: 100%;
@@ -100,13 +98,13 @@
 @media (prefers-reduced-motion: reduce) { .owl, .screen, .confettiPiece { animation: none !important; } }
 
 .introTitle, .doneTitle, .q {
-  font-family: var(--serif, "Fraunces", Georgia, serif);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.12;
+  font-family: var(--sans, "Nunito", system-ui, sans-serif);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 .introTitle { font-size: clamp(2rem, 6vw, 3rem); margin-bottom: 0.9rem; }
-.introTitle span, .doneTitle span { color: var(--gold); font-style: italic; }
+.introTitle span, .doneTitle span { color: var(--gold); }
 .doneTitle { font-size: clamp(2rem, 6vw, 2.8rem); margin-bottom: 0.8rem; }
 .q { font-size: clamp(1.7rem, 5vw, 2.4rem); margin-bottom: 1.6rem; }
 .tag { color: var(--muted); font-size: 1.05rem; margin-bottom: 2rem; line-height: 1.55; }

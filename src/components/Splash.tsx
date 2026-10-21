@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-// Brief branded splash on initial load: "Leep." pulses, then fades out.
+// Brief branded splash on initial load: "Lybry." pulses, then fades out.
 export default function Splash() {
   const [gone, setGone] = useState(false);
   const [fading, setFading] = useState(false);
@@ -43,7 +43,7 @@ export default function Splash() {
           animation: "leepSplashPulse 1.2s ease-in-out infinite",
         }}
       >
-        Leep<span style={{ color: "#C4A35A" }}>.</span>
+        Lybry<span style={{ color: "var(--gold)" }}>.</span>
       </span>
       <style>{`@keyframes leepSplashPulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}`}</style>
     </div>

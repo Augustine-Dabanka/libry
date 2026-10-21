@@ -3,7 +3,7 @@ import AppNav from "@/components/AppNav";
 import Icon from "@/components/Icon";
 import LeaderboardToggle from "@/components/LeaderboardToggle";
 
-export const metadata = { title: "Weekly leaderboard · Leep" };
+export const metadata = { title: "Weekly leaderboard · Lybry" };
 
 type Row = { rank: number; display_name: string; avatar_url: string | null; minutes: number; is_me: boolean };
 
@@ -23,7 +23,7 @@ export default async function LeaderboardPage() {
   let optedIn = false;
   let myMinutes = 0;
   if (user) {
-    const p = await supabase.from("profiles").select("prefs").eq("id", user.id).maybeSingle();
+    const p = await supabase.from("my_profile").select("prefs").eq("id", user.id).maybeSingle();
     optedIn = (p.data?.prefs as Record<string, unknown> | null)?.leaderboard === "on";
     const monday = new Date();
     const dow = (monday.getUTCDay() + 6) % 7;
@@ -64,7 +64,7 @@ export default async function LeaderboardPage() {
         ) : (
           <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: "0.4rem" }}>
             {rows.map((r) => (
-              <li key={`${r.rank}-${r.display_name}`} style={{ display: "flex", alignItems: "center", gap: "0.9rem", padding: "0.7rem 0.9rem", borderRadius: 12, background: r.is_me ? "rgba(95,160,104,0.12)" : "var(--stone)", border: `1px solid ${r.is_me ? "var(--gold)" : "transparent"}`, fontFamily: "var(--sans)" }}>
+              <li key={`${r.rank}-${r.display_name}`} style={{ display: "flex", alignItems: "center", gap: "0.9rem", padding: "0.7rem 0.9rem", borderRadius: 12, background: r.is_me ? "color-mix(in srgb, var(--gold) 12%, transparent)" : "var(--stone)", border: `1px solid ${r.is_me ? "var(--gold)" : "transparent"}`, fontFamily: "var(--sans)" }}>
                 <span style={{ width: 28, textAlign: "center", fontFamily: "var(--serif)", fontWeight: 600, fontSize: "1.1rem", color: r.rank <= 3 ? "var(--gold)" : "var(--muted)" }}>{r.rank}</span>
                 {r.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element

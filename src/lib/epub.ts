@@ -1,6 +1,6 @@
 import JSZip from "jszip";
 
-// Minimal, valid EPUB 3 generator for Leep's "download your copy" perk. Text-
+// Minimal, valid EPUB 3 generator for Lybry's "download your copy" perk. Text-
 // focused (novels/classics) with a soft, personalised watermark — no hard DRM,
 // which fits the calm brand.
 
@@ -121,7 +121,7 @@ p.first{text-indent:0}
     <dc:title>${esc(title)}</dc:title>
     <dc:creator>${esc(author || "Unknown author")}</dc:creator>
     <dc:language>en</dc:language>
-    <dc:publisher>Leep</dc:publisher>
+    <dc:publisher>Lybry</dc:publisher>
     <meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, "Z")}</meta>
   </metadata>
   <manifest>${manifest}</manifest>

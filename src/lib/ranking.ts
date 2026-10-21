@@ -1,4 +1,4 @@
-// Leep's own recommendation algorithm — a transparent, from-scratch ranking
+// Lybry's own recommendation algorithm — a transparent, from-scratch ranking
 // engine (the "YouTube algorithm" idea, for books). Every published book gets a
 // score from real signals, so the best and most-loved books rise, and it tilts
 // toward the categories a given reader actually reads.

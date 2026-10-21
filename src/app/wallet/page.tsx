@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getWallet, coinPurchasesLive } from "@/app/actions/coins";
 import { COIN_PACKS, AD_DAILY_CAP } from "@/lib/coins";
 
-export const metadata = { title: "Wallet · Leep" };
+export const metadata = { title: "Wallet · Lybry" };
 export const dynamic = "force-dynamic";
 
 const card = { background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 18, padding: "1.4rem" } as const;

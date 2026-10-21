@@ -41,7 +41,7 @@ export default function CommunityCreate() {
       <div role="radiogroup" aria-label="Community icon" style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", margin: "0.2rem 0 0.7rem" }}>
         {ROOM_ICONS.map((ic) => (
           <button key={ic} type="button" role="radio" aria-checked={emoji === ic} onClick={() => setEmoji(ic)}
-            style={{ width: 40, height: 40, borderRadius: 10, display: "grid", placeItems: "center", cursor: "pointer", color: emoji === ic ? "var(--gold)" : "var(--ivory-muted)", background: emoji === ic ? "rgba(196,163,90,0.14)" : "transparent", border: `1px solid ${emoji === ic ? "var(--gold)" : "var(--border)"}` }}>
+            style={{ width: 40, height: 40, borderRadius: 10, display: "grid", placeItems: "center", cursor: "pointer", color: emoji === ic ? "var(--gold)" : "var(--ivory-muted)", background: emoji === ic ? "color-mix(in srgb, var(--gold) 14%, transparent)" : "transparent", border: `1px solid ${emoji === ic ? "var(--gold)" : "var(--border)"}` }}>
             <Glyph e={ic} size={20} />
           </button>
         ))}

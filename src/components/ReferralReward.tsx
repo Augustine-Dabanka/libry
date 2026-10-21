@@ -22,7 +22,7 @@ export default async function ReferralReward() {
   const earned = new Map<string, { code: string | null; redeemed: boolean }>();
   for (const t of TIERS) {
     if (count < t.at) continue;
-    const code = `LEEP-${t.kind.toUpperCase()}-${user.id.slice(0, 5).toUpperCase()}`;
+    const code = `LYBRY-${t.kind.toUpperCase()}-${user.id.slice(0, 5).toUpperCase()}`;
     try {
       await supabase.from("rewards").upsert(
         { user_id: user.id, kind: t.kind, code, detail: t.detail },
@@ -57,7 +57,7 @@ export default async function ReferralReward() {
           const on = count >= t.at;
           const r = earned.get(t.kind);
           return (
-            <div key={t.kind} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.7rem 0.9rem", border: "1px solid var(--border)", borderRadius: 12, background: on ? "rgba(197,160,89,0.08)" : "var(--charcoal)", opacity: on ? 1 : 0.7 }}>
+            <div key={t.kind} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.7rem 0.9rem", border: "1px solid var(--border)", borderRadius: 12, background: on ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "var(--charcoal)", opacity: on ? 1 : 0.7 }}>
               <span style={{ fontSize: "1.1rem" }}><Glyph e={on ? "🎁" : "🔒"} /></span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.92rem", color: "var(--ivory)" }}>Refer {t.at} · {t.detail}</div>
@@ -67,7 +67,7 @@ export default async function ReferralReward() {
                   </div>
                 ) : null}
               </div>
-              <span style={{ fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", color: on ? "#7DBE86" : "var(--muted)" }}>{on ? "EARNED" : "LOCKED"}</span>
+              <span style={{ fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", color: on ? "var(--success)" : "var(--muted)" }}>{on ? "EARNED" : "LOCKED"}</span>
             </div>
           );
         })}

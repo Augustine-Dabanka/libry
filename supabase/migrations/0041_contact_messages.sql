@@ -1,4 +1,4 @@
--- Leep: contact form inbox (replaces every "[CONTACT EMAIL]" placeholder).
+-- Lybry: contact form inbox (replaces every "[CONTACT EMAIL]" placeholder).
 -- Messages are written ONLY through submit_contact(), which rate-limits;
 -- nobody can read them except staff via the dashboard / service role.
 -- Safe to run any time, safe to re-run.

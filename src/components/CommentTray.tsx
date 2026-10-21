@@ -82,12 +82,12 @@ export default function CommentTray({
     const byCreator = !!c.user_id && c.user_id === creatorId;
     const my = c.my_reaction ?? 0;
     return (
-      <div style={{ background: "var(--stone)", border: `1px solid ${c.pinned ? "rgba(197,160,89,0.5)" : "var(--border)"}`, borderRadius: 12, padding: "0.75rem 0.85rem", marginLeft: isReply ? "1.4rem" : 0 }}>
+      <div style={{ background: "var(--stone)", border: `1px solid ${c.pinned ? "color-mix(in srgb, var(--gold) 50%, transparent)" : "var(--border)"}`, borderRadius: 12, padding: "0.75rem 0.85rem", marginLeft: isReply ? "1.4rem" : 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "0.5rem", flexWrap: "wrap" }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
             <span style={{ fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem", color: "var(--ivory)" }}>{c.user_name || "Reader"}</span>
             {byCreator ? (
-              <span style={{ fontFamily: "var(--sans)", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#12100E", background: "var(--gold)", borderRadius: 999, padding: "0.1rem 0.45rem" }}>Creator</span>
+              <span style={{ fontFamily: "var(--sans)", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#12100E", background: "var(--gold)", borderRadius: 999, padding: "0.1rem 0.45rem" }}>Creator</span>
             ) : null}
             {c.pinned ? (
               <span style={{ fontFamily: "var(--sans)", fontSize: "0.68rem", color: "var(--gold-hi)" }}><Glyph e="📌" /> Pinned</span>
@@ -201,7 +201,7 @@ const linkBtn: React.CSSProperties = { background: "transparent", border: "none"
 function rxStyle(active: boolean): React.CSSProperties {
   return {
     display: "inline-flex", alignItems: "center", gap: "0.3rem",
-    background: active ? "rgba(95,160,104,0.16)" : "transparent",
+    background: active ? "color-mix(in srgb, var(--gold) 16%, transparent)" : "transparent",
     border: `1px solid ${active ? "var(--gold)" : "var(--border)"}`,
     color: active ? "var(--gold)" : "var(--ivory-muted)",
     borderRadius: 999, padding: "0.2rem 0.55rem", cursor: "pointer", fontFamily: "var(--sans)", fontSize: "0.78rem",

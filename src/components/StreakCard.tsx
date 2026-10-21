@@ -22,7 +22,7 @@ export default function StreakCard({ compact = false }: { compact?: boolean }) {
       } = await supabase.auth.getUser();
       if (!user) { setReady(true); return; }
 
-      const prof = await supabase.from("profiles").select("prefs").eq("id", user.id).maybeSingle();
+      const prof = await supabase.from("my_profile").select("prefs").eq("id", user.id).maybeSingle();
       const prefs = (prof.data?.prefs && typeof prof.data.prefs === "object" ? prof.data.prefs : {}) as Record<string, unknown>;
       const goal = goalMinutes(typeof prefs.goal === "string" ? prefs.goal : null);
 
@@ -87,11 +87,11 @@ export default function StreakCard({ compact = false }: { compact?: boolean }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 7, marginBottom: "1.1rem" }}>
             {info.week.map((d, i) => (
               <div key={i} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "0.62rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5, fontFamily: "var(--sans)" }}>{d.label}</div>
+                <div style={{ fontSize: "0.7rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5, fontFamily: "var(--sans)" }}>{d.label}</div>
                 <div
                   style={{
                     height: 32, borderRadius: 9, display: "grid", placeItems: "center", fontSize: "0.7rem", fontFamily: "var(--sans)", fontWeight: 800,
-                    background: d.met ? "linear-gradient(180deg,#C5A059,#97692F)" : "transparent",
+                    background: d.met ? "var(--gold-hi)" : "transparent",
                     border: d.met ? "1px solid transparent" : `1px solid var(--border)`,
                     color: d.met ? "#20180a" : d.isToday ? "var(--gold)" : "var(--muted)",
                     outline: d.isToday && !d.met ? "1.5px solid var(--gold)" : "none",
@@ -106,7 +106,7 @@ export default function StreakCard({ compact = false }: { compact?: boolean }) {
           {/* today's goal ring */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.9rem", padding: "0.9rem 0", borderTop: "1px solid var(--border)" }}>
             <div style={{ width: 46, height: 46, borderRadius: "50%", background: `conic-gradient(var(--gold) ${goalPct * 3.6}deg, rgba(250,247,242,0.10) 0)`, display: "grid", placeItems: "center", flexShrink: 0 }}>
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--stone)", display: "grid", placeItems: "center", fontSize: "0.6rem", fontWeight: 800, fontFamily: "var(--sans)", color: "var(--ivory)" }}>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--stone)", display: "grid", placeItems: "center", fontSize: "0.7rem", fontWeight: 800, fontFamily: "var(--sans)", color: "var(--ivory)" }}>
                 {info.minutesToday}/{info.goalMin}
               </div>
             </div>
@@ -124,7 +124,7 @@ export default function StreakCard({ compact = false }: { compact?: boolean }) {
           <div style={{ paddingTop: "0.9rem", borderTop: "1px solid var(--border)", fontFamily: "var(--sans)", fontSize: "0.82rem", color: "var(--muted)" }}>
             Next badge: <b style={{ color: "var(--ivory)" }}>{ms.name}</b> at {ms.hours} hrs — {totalHours.toFixed(1)} / {ms.hours} hrs
             <div style={{ height: 7, borderRadius: 999, background: "rgba(250,247,242,0.10)", overflow: "hidden", marginTop: 6 }}>
-              <div style={{ height: "100%", width: `${msPct}%`, background: "linear-gradient(90deg,var(--green,#5FA068),var(--gold))" }} />
+              <div style={{ height: "100%", width: `${msPct}%`, background: "var(--accent)" }} />
             </div>
           </div>
         </>

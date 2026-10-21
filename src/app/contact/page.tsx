@@ -3,7 +3,7 @@ import AppNav from "@/components/AppNav";
 import ContactForm from "./ContactForm";
 import { LEGAL, operatorLine } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Contact — Leep" };
+export const metadata: Metadata = { title: "Contact — Lybry" };
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<{ topic?: string }> }) {
   const { topic } = await searchParams;
@@ -18,7 +18,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
         </p>
         <ContactForm topic={topic} />
         <p style={{ fontFamily: "var(--sans)", color: "var(--muted)", fontSize: "0.8rem", marginTop: "2rem" }}>
-          Leep is operated by {operatorLine()}. What you send is used only to answer you; see the <a href="/privacy">Privacy Policy</a>.
+          Lybry is operated by {operatorLine()}. What you send is used only to answer you; see the <a href="/privacy">Privacy Policy</a>.
         </p>
       </section>
     </>

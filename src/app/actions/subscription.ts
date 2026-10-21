@@ -1,9 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { paymentsLive } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 import { serviceClient } from "@/lib/supabase/service";
-import { type Plan, PLAN_PRICE, PERIOD_DAYS } from "@/lib/plans";
+import { type Plan, PLAN_PRICE, PERIOD_DAYS, PLAN_PICKS } from "@/lib/plans";
 
 const RATE = Number(process.env.NEXT_PUBLIC_PAYSTACK_USD_RATE || "1") || 1;
 
@@ -19,7 +20,7 @@ export async function subscribeUnlimited(input: {
   // Verify the payment server-side unless this is a simulated (pre-launch) run.
   const isSimulated = /^(demo|free)-/.test(input.reference);
   // Demo references only work while real payments are switched off.
-  if (price > 0 && isSimulated && !!process.env.PAYSTACK_SECRET_KEY && process.env.NEXT_PUBLIC_PAYSTACK_ENABLED === "true") return { error: "Please complete payment to continue." };
+  if (price > 0 && isSimulated && paymentsLive()) return { error: "Please complete payment to continue." };
   if (price > 0 && !isSimulated) {
     const secret = process.env.PAYSTACK_SECRET_KEY;
     if (!secret) return { error: "Payments aren't fully set up yet." };
@@ -36,7 +37,7 @@ export async function subscribeUnlimited(input: {
 
   const periodEnd = new Date(Date.now() + PERIOD_DAYS[plan] * 86400 * 1000).toISOString();
   const genres = (input.genres || []).slice(0, 12);
-  const picks = Math.max(1, Math.min(50, Number(input.picks) || 4));
+  const picks = PLAN_PICKS[plan]; // fixed per plan; the browser can't choose it
 
   // Subscriptions are written by the server only (readers used to be able to
   // give themselves Unlimited by editing their own row).
@@ -66,7 +67,7 @@ export async function updateSubscriptionPrefs(input: { genres: string[]; maxAge:
   // Preferences only: status and dates can't be changed here.
   const { error } = await svc.from("subscriptions").update({
     genres: (input.genres || []).slice(0, 12), max_age: input.maxAge || "Everyone",
-    picks_per_cycle: Math.max(1, Math.min(50, Number(input.picks) || 4)), updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   }).eq("user_id", user.id);
   if (error) return { error: "Couldn't save your subscription. Try again." };
   revalidatePath("/unlimited");

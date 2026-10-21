@@ -100,7 +100,7 @@ export default async function Achievements() {
   // streak card), so badges and the card always agree. Guarded (pre-migration → 0).
   let streak = 0;
   {
-    const prof2 = await supabase.from("profiles").select("prefs").eq("id", user.id).maybeSingle();
+    const prof2 = await supabase.from("my_profile").select("prefs").eq("id", user.id).maybeSingle();
     const prefs = (prof2.data?.prefs && typeof prof2.data.prefs === "object" ? prof2.data.prefs : {}) as Record<string, unknown>;
     const goal = goalMinutes(typeof prefs.goal === "string" ? prefs.goal : null);
     const rd = await supabase.from("reading_days").select("day, minutes");
@@ -150,7 +150,7 @@ export default async function Achievements() {
   // Grand prize: unlock every badge → grant a one-time reward (idempotent).
   let reward: { code: string | null; detail: string | null; redeemed: boolean } | null = null;
   if (allUnlocked) {
-    const code = "LEEP-LEGEND-" + user.id.slice(0, 6).toUpperCase();
+    const code = "LYBRY-LEGEND-" + user.id.slice(0, 6).toUpperCase();
     try {
       await supabase.from("rewards").upsert(
         { user_id: user.id, kind: "all_badges", code, detail: "2 free books (one-time)" },
@@ -169,7 +169,7 @@ export default async function Achievements() {
           <h2>Achievements</h2>
         </div>
         <p style={{ color: "var(--muted)", marginTop: "-1.5rem", marginBottom: "2rem" }}>
-          Your reading journey on Leep — level up by finishing books and completing challenges.
+          Your reading journey on Lybry — level up by finishing books and completing challenges.
         </p>
 
         {/* Level card */}
@@ -207,7 +207,7 @@ export default async function Achievements() {
 
         {/* Grand prize — every badge unlocked */}
         {allUnlocked ? (
-          <div style={{ background: "linear-gradient(135deg, rgba(197,160,89,0.22), rgba(95,160,104,0.16))", border: "1px solid var(--gold)", borderRadius: 18, padding: "1.6rem 1.8rem", marginBottom: "2.5rem", textAlign: "center" }}>
+          <div style={{ background: "linear-gradient(135deg, color-mix(in srgb, var(--gold) 22%, transparent), color-mix(in srgb, var(--gold) 16%, transparent))", border: "1px solid var(--gold)", borderRadius: 18, padding: "1.6rem 1.8rem", marginBottom: "2.5rem", textAlign: "center" }}>
             <div style={{ fontSize: "2.4rem", marginBottom: "0.3rem" }}><Glyph e="🎁" /></div>
             <h3 style={{ fontFamily: "var(--serif)", fontSize: "1.5rem", marginBottom: "0.3rem" }}>Every badge unlocked — you legend.</h3>
             <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.95rem", marginBottom: "1rem" }}>
@@ -217,7 +217,7 @@ export default async function Achievements() {
               <div style={{ display: "inline-flex", alignItems: "center", gap: "0.6rem", background: "var(--charcoal)", border: "1px dashed var(--gold)", borderRadius: 10, padding: "0.6rem 1rem", fontFamily: "var(--sans)" }}>
                 <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>Your code</span>
                 <code style={{ color: "var(--gold)", fontWeight: 700, letterSpacing: "0.05em" }}>{reward.code}</code>
-                <span style={{ color: reward.redeemed ? "var(--muted)" : "#7DBE86", fontSize: "0.78rem" }}>{reward.redeemed ? "· redeemed" : "· ready"}</span>
+                <span style={{ color: reward.redeemed ? "var(--muted)" : "var(--success)", fontSize: "0.78rem" }}>{reward.redeemed ? "· redeemed" : "· ready"}</span>
               </div>
             ) : null}
           </div>
@@ -236,7 +236,7 @@ export default async function Achievements() {
                 <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}><Glyph e={on ? "🏅" : "🔒"} /></div>
                 <div style={{ fontFamily: "var(--sans)", fontWeight: 700, color: on ? "var(--gold)" : "var(--ivory)", fontSize: "0.95rem" }}>{b.name}</div>
                 <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", margin: "0.35rem 0 0.5rem" }}>{b.need}</div>
-                <div style={{ fontSize: "0.72rem", letterSpacing: "0.1em", color: on ? "#7DBE86" : "var(--muted)", fontFamily: "var(--sans)" }}>
+                <div style={{ fontSize: "0.72rem", letterSpacing: "0.1em", color: on ? "var(--success)" : "var(--muted)", fontFamily: "var(--sans)" }}>
                   {on ? "UNLOCKED" : "LOCKED"}
                 </div>
               </div>

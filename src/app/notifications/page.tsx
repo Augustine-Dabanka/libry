@@ -5,7 +5,7 @@ import MarkNotificationsRead from "@/components/MarkNotificationsRead";
 import PushToggle from "@/components/PushToggle";
 
 import Glyph from "@/components/Glyph";
-export const metadata = { title: "Notifications — Leep" };
+export const metadata = { title: "Notifications — Lybry" };
 
 type Notif = { id: number; actor_name: string | null; kind: string; summary: string; link: string | null; read: boolean; created_at: string };
 
@@ -68,7 +68,7 @@ export default async function NotificationsPage() {
               );
               const style: React.CSSProperties = {
                 display: "flex", alignItems: "flex-start", gap: "0.7rem", padding: "0.85rem 1rem", borderRadius: 12,
-                border: "1px solid var(--border)", background: n.read ? "var(--stone)" : "rgba(95,160,104,0.08)", textDecoration: "none", color: "inherit",
+                border: "1px solid var(--border)", background: n.read ? "var(--stone)" : "color-mix(in srgb, var(--gold) 8%, transparent)", textDecoration: "none", color: "inherit",
               };
               return n.link ? (
                 <a key={n.id} href={n.link} style={style}>{inner}</a>

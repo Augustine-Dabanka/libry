@@ -1,6 +1,6 @@
 import Icon, { type IconName } from "@/components/Icon";
 
-// Emoji -> Leep icon. Old data (community icons saved in the database, picker
+// Emoji -> Lybry icon. Old data (community icons saved in the database, picker
 // options, notification kinds) still stores emoji; render it through <Glyph>
 // and it shows as a crisp icon in the current icon style instead of whatever
 // emoji font the phone has. Unknown values render as plain text.

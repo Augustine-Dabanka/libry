@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import BookCarousel from "@/components/BookCarousel";
 import ProductMini, { type ProductCard } from "@/components/ProductMini";
+import { productsOn } from "@/lib/features";
 import HeroArt from "@/components/HeroArt";
 import StreakCard from "@/components/StreakCard";
 import AudiencePicker, { type AudienceGroup } from "@/components/AudiencePicker";
@@ -15,6 +16,7 @@ import { type Book } from "@/lib/types";
 import { rankBooks, type BookSignals } from "@/lib/ranking";
 
 import Glyph from "@/components/Glyph";
+import SmartGreeting from "@/components/SmartGreeting";
 // Shelves are horizontal carousels now (compact cards, snap-scroll) so several
 // categories fit on one mobile screen. The .section wrapper keeps the gutter.
 function Shelf({ title, books, href = "/catalog" }: { title: string; books: Book[]; href?: string }) {
@@ -39,7 +41,11 @@ export default async function Home() {
     .eq("id", user.id)
     .maybeSingle();
   const firstName = (profile?.full_name || profile?.username || "").split(" ")[0];
-  const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+  // Date of birth (0046, owner-only) flavours the greeting by generation and
+  // for birthdays. Guarded so Home works before the migration.
+  const pv = await supabase.from("profile_private").select("date_of_birth").eq("user_id", user.id).maybeSingle();
+  const myDob = pv.error ? null : ((pv.data as { date_of_birth?: string | null } | null)?.date_of_birth ?? null);
+  const sm = await supabase.from("my_profile").select("show_mature").eq("id", user.id).maybeSingle();
   const allowed = allowedRatings(sm.data?.show_mature ?? false);
 
   const primaryBooks = await supabase
@@ -60,7 +66,7 @@ export default async function Home() {
 
   // Digital products from creators (guarded pre-migration).
   let products: ProductCard[] = [];
-  {
+  if (await productsOn()) {
     const pp = await supabase.from("products").select("id, title, type, price, cover_url, category").eq("is_published", true).order("created_at", { ascending: false }).limit(12);
     if (!pp.error && pp.data) products = pp.data as ProductCard[];
   }
@@ -74,19 +80,19 @@ export default async function Home() {
     for (let i = 0; i < Math.min(5, books.length); i++) featured.push(books[(start + i) % books.length]);
   }
 
-  // --- Trending on Leep: our own ranking algorithm over real signals ---
+  // --- Trending on Lybry: our own ranking algorithm over real signals ---
   let trending: Book[] = [];
   {
     // Global reading signals (all readers) → reach + completion per book.
-    const prog = await supabase.from("reading_progress").select("book_id, user_email, progress_percentage").limit(5000);
-    const rows = prog.data ?? [];
-    const readersBy = new Map<number, Set<string>>();
+    // One aggregate row per book (0048) instead of downloading everyone's progress.
+    const stats = await supabase.rpc("book_reading_stats");
+    const readersBy = new Map<number, number>();
     const finishersBy = new Map<number, number>();
-    for (const r of rows as { book_id: number; user_email: string; progress_percentage: number | null }[]) {
-      const bid = Number(r.book_id);
-      if (!readersBy.has(bid)) readersBy.set(bid, new Set());
-      readersBy.get(bid)!.add(r.user_email);
-      if (Number(r.progress_percentage ?? 0) >= 100) finishersBy.set(bid, (finishersBy.get(bid) ?? 0) + 1);
+    if (!stats.error && stats.data) {
+      for (const r of stats.data as { book_id: number; readers: number; finishers: number }[]) {
+        readersBy.set(Number(r.book_id), r.readers);
+        finishersBy.set(Number(r.book_id), r.finishers);
+      }
     }
     // Review counts (guarded).
     const reviewsBy = new Map<number, number>();
@@ -108,12 +114,13 @@ export default async function Home() {
     const catByBook = new Map<number, string>();
     for (const b of pool) {
       const bid = Number(b.id);
-      signals.set(bid, { readers: readersBy.get(bid)?.size ?? 0, finishers: finishersBy.get(bid) ?? 0, reviews: reviewsBy.get(bid) ?? 0 });
+      signals.set(bid, { readers: readersBy.get(bid) ?? 0, finishers: finishersBy.get(bid) ?? 0, reviews: reviewsBy.get(bid) ?? 0 });
       if (b.category) catByBook.set(bid, b.category);
     }
 
     // This reader's taste → top categories they actually read.
-    const myBooks = new Set((rows as { book_id: number; user_email: string }[]).filter((r) => r.user_email === user.email).map((r) => Number(r.book_id)));
+    const mine = await supabase.from("reading_progress").select("book_id").eq("user_email", user.email ?? "");
+    const myBooks = new Set(((mine.data ?? []) as { book_id: number }[]).map((r) => Number(r.book_id)));
     const affCount = new Map<string, number>();
     for (const bid of myBooks) { const c = catByBook.get(bid); if (c) affCount.set(c, (affCount.get(c) ?? 0) + 1); }
     const affinity = new Set([...affCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map((e) => e[0]));
@@ -255,9 +262,7 @@ export default async function Home() {
 
       <section className="hero">
         <div className="hero-content">
-          <h1>
-            Welcome back, <span style={{ fontStyle: "italic" }}>{firstName || "reader"}</span>
-          </h1>
+          <SmartGreeting name={firstName || "reader"} dob={myDob} />
           <p>We&apos;ve lined up beautiful, character-driven fiction — picked for you below.</p>
           <form className="hero-search" action="/search" method="get">
             <input name="q" type="text" placeholder="Search titles, authors, worlds…" aria-label="Search books" />
@@ -334,7 +339,7 @@ export default async function Home() {
       {becauseBooks.length > 0 ? (
         <Shelf title={`Because you read ${becauseTitle}`} books={becauseBooks} />
       ) : null}
-      <Shelf title="Top Rated on Leep" books={topRated} href="/catalog?sort=rating" />
+      <Shelf title="Top Rated on Lybry" books={topRated} href="/catalog?sort=rating" />
       <Shelf title="Free to Read" books={freeBooks} href="/catalog?free=1" />
       <Shelf title="Premium Reads" books={premiumBooks} href="/catalog?paid=1" />
 

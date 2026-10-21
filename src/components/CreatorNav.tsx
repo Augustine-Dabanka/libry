@@ -16,9 +16,9 @@ export default function CreatorNav() {
     <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", padding: "0.85rem clamp(1.1rem,5vw,2.4rem)", background: "var(--stone)", borderBottom: "1px solid var(--border)", flexWrap: "wrap" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.9rem" }}>
         <a href="/creator" style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: "1.2rem", color: "var(--ivory)", textDecoration: "none" }}>
-          Leep<span style={{ color: "var(--gold)" }}>.</span>
+          Lybry<span style={{ color: "var(--gold)" }}>.</span>
         </a>
-        <span style={{ fontFamily: "var(--sans)", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--gold)", border: "1px solid rgba(197,160,89,0.4)", borderRadius: 999, padding: "0.2rem 0.6rem" }}>
+        <span style={{ fontFamily: "var(--sans)", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--gold)", border: "1px solid color-mix(in srgb, var(--gold) 40%, transparent)", borderRadius: 999, padding: "0.2rem 0.6rem" }}>
           Creator
         </span>
       </div>

@@ -11,15 +11,20 @@ const env = (v: string | undefined, fallback: string) => (v && v.trim()) || fall
 
 export const LEGAL = {
   brand: BRAND.name,
-  entity: env(process.env.NEXT_PUBLIC_LEGAL_ENTITY, "Craft & Anchor"),
+  // The person or company legally responsible for Lybry. Until a company exists
+  // this is the parent/guardian who runs it: set NEXT_PUBLIC_LEGAL_ENTITY to
+  // their full legal name in Vercel. "Lybry" is only a stand-in.
+  entity: env(process.env.NEXT_PUBLIC_LEGAL_ENTITY, "Lybry"),
   // Full postal address. Optional: when empty, only the country is shown.
   address: env(process.env.NEXT_PUBLIC_LEGAL_ADDRESS, ""),
-  country: env(process.env.NEXT_PUBLIC_LEGAL_COUNTRY, "Ghana"),
-  effectiveDate: env(process.env.NEXT_PUBLIC_LEGAL_EFFECTIVE_DATE, "10 October 2026"),
+  // Left blank on purpose until the operator's state is settled (set e.g. "United States").
+  country: env(process.env.NEXT_PUBLIC_LEGAL_COUNTRY, ""),
+  effectiveDate: env(process.env.NEXT_PUBLIC_LEGAL_EFFECTIVE_DATE, "20 October 2026"),
   // One inbox is enough. Leave empty and every "contact us" points at /contact.
   contactEmail: env(process.env.NEXT_PUBLIC_CONTACT_EMAIL, ""),
-  jurisdiction: env(process.env.NEXT_PUBLIC_GOVERNING_JURISDICTION, "the Republic of Ghana"),
-  venue: env(process.env.NEXT_PUBLIC_LEGAL_VENUE, "the courts of Ghana"),
+  // Generic until a US state is chosen; then set e.g. "the State of Texas, USA" / "the state and federal courts in Travis County, Texas".
+  jurisdiction: env(process.env.NEXT_PUBLIC_GOVERNING_JURISDICTION, "the state and country where Lybry's operator lives"),
+  venue: env(process.env.NEXT_PUBLIC_LEGAL_VENUE, "the state and country where Lybry's operator lives"),
   liabilityPeriod: env(process.env.NEXT_PUBLIC_LIABILITY_PERIOD, "12 months"),
   appealWindow: env(process.env.NEXT_PUBLIC_APPEAL_WINDOW, "30 days"),
   refundWindow: env(process.env.NEXT_PUBLIC_REFUND_WINDOW, "14 days"),
@@ -29,10 +34,10 @@ export const LEGAL = {
   host: "Supabase",
   web: "Vercel",
   mail: "Resend",
-  payments: "Paystack",
+  payments: "Paystack and Stripe",
   monitoring: "Sentry",
 };
 
-// "Craft & Anchor, Accra, Ghana" or "Craft & Anchor (Ghana)"
+// "Jane Doe, 1 Main St, Austin, TX", "Jane Doe (United States)" or just "Jane Doe"
 export const operatorLine = () =>
-  LEGAL.address ? `${LEGAL.entity}, ${LEGAL.address}` : `${LEGAL.entity} (${LEGAL.country})`;
+  LEGAL.address ? `${LEGAL.entity}, ${LEGAL.address}` : LEGAL.country ? `${LEGAL.entity} (${LEGAL.country})` : LEGAL.entity;

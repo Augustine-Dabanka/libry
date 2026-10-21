@@ -26,8 +26,16 @@ export function genCover(title?: string | null, subtitle?: string | null): strin
   return `/api/cover?${p.toString()}`;
 }
 
+// Prices are stored in USD. When Paystack charges in a local currency (e.g.
+// GHS), show that amount, so the price on the page is the price you pay.
+// Stripe always charges USD at the list price.
+const STRIPE = process.env.NEXT_PUBLIC_PAYMENT_PROVIDER === "stripe";
+const CUR = STRIPE ? "USD" : process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY || "USD";
+const RATE = STRIPE ? 1 : Number(process.env.NEXT_PUBLIC_PAYSTACK_USD_RATE || "1") || 1;
+const SYMBOL: Record<string, string> = { GHS: "GH₵", NGN: "₦", KES: "KSh ", ZAR: "R", USD: "$" };
 export function formatPrice(price: number | null): string {
   if (!price || price <= 0) return "Free";
+  if (CUR !== "USD") return `${SYMBOL[CUR] ?? CUR + " "}${(Number(price) * RATE).toFixed(2)}`;
   return `$${Number(price).toFixed(2)}`;
 }
 

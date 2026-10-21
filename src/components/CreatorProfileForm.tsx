@@ -103,7 +103,7 @@ export default function CreatorProfileForm({
 
       <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginTop: "0.8rem", flexWrap: "wrap" }}>
         <button type="button" className="btn btn-gold" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save author profile"}</button>
-        {msg ? <span style={{ color: msg.includes("✓") ? "#7DBE86" : "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.85rem" }}>{msg}</span> : null}
+        {msg ? <span style={{ color: msg.includes("✓") ? "var(--success)" : "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.85rem" }}>{msg}</span> : null}
       </div>
     </div>
   );

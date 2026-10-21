@@ -79,7 +79,7 @@ export default function FinancePanel({
           <div>
             <h3 style={{ marginBottom: "0.2rem" }}>Withdraw your earnings</h3>
             <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", margin: 0 }}>
-              Minimum {formatPrice(MIN)}. Payouts settle in GHS and are sent to your account through Paystack once requested.
+              Minimum {formatPrice(MIN)}. During early access, payouts are reviewed and sent manually after you request one; we confirm the method and currency with you first.
             </p>
           </div>
           <button type="button" className="btn btn-gold" disabled={!canRequest || reqBusy} onClick={request} style={{ opacity: !canRequest || reqBusy ? 0.6 : 1, whiteSpace: "nowrap" }}>
@@ -88,7 +88,7 @@ export default function FinancePanel({
         </div>
         {!isPartner ? (
           <p style={{ color: "var(--gold-hi)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem" }}>
-            <Glyph e="🤝" /> Payouts unlock once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Leep Partnership Program</a>{partner === "pending" ? " — your application is under review." : "."} You keep earning in the meantime.
+            <Glyph e="🤝" /> Payouts unlock once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Lybry Partnership Program</a>{partner === "pending" ? " — your application is under review." : "."} You keep earning in the meantime.
           </p>
         ) : null}
         {isPartner && !hasAccount ? <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.7rem" }}>Add your payout details below first.</p> : null}
@@ -101,7 +101,7 @@ export default function FinancePanel({
         <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", marginBottom: "0.6rem" }}>Where we send your money. Only you can see this. Pick the option that works for your country.</p>
         <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.4rem", flexWrap: "wrap" }}>
           {([["momo", "Mobile money"], ["bank", "Bank"], ["paypal", "PayPal"], ["wise", "Wise / Intl"]] as [string, string][]).map(([m, lbl]) => (
-            <button key={m} type="button" onClick={() => setMethod(m)} style={{ padding: "0.45rem 0.9rem", borderRadius: 999, cursor: "pointer", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.82rem", border: `1px solid ${method === m ? "var(--gold)" : "var(--border)"}`, background: method === m ? "rgba(95,160,104,0.14)" : "transparent", color: method === m ? "var(--gold)" : "var(--ivory-muted)" }}>
+            <button key={m} type="button" onClick={() => setMethod(m)} style={{ padding: "0.45rem 0.9rem", borderRadius: 999, cursor: "pointer", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.82rem", border: `1px solid ${method === m ? "var(--gold)" : "var(--border)"}`, background: method === m ? "color-mix(in srgb, var(--gold) 14%, transparent)" : "transparent", color: method === m ? "var(--gold)" : "var(--ivory-muted)" }}>
               {lbl}
             </button>
           ))}
@@ -117,8 +117,8 @@ export default function FinancePanel({
           </>
         ) : method === "bank" ? (
           <>
-            <label style={label}>Bank name (add country if outside Ghana)</label>
-            <input style={field} value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="e.g. GCB Bank · Ghana / Barclays · UK" />
+            <label style={label}>Bank name (and country)</label>
+            <input style={field} value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="e.g. Chase · USA" />
             <label style={label}>Account name</label>
             <input style={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name on the account" />
             <label style={label}>Account number / IBAN / sort code</label>
@@ -145,7 +145,7 @@ export default function FinancePanel({
         <button type="button" className="btn btn-outline" disabled={busy} onClick={saveAccount} style={{ marginTop: "1rem" }}>{busy ? "Saving…" : "Save payout details"}</button>
       </div>
 
-      {msg ? <p style={{ color: "#7DBE86", fontFamily: "var(--sans)", fontSize: "0.88rem" }}>{msg}</p> : null}
+      {msg ? <p style={{ color: "var(--success)", fontFamily: "var(--sans)", fontSize: "0.88rem" }}>{msg}</p> : null}
       {err ? <p style={{ color: "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.88rem" }}>{err}</p> : null}
 
       {/* History */}
@@ -160,7 +160,7 @@ export default function FinancePanel({
                   <tr key={h.id}>
                     <td>{new Date(h.requested_at).toLocaleDateString()}</td>
                     <td>{formatPrice(h.amount)}</td>
-                    <td><span className="badge" style={{ background: h.status === "paid" ? "rgba(78,122,82,0.2)" : h.status === "rejected" ? "rgba(196,85,63,0.2)" : "rgba(217,164,65,0.2)", color: h.status === "paid" ? "#7DBE86" : h.status === "rejected" ? "#E0836B" : "#D9A441" }}>{h.status}</span></td>
+                    <td><span className="badge" style={{ background: h.status === "paid" ? "color-mix(in srgb, var(--success) 20%, transparent)" : h.status === "rejected" ? "rgba(196,85,63,0.2)" : "rgba(217,164,65,0.2)", color: h.status === "paid" ? "var(--success)" : h.status === "rejected" ? "#E0836B" : "#D9A441" }}>{h.status}</span></td>
                     <td>{h.paid_at ? new Date(h.paid_at).toLocaleDateString() : "—"}</td>
                   </tr>
                 ))}

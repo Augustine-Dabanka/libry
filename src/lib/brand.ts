@@ -5,7 +5,7 @@
 const env = (v: string | undefined) => (v && v.trim()) || "";
 
 export const BRAND = {
-  name: "Leep",
+  name: "Lybry",
   tagline: "Stories worth lingering in",
   siteUrl: (env(process.env.NEXT_PUBLIC_SITE_URL) || "https://libry-sigma.vercel.app").replace(/\/+$/, ""),
   // Public inbox (e.g. hello@yourdomain). Empty = use the /contact form.

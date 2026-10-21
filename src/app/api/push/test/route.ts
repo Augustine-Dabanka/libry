@@ -13,7 +13,7 @@ export async function POST() {
   } = await supabase.auth.getUser();
   if (!user) return json({ error: "Not signed in." }, 401);
   if (!pushConfigured()) return json({ error: "Push isn't fully configured on the server yet." }, 503);
-  const sent = await sendPushToUser(user.id, { title: "Leep", body: "Notifications are on — you're all set.", url: "/notifications" });
+  const sent = await sendPushToUser(user.id, { title: "Lybry", body: "Notifications are on — you're all set.", url: "/notifications" });
   return json({ ok: true, sent });
 }
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-// Shared access: grant other Leep readers access to your library by username.
+// Shared access: grant other Lybry readers access to your library by username.
 // The list is stored on your profile (prefs.shared_with); enforcement of shared
 // reading is layered on later, but the sharing relationship is real and saved.
 export default function SharedAccess({
@@ -22,7 +22,7 @@ export default function SharedAccess({
 
   async function persist(next: string[]) {
     const supabase = createClient();
-    const { data } = await supabase.from("profiles").select("prefs").eq("id", userId).maybeSingle();
+    const { data } = await supabase.from("my_profile").select("prefs").eq("id", userId).maybeSingle();
     const prefs = data?.prefs && typeof data.prefs === "object" ? (data.prefs as Record<string, unknown>) : {};
     await supabase.from("profiles").update({ prefs: { ...prefs, shared_with: next } }).eq("id", userId);
   }
@@ -36,7 +36,7 @@ export default function SharedAccess({
     setBusy(true);
     const supabase = createClient();
     const { data } = await supabase.from("profiles").select("username").eq("username", u).maybeSingle();
-    if (!data) { setBusy(false); setMsg("No Leep reader with that username."); return; }
+    if (!data) { setBusy(false); setMsg("No Lybry reader with that username."); return; }
     const next = [...list, u];
     setList(next);
     setInput("");
@@ -76,7 +76,7 @@ export default function SharedAccess({
           {busy ? "…" : "Invite"}
         </button>
       </div>
-      {msg ? <p style={{ color: msg.includes("✓") ? "#7DBE86" : "var(--terracotta)", fontSize: "0.82rem", marginTop: "0.6rem", fontFamily: "var(--sans)" }}>{msg}</p> : null}
+      {msg ? <p style={{ color: msg.includes("✓") ? "var(--success)" : "var(--terracotta)", fontSize: "0.82rem", marginTop: "0.6rem", fontFamily: "var(--sans)" }}>{msg}</p> : null}
 
       {list.length > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "1rem" }}>

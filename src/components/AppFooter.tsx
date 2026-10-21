@@ -19,7 +19,7 @@ export default function AppFooter() {
       <div className="footer-cols">
         <div>
           <div className="footer-logo">
-            Leep<span>.</span>
+            Lybry<span>.</span>
           </div>
           <p className="footer-tag">Stories worth lingering in.</p>
           <SocialIcons className="footer-social" />
@@ -28,7 +28,7 @@ export default function AppFooter() {
         <div className="footer-col">
           <h4>Read</h4>
           <a href="/catalog">Browse the catalog</a>
-          <a href="/unlimited">Leep Unlimited</a>
+          <a href="/unlimited">Lybry Unlimited</a>
           <a href="/discover?filter=free">Free to read</a>
           <a href="/discover?filter=interactive">Interactive stories</a>
           <a href="/my-library">My Library</a>
@@ -56,10 +56,10 @@ export default function AppFooter() {
         <span className="footer-status">
           <span className="status-dot" /> Early access · reading free to start
         </span>
-        <span className="footer-copy">© 2026 Leep. Crafted with care for readers &amp; writers.</span>
+        <span className="footer-copy">© 2026 Lybry. Crafted with care for readers &amp; writers.</span>
       </div>
       <p className="footer-legal">
-        Leep is operated by {operatorLine()}.
+        Lybry is operated by {operatorLine()}.
         {" "}<a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/cookies">Cookies</a> · <a href="/refunds">Refunds</a>
       </p>
     </footer>

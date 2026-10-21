@@ -56,14 +56,14 @@ export default function RoyaltyCalculator() {
         <label style={label}>Platform fee (%)</label>
         <input style={field} type="number" min="0" max="100" step="1" value={fee} onChange={(e) => setFee(e.target.value)} />
         <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.5rem" }}>
-          Leep&apos;s standard fee is 35% — a 30% platform cut plus a 5% platform &amp; infra fee (you keep 65%).
+          Lybry&apos;s standard fee is 35% — a 30% platform cut plus a 5% platform &amp; infra fee (you keep 65%).
         </p>
       </div>
 
       <div
         style={{
-          background: "linear-gradient(150deg, rgba(196,163,90,0.14), rgba(180,83,9,0.10))",
-          border: "1px solid rgba(196,163,90,0.35)",
+          background: "linear-gradient(150deg, color-mix(in srgb, var(--gold) 14%, transparent), rgba(180,83,9,0.10))",
+          border: "1px solid color-mix(in srgb, var(--gold) 35%, transparent)",
           borderRadius: 18,
           padding: "1.6rem",
         }}

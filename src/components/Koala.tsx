@@ -14,7 +14,7 @@ const MOOD: Record<KoalaState, MascotMood> = {
 export default function Koala({ state = "idle", size = 96 }: { state?: KoalaState; size?: number }) {
   return (
     <span style={{ display: "inline-block", filter: state === "frozen" ? "hue-rotate(170deg) saturate(0.6) brightness(1.1)" : undefined }}>
-      <Mascot mood={MOOD[state]} size={size} prop={state === "detective" ? "magnifier" : undefined} label={`Koala (${state})`} />
+      <Mascot mood={MOOD[state]} size={size} prop={state === "detective" ? "magnifier" : undefined} label={`Bushbaby (${state})`} />
     </span>
   );
 }

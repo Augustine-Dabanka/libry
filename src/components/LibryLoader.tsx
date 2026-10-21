@@ -1,5 +1,6 @@
-// The Leep loader: L-E-E-P fly in, collide into the "L", and the dot drops
-// and bounces into place, then it repeats. Pure CSS (see .ll-* in globals.css):
+// The Lybry loader: L, E, E, P hop in one after another and the dot drops onto
+// the baseline, then the word drops away and it repeats. The letters are a real
+// flex row, so they never overlap. Pure CSS (see .ll-* in globals.css):
 // no JS, no image, about 1 KB, transform/opacity only, so it never slows the
 // page loading underneath it. Honors prefers-reduced-motion.
 //
@@ -19,10 +20,11 @@ export default function LibryLoader({
 }) {
   const mark = (px: number, a11yLabel?: string) => (
     <span className="ll" style={{ fontSize: px }} role={a11yLabel ? "status" : undefined} aria-label={a11yLabel} aria-hidden={a11yLabel ? undefined : true}>
-      <span className="ll-ch ll-i" aria-hidden="true">E</span>
-      <span className="ll-ch ll-b" aria-hidden="true">E</span>
-      <span className="ll-ch ll-y" aria-hidden="true">P</span>
-      <span className="ll-ch ll-l" aria-hidden="true">L</span>
+      <span className="ll-ch" aria-hidden="true">L</span>
+      <span className="ll-ch" aria-hidden="true">y</span>
+      <span className="ll-ch" aria-hidden="true">b</span>
+      <span className="ll-ch" aria-hidden="true">r</span>
+      <span className="ll-ch" aria-hidden="true">y</span>
       <span className="ll-dot" aria-hidden="true" />
     </span>
   );

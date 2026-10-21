@@ -60,7 +60,7 @@ export default function ProductReviews({
       <div style={{ display: "flex", gap: "0.2rem", marginBottom: "0.8rem" }}>
         {[1, 2, 3, 4, 5].map((i) => (
           <button key={i} type="button" onClick={() => setRating(i)} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(0)} aria-label={`${i} star${i > 1 ? "s" : ""}`}
-            style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "1.6rem", lineHeight: 1, color: "var(--gold-hi, #C5A059)", opacity: i <= (hover || rating) ? 1 : 0.28, padding: 0 }}>★</button>
+            style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "1.6rem", lineHeight: 1, color: "var(--gold-hi, #F5B731)", opacity: i <= (hover || rating) ? 1 : 0.28, padding: 0 }}>★</button>
         ))}
       </div>
       <textarea ref={taRef} value={body} onChange={(e) => setBody(e.target.value)} placeholder="What did you think? (optional)" rows={3}
@@ -74,7 +74,7 @@ export default function ProductReviews({
   );
 
   const myCard = myReview ? (
-    <div style={{ background: "var(--stone)", border: "1px solid var(--gold, #C5A059)", borderRadius: 12, padding: "1rem 1.2rem", marginBottom: "1.4rem" }}>
+    <div style={{ background: "var(--stone)", border: "1px solid var(--gold, #C8471F)", borderRadius: 12, padding: "1rem 1.2rem", marginBottom: "1.4rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.6rem" }}>
         <span style={{ fontFamily: "var(--sans)", fontWeight: 700, color: "var(--ivory)" }}>{myReview.user_name || "Reader"} <span style={{ color: "var(--muted)", fontWeight: 400, fontSize: "0.8rem" }}>· you</span></span>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>

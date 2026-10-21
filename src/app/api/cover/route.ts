@@ -42,7 +42,7 @@ export function GET(req: Request) {
   const hue2 = (hue + 28) % 360;
   const c1 = `hsl(${hue} 42% 24%)`;
   const c2 = `hsl(${hue2} 48% 12%)`;
-  const gold = "#C5A059";
+  const gold = "#C8471F";
   const ivory = "#F2E9D8";
 
   const lines = wrap(title);
@@ -63,7 +63,7 @@ export function GET(req: Request) {
   </defs>
   <rect width="300" height="450" fill="url(#g)"/>
   <rect x="10" y="10" width="280" height="430" fill="none" stroke="${gold}" stroke-opacity="0.35" stroke-width="1"/>
-  <text x="150" y="52" text-anchor="middle" fill="${gold}" font-family="Georgia, serif" font-size="13" letter-spacing="5" opacity="0.9">LEEP</text>
+  <text x="150" y="52" text-anchor="middle" fill="${gold}" font-family="Georgia, serif" font-size="13" letter-spacing="5" opacity="0.9">LYBRY</text>
   <line x1="120" y1="72" x2="180" y2="72" stroke="${gold}" stroke-width="1" opacity="0.6"/>
   <text text-anchor="middle" fill="${ivory}" font-family="Georgia, 'Times New Roman', serif" font-size="27" font-weight="600">${titleTspans}</text>
   ${subtitle ? `<text x="150" y="400" text-anchor="middle" fill="${ivory}" fill-opacity="0.72" font-family="Georgia, serif" font-size="14" font-style="italic">${esc(subtitle)}</text>` : ""}

@@ -67,7 +67,7 @@ export default function AccountSettings({ userId, initialName }: { userId: strin
         <input style={{ ...field, flex: 1, minWidth: 200 }} value={name} onChange={(e) => setName(e.target.value)} />
         <button className="btn btn-gold" type="button" onClick={saveName} disabled={busy} style={{ padding: "0.6rem 1.3rem" }}>Save</button>
       </div>
-      {nameMsg ? <p style={{ color: nameMsg.includes("✓") ? "#7DBE86" : "var(--terracotta)", fontSize: "0.82rem", marginTop: "0.5rem", fontFamily: "var(--sans)" }}>{nameMsg}</p> : null}
+      {nameMsg ? <p style={{ color: nameMsg.includes("✓") ? "var(--success)" : "var(--terracotta)", fontSize: "0.82rem", marginTop: "0.5rem", fontFamily: "var(--sans)" }}>{nameMsg}</p> : null}
 
       <label style={label}>Change password</label>
       <input style={field} type="password" placeholder="New password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} />
@@ -75,7 +75,7 @@ export default function AccountSettings({ userId, initialName }: { userId: strin
       <div style={{ marginTop: "0.7rem" }}>
         <button className="btn btn-outline" type="button" onClick={savePassword} disabled={busy} style={{ padding: "0.55rem 1.3rem" }}>Update password</button>
       </div>
-      {pwMsg ? <p style={{ color: pwMsg.includes("✓") ? "#7DBE86" : "var(--terracotta)", fontSize: "0.82rem", marginTop: "0.5rem", fontFamily: "var(--sans)" }}>{pwMsg}</p> : null}
+      {pwMsg ? <p style={{ color: pwMsg.includes("✓") ? "var(--success)" : "var(--terracotta)", fontSize: "0.82rem", marginTop: "0.5rem", fontFamily: "var(--sans)" }}>{pwMsg}</p> : null}
     </div>
   );
 }

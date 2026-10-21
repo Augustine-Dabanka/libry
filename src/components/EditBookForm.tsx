@@ -90,7 +90,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
     }
     const priceNum = Math.max(0, parseFloat(price) || 0);
     // Price floor: paid books must clear the payment-processor fee (~5% + $0.50)
-    // so both the writer and Leep actually profit. Free (0) is always allowed.
+    // so both the writer and Lybry actually profit. Free (0) is always allowed.
     if (priceNum > 0 && priceNum < MIN_PRICE) {
       setErr(`Paid books must be free or at least $${MIN_PRICE.toFixed(2)} — below that, payment fees eat the sale.`);
       return;
@@ -147,12 +147,12 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
       {/* Cover — upload from device, or paste a URL */}
       <label style={label}>Book cover</label>
       <div style={{ display: "flex", gap: "1.1rem", alignItems: "flex-start", flexWrap: "wrap", marginTop: "0.35rem" }}>
-        <div style={{ width: 96, aspectRatio: "2 / 3", borderRadius: 10, overflow: "hidden", flexShrink: 0, border: "1px solid var(--border)", background: "linear-gradient(160deg, rgba(197,160,89,0.12), rgba(0,0,0,0.25))", display: "grid", placeItems: "center" }}>
+        <div style={{ width: 96, aspectRatio: "2 / 3", borderRadius: 10, overflow: "hidden", flexShrink: 0, border: "1px solid var(--border)", background: "linear-gradient(160deg, color-mix(in srgb, var(--gold) 12%, transparent), rgba(0,0,0,0.25))", display: "grid", placeItems: "center" }}>
           {cover.trim() ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={cover} alt="Cover preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
-            <span style={{ fontFamily: "var(--sans)", fontSize: "0.6rem", letterSpacing: "0.2em", color: "var(--gold-hi)", fontWeight: 700 }}>LEEP</span>
+            <span style={{ fontFamily: "var(--sans)", fontSize: "0.7rem", letterSpacing: "0.2em", color: "var(--gold-hi)", fontWeight: 700 }}>LYBRY</span>
           )}
         </div>
         <div style={{ flex: 1, minWidth: 200 }}>
@@ -168,7 +168,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
           <label style={{ ...label, marginTop: "0.8rem", fontSize: "0.78rem" }}>…or paste an image URL</label>
           <input style={field} value={cover} onChange={(e) => setCover(e.target.value)} placeholder="https://…/cover.jpg" />
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "0.4rem" }}>
-            Portrait works best (2:3). Leave empty to use the generated Leep cover.
+            Portrait works best (2:3). Leave empty to use the generated Lybry cover.
           </p>
           {coverErr ? <p style={{ color: "var(--terracotta)", fontSize: "0.82rem", marginTop: "0.4rem" }}>{coverErr}</p> : null}
         </div>
@@ -206,7 +206,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
                     padding: "0.3rem 0.7rem", borderRadius: 999, cursor: "pointer",
                     fontFamily: "var(--sans)", fontSize: "0.78rem", fontWeight: 700,
                     border: `1px solid ${on ? "var(--gold)" : "var(--border)"}`,
-                    background: on ? "rgba(197,160,89,0.14)" : "transparent",
+                    background: on ? "color-mix(in srgb, var(--gold) 14%, transparent)" : "transparent",
                     color: on ? "var(--gold)" : "var(--ivory-muted)",
                   }}
                 >
@@ -234,7 +234,7 @@ export default function EditBookForm({ book }: { book: BookEdit }) {
           const on = cur.includes(t);
           return (
             <button key={t} type="button" onClick={() => setTags((on ? cur.filter((x) => x !== t) : [...cur, t]).join(", "))}
-              style={{ padding: "0.25rem 0.6rem", borderRadius: 999, cursor: "pointer", fontFamily: "var(--sans)", fontSize: "0.75rem", fontWeight: 600, border: `1px solid ${on ? "var(--gold)" : "var(--border)"}`, background: on ? "rgba(197,160,89,0.14)" : "transparent", color: on ? "var(--gold)" : "var(--ivory-muted)" }}>
+              style={{ padding: "0.25rem 0.6rem", borderRadius: 999, cursor: "pointer", fontFamily: "var(--sans)", fontSize: "0.75rem", fontWeight: 600, border: `1px solid ${on ? "var(--gold)" : "var(--border)"}`, background: on ? "color-mix(in srgb, var(--gold) 14%, transparent)" : "transparent", color: on ? "var(--gold)" : "var(--ivory-muted)" }}>
               {on ? "✓ " : "+ "}{t}
             </button>
           );

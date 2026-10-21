@@ -82,7 +82,7 @@ export default function LearningPath({ books }: { books: Book[] }) {
                       borderRadius: "50%",
                       background: coverGradient(node.book.title),
                       boxShadow: "0 8px 20px rgba(0,0,0,0.45), inset 0 -4px 10px rgba(0,0,0,0.35)",
-                      border: "3px solid rgba(196,163,90,0.5)",
+                      border: "3px solid color-mix(in srgb, var(--gold) 50%, transparent)",
                       display: "grid",
                       placeItems: "center",
                       fontSize: "1.6rem",

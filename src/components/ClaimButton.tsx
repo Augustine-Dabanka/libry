@@ -5,7 +5,7 @@ import { claimQuest } from "@/app/actions/gamification";
 import { playPop } from "@/lib/sfx";
 
 import Glyph from "@/components/Glyph";
-const COLORS = ["#C4A35A", "#B45309", "#7DBE86", "#B7B7E6", "#E08A3C", "#FAF7F2"];
+const COLORS = ["var(--gold)", "#B45309", "var(--success)", "#B7B7E6", "#E08A3C", "#FAF7F2"];
 // 12 particles fanned out in a circle.
 const PARTICLES = Array.from({ length: 12 }, (_, i) => {
   const a = (i / 12) * Math.PI * 2;

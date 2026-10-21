@@ -139,7 +139,7 @@ export default function ProductsPanel({ userId, products, canPublish }: { userId
         </button>
         <h3 style={{ marginBottom: "0.3rem" }}>{editing.id ? "Edit product" : "New product"}</h3>
         <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.86rem", marginBottom: "0.5rem" }}>
-          You keep <strong style={{ color: "var(--ivory)" }}>65%</strong> of every sale · Leep keeps 35% (30% platform + 5% infra fee).
+          You keep <strong style={{ color: "var(--ivory)" }}>65%</strong> of every sale · Lybry keeps 35% (30% platform + 5% infra fee).
         </p>
 
         <label style={labelStyle}>Product type</label>
@@ -176,7 +176,7 @@ export default function ProductsPanel({ userId, products, canPublish }: { userId
             <label style={labelStyle}>File {editing.file_name ? "· replace" : ""}</label>
             <input type="file" onChange={uploadFile} style={{ ...inputStyle, padding: "0.5rem" }} />
             {editing.file_name ? (
-              <p style={{ color: "#7DBE86", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.35rem" }}>✓ {editing.file_name} {fmtSize(editing.file_size)}</p>
+              <p style={{ color: "var(--success)", fontFamily: "var(--sans)", fontSize: "0.82rem", marginTop: "0.35rem" }}>✓ {editing.file_name} {fmtSize(editing.file_size)}</p>
             ) : null}
           </>
         ) : (
@@ -251,7 +251,7 @@ export default function ProductsPanel({ userId, products, canPublish }: { userId
                   <td>{(p.price ?? 0) > 0 ? formatPrice(p.price) : "Free"}</td>
                   <td>{p.sales ?? 0}</td>
                   <td>
-                    <span className="badge" style={p.is_published ? { background: "rgba(78,122,82,0.2)", color: "#7DBE86" } : { background: "rgba(168,162,158,0.2)", color: "var(--muted)" }}>
+                    <span className="badge" style={p.is_published ? { background: "color-mix(in srgb, var(--success) 20%, transparent)", color: "var(--success)" } : { background: "rgba(168,162,158,0.2)", color: "var(--muted)" }}>
                       {p.is_published ? "Live" : "Draft"}
                     </span>
                   </td>

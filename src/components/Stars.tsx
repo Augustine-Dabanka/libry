@@ -4,7 +4,7 @@ export default function Stars({ value, size = 15, showValue = false }: { value: 
   const full = Math.round(v);
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-      <span aria-label={`${v.toFixed(1)} out of 5 stars`} style={{ display: "inline-flex", gap: 1, color: "var(--gold-hi, #C5A059)", fontSize: size, lineHeight: 1 }}>
+      <span aria-label={`${v.toFixed(1)} out of 5 stars`} style={{ display: "inline-flex", gap: 1, color: "var(--gold-hi, #F5B731)", fontSize: size, lineHeight: 1 }}>
         {[1, 2, 3, 4, 5].map((i) => (
           <span key={i} style={{ opacity: i <= full ? 1 : 0.26 }}>★</span>
         ))}

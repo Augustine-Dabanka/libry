@@ -7,18 +7,18 @@ type Mode = "dark" | "light" | "system";
 
 function apply(mode: Mode) {
   const theme = mode === "system"
-    ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")
+    ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
     : mode;
   document.documentElement.setAttribute("data-theme", theme);
 }
 
 // Appearance: Dark / Light / System, persisted in localStorage and applied live.
 export default function AppearanceMode() {
-  const [mode, setMode] = useState<Mode>("system");
+  const [mode, setMode] = useState<Mode>("light");
 
   useEffect(() => {
     try {
-      setMode((localStorage.getItem("libry-theme") as Mode) || "system");
+      setMode((localStorage.getItem("libry-theme") as Mode) || "light");
     } catch {}
   }, []);
 
@@ -31,8 +31,8 @@ export default function AppearanceMode() {
   }
 
   const opts: { v: Mode; label: string; icon: string }[] = [
-    { v: "dark", label: "Dark", icon: "🌙" },
     { v: "light", label: "Light", icon: "☀️" },
+    { v: "dark", label: "Dark", icon: "🌙" },
     { v: "system", label: "System", icon: "🖥️" },
   ];
 
@@ -51,7 +51,7 @@ export default function AppearanceMode() {
             fontFamily: "var(--sans)",
             fontWeight: 600,
             fontSize: "0.9rem",
-            background: mode === o.v ? "rgba(196,163,90,0.16)" : "var(--charcoal)",
+            background: mode === o.v ? "color-mix(in srgb, var(--gold) 16%, transparent)" : "var(--charcoal)",
             border: `1.5px solid ${mode === o.v ? "var(--gold)" : "var(--border)"}`,
             color: mode === o.v ? "var(--gold)" : "var(--ivory-muted)",
           }}

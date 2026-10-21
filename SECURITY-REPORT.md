@@ -1,4 +1,4 @@
-# Leep security report
+# Lybry security report
 
 Scope: the full `libry` repo (Next.js app, server actions, API routes, 38 Supabase
 migrations). Method: read every write policy, server action, API route and payment
@@ -22,7 +22,7 @@ account or data abuse. Medium = limited abuse or needs setup to exploit. Low = h
 | 8 | High | Creators could insert "active" promotions / placements for free | Free featured placement | Server-only writes after payment; legacy free promote button disabled | 7 |
 | 9 | High | Paid interactive stories played in full for everyone | Read without buying | Access check before the story loads | 7 |
 | 10 | High | Stored XSS in book HTML: `jav&#x61;script:` links passed the sanitiser | A creator plants a link that runs code in readers' sessions | Entities decoded, only http/https/mailto/relative links and image data URLs allowed; 13 attack payloads tested | 7 |
-| 11 | High | Open redirect after Google sign-in (`next=@evil.com`) | Phishing: log in on Leep, land on a fake site | Only same-site paths allowed; tested | 7 |
+| 11 | High | Open redirect after Google sign-in (`next=@evil.com`) | Phishing: log in on Lybry, land on a fake site | Only same-site paths allowed; tested | 7 |
 | 12 | High | Users could set their own XP / tokens / quest rewards | Top every board instantly | Writes removed; one server-side XP ledger | 1 |
 | 13 | High | Collaborators could change a book's owner | Take the book and its earnings | `user_id` can't change except by the server | 7 |
 | 14 | High | Free unlimited token "purchase" and refill actions | Infinite tokens | Disabled | 1 |

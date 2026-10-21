@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { paymentsLive, paystackLive } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 import { serviceClient } from "@/lib/supabase/service";
 
@@ -15,7 +16,7 @@ const RATE = Number(process.env.NEXT_PUBLIC_PAYSTACK_USD_RATE || "1") || 1;
 // enabled). The client uses this to decide real Paystack vs. simulated checkout,
 // so we never open the card iframe when we couldn't verify the result.
 export async function paystackReady(): Promise<boolean> {
-  return !!process.env.PAYSTACK_SECRET_KEY && process.env.NEXT_PUBLIC_PAYSTACK_ENABLED === "true";
+  return paystackLive(); // false while Stripe is the active provider
 }
 
 // Verify a Paystack transaction server-side with the SECRET key before granting
@@ -61,7 +62,8 @@ export async function checkoutCart(items: CheckoutItem[], reference: string) {
   // real payments are switched off, and it records NO revenue (amount 0,
   // simulated), so it can never turn into a creator payout. Once Paystack is
   // live, every paid order must be verified, and each reference pays once.
-  const live = await paystackReady();
+  // Any real provider on (Paystack or Stripe) means no free demo orders.
+  const live = paymentsLive();
   const isSimulated = /^(demo|free)-/.test(reference);
   if (realTotalUsd > 0 && isSimulated && live) return { error: "Please complete payment to continue." };
   const svc = serviceClient();

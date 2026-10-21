@@ -237,7 +237,7 @@ export default function CommunityFeed({ userId, userName, avatarUrl, communityId
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                       <span style={{ fontFamily: "var(--sans)", fontWeight: 700, color: "var(--ivory)" }}>{p.author_name || "Reader"}</span>
-                      {m?.creator ? <span style={{ fontFamily: "var(--sans)", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#12100E", background: "var(--gold)", borderRadius: 999, padding: "0.1rem 0.45rem" }}>Creator</span> : null}
+                      {m?.creator ? <span style={{ fontFamily: "var(--sans)", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#12100E", background: "var(--gold)", borderRadius: 999, padding: "0.1rem 0.45rem" }}>Creator</span> : null}
                       <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem" }}>· {timeAgo(p.created_at)}</span>
                     </div>
                     {p.body ? <p style={{ fontFamily: "var(--sans)", fontSize: "0.96rem", color: "var(--ivory-muted)", lineHeight: 1.6, margin: "0.4rem 0 0.7rem", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{p.body}</p> : null}
@@ -265,7 +265,7 @@ export default function CommunityFeed({ userId, userName, avatarUrl, communityId
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <span style={{ display: "inline-flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap" }}>
                                 <span style={{ fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem", color: "var(--ivory)" }}>{c.author_name || "Reader"}</span>
-                                {meta.get(c.user_id)?.creator ? <span style={{ fontFamily: "var(--sans)", fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase", color: "#12100E", background: "var(--gold)", borderRadius: 999, padding: "0.05rem 0.4rem" }}>Creator</span> : null}
+                                {meta.get(c.user_id)?.creator ? <span style={{ fontFamily: "var(--sans)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", color: "#12100E", background: "var(--gold)", borderRadius: 999, padding: "0.05rem 0.4rem" }}>Creator</span> : null}
                                 <span style={{ color: "var(--muted)", fontSize: "0.75rem" }}>· {timeAgo(c.created_at)}</span>
                               </span>
                               <p style={{ fontFamily: "var(--sans)", fontSize: "0.9rem", color: "var(--ivory-muted)", lineHeight: 1.5, margin: "0.2rem 0 0", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{c.body}</p>

@@ -20,7 +20,7 @@ export default function ShareButton({
 
   async function share() {
     const url = typeof window !== "undefined" ? new URL(path, window.location.origin).toString() : path;
-    const data = { title: title || "Leep", text: title ? `${title} — on Leep` : "Read on Leep", url };
+    const data = { title: title || "Lybry", text: title ? `${title} — on Lybry` : "Read on Lybry", url };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const nav = navigator as any;
     if (nav.share) {

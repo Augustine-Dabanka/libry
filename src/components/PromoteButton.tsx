@@ -21,7 +21,7 @@ export default function PromoteButton({
 
   if (promoted) {
     return (
-      <span className="badge" style={{ background: "rgba(196,163,90,0.2)", color: "var(--gold)" }} title="Active home-page promotion">
+      <span className="badge" style={{ background: "color-mix(in srgb, var(--gold) 20%, transparent)", color: "var(--gold)" }} title="Active home-page promotion">
         ★ {promoted}
       </span>
     );

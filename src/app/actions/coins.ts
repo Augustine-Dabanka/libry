@@ -1,9 +1,11 @@
 "use server";
 
+import { requirePerm } from "@/lib/staff";
+
 import { revalidatePath } from "next/cache";
+import { paystackLive } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 import { serviceClient } from "@/lib/supabase/service";
-import { isAdmin } from "@/app/actions/admin";
 import { COIN_PACKS, type CoinPackId } from "@/lib/coins";
 
 // Every coin change happens inside a database function (see migration 0038):
@@ -58,7 +60,8 @@ export async function unlockBookWithCoins(bookId: number) {
 }
 
 export async function coinPurchasesLive() {
-  return !!process.env.PAYSTACK_SECRET_KEY && process.env.NEXT_PUBLIC_PAYSTACK_ENABLED === "true";
+  // Coin packs are Paystack-only for now; they pause while Stripe is the provider.
+  return paystackLive();
 }
 
 // Credit a bought coin pack, only after Paystack confirms the payment and only
@@ -102,7 +105,7 @@ export async function buyCoinPack(packId: CoinPackId, reference: string) {
 
 // ---- Staff: coupons ------------------------------------------------------------
 export async function createCoupon(input: { code: string; coins: number; maxUses: number; endsAt?: string | null }) {
-  if (!(await isAdmin())) return { error: "Not authorised." };
+  { const g = await requirePerm("promo.manage"); if ("error" in g) return { error: g.error }; }
   const svc = serviceClient();
   if (!svc) return { error: "Service key missing." };
   const code = String(input.code || "").trim().toUpperCase();
@@ -122,7 +125,7 @@ export async function createCoupon(input: { code: string; coins: number; maxUses
 }
 
 export async function setCouponActive(code: string, active: boolean) {
-  if (!(await isAdmin())) return { error: "Not authorised." };
+  { const g = await requirePerm("promo.manage"); if ("error" in g) return { error: g.error }; }
   const svc = serviceClient();
   if (!svc) return { error: "Service key missing." };
   const { error } = await svc.from("coupons").update({ active }).eq("code", String(code).toUpperCase());

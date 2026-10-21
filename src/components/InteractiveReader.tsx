@@ -9,7 +9,7 @@ import PathMap from "@/components/PathMap";
 import { logEvent } from "@/app/actions/analytics";
 import ReaderCompanion from "@/components/ReaderCompanion";
 
-const PAL = { bg: "#1C1917", fg: "#EDE7DE", muted: "#A8A29E", bar: "rgba(250,247,242,0.12)", gold: "#C5A059" };
+const PAL = { bg: "#1C1917", fg: "#EDE7DE", muted: "#A8A29E", bar: "rgba(250,247,242,0.12)", gold: "var(--gold)" };
 
 export default function InteractiveReader({
   bookId,
@@ -85,7 +85,7 @@ export default function InteractiveReader({
   return (
     <div style={{ position: "fixed", inset: 0, overflowY: "auto", background: PAL.bg, color: PAL.fg }}>
       <div style={{ position: "sticky", top: 0, height: 4, background: PAL.bar, zIndex: 5 }}>
-        <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#5FA068,#C5A059)", transition: "width 0.4s ease" }} />
+        <div style={{ height: "100%", width: `${progress}%`, background: "var(--accent)", transition: "width 0.4s ease" }} />
       </div>
       <div style={{ position: "sticky", top: 4, zIndex: 5, display: "flex", alignItems: "center", gap: "1rem", padding: "0.7rem clamp(1rem,4vw,2rem)", background: "rgba(28,25,23,0.85)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${PAL.bar}` }}>
         <button type="button" onClick={goBackToBook} style={{ background: "transparent", border: "none", color: PAL.muted, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>← Back</button>
@@ -151,7 +151,7 @@ export default function InteractiveReader({
                       type="button"
                       onClick={() => advance(i)}
                       style={btn}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = PAL.gold; e.currentTarget.style.background = "rgba(197,160,89,0.06)"; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = PAL.gold; e.currentTarget.style.background = "color-mix(in srgb, var(--gold) 6%, transparent)"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = PAL.bar; e.currentTarget.style.background = "transparent"; }}
                     >
                       <span style={{ color: PAL.gold, marginRight: "0.6rem" }}>▸</span>{c}

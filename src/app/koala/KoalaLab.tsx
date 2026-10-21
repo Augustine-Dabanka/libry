@@ -19,7 +19,7 @@ export default function KoalaLab() {
   return (
     <div style={{ display: "grid", gap: "1.2rem", justifyItems: "center" }}>
       <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 24, padding: "2rem 1rem 1.2rem", width: "100%", display: "grid", justifyItems: "center", gap: "0.6rem" }}>
-        <Mascot mood={mood} size={220} follow interactive prop={book ? "book" : undefined} label={`Koala, ${mood}`} />
+        <Mascot mood={mood} size={220} follow interactive prop={book ? "book" : undefined} label={`Bushbaby, ${mood}`} />
         <p style={{ margin: 0, color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", textAlign: "center" }}>
           Move your finger (or tilt the tablet). Press and hold to squash, let go to cheer.
         </p>
@@ -27,7 +27,7 @@ export default function KoalaLab() {
       <div role="group" aria-label="Mood" style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", justifyContent: "center" }}>
         {MOODS.map((x) => (
           <button key={x.m} type="button" className="btn" aria-pressed={mood === x.m} onClick={() => setMood(x.m)}
-            style={{ padding: "0.55rem 1rem", borderRadius: 999, border: `1px solid ${mood === x.m ? "var(--gold)" : "var(--border)"}`, background: mood === x.m ? "rgba(196,163,90,0.15)" : "transparent", color: "var(--ivory)", fontFamily: "var(--sans)" }}>
+            style={{ padding: "0.55rem 1rem", borderRadius: 999, border: `1px solid ${mood === x.m ? "var(--gold)" : "var(--border)"}`, background: mood === x.m ? "color-mix(in srgb, var(--gold) 15%, transparent)" : "transparent", color: "var(--ivory)", fontFamily: "var(--sans)" }}>
             {x.t}
           </button>
         ))}
@@ -43,7 +43,7 @@ export default function KoalaLab() {
       <div role="group" aria-label="Season" style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", justifyContent: "center" }}>
         {SEASON_KEYS.map((k) => (
           <button key={k} type="button" className="btn" aria-pressed={season === k} onClick={() => setSeason(k)}
-            style={{ padding: "0.5rem 0.9rem", borderRadius: 999, border: `1px solid ${season === k ? "var(--gold)" : "var(--border)"}`, background: season === k ? "rgba(196,163,90,0.15)" : "transparent", color: "var(--ivory)", fontFamily: "var(--sans)", textTransform: "capitalize" }}>
+            style={{ padding: "0.5rem 0.9rem", borderRadius: 999, border: `1px solid ${season === k ? "var(--gold)" : "var(--border)"}`, background: season === k ? "color-mix(in srgb, var(--gold) 15%, transparent)" : "transparent", color: "var(--ivory)", fontFamily: "var(--sans)", textTransform: "capitalize" }}>
             {k}
           </button>
         ))}
