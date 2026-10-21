@@ -13,6 +13,8 @@ import ReaderCompanion from "@/components/ReaderCompanion";
 import ReadingSyncToast from "@/components/ReadingSyncToast";
 
 import Glyph from "@/components/Glyph";
+import { formatPrice } from "@/lib/types";
+import { markGuestBook } from "@/lib/guest";
 type Theme = "dark" | "sepia";
 
 const PALETTES: Record<Theme, { bg: string; fg: string; muted: string; bar: string }> = {
@@ -48,15 +50,15 @@ const READER_ENHANCE_CSS = `
 .rd-meta { font-family: var(--sans); font-size: 0.78rem; opacity: 0.5; margin-top: 0.35rem; letter-spacing: 0.02em; }
 .rd-rule { display: flex; align-items: center; justify-content: center; gap: 0.9rem; margin: 1.5rem auto 0; max-width: 240px; }
 .rd-rule::before, .rd-rule::after { content: ""; height: 1px; flex: 1; background: currentColor; opacity: 0.28; }
-.rd-rule span { font-size: 0.95rem; color: #C4A35A; opacity: 0.9; }
+.rd-rule span { font-size: 0.95rem; color: var(--gold); opacity: 0.9; }
 .rd-epigraph { font-family: var(--serif); font-style: italic; text-align: center; opacity: 0.78; max-width: 460px; margin: 0 auto 2.6rem; line-height: 1.7; font-size: 1.02rem; }
 .rd-epigraph cite { display: block; font-style: normal; font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.65; margin-top: 0.7rem; }
 .rd-drop::first-letter,
 .rd-scope .le-body > p:first-of-type::first-letter {
   font-family: var(--serif); float: left; font-size: 3.3em; line-height: 0.76;
-  padding: 0.04em 0.12em 0 0; font-weight: 600; color: #C4A35A;
+  padding: 0.04em 0.12em 0 0; font-weight: 600; color: var(--gold);
 }
-.rd-orn { text-align: center; font-size: 1rem; letter-spacing: 0.4em; opacity: 0.45; color: #C4A35A; margin: 2.6rem 0 0.2rem; }
+.rd-orn { text-align: center; font-size: 1rem; letter-spacing: 0.4em; opacity: 0.45; color: var(--gold); margin: 2.6rem 0 0.2rem; }
 
 /* Professional-book arrangement: each chapter starts a fresh page (paged mode)
    and the ornament + heading never split or strand at a page bottom. In scroll
@@ -74,7 +76,7 @@ const READER_ENHANCE_CSS = `
   font-size: 0.62em; color: var(--muted); opacity: 0.22; transition: opacity 0.15s ease;
 }
 .rd-p:hover .rd-chip, .rd-chip:focus-visible { opacity: 0.6; }
-.rd-chip-has { opacity: 1; color: #C4A35A; }
+.rd-chip-has { opacity: 1; color: var(--gold); }
 
 /* In-reader Table of Contents (slide-in panel) */
 .rd-toc-btn {
@@ -104,7 +106,7 @@ const READER_ENHANCE_CSS = `
   border: none; border-radius: 8px; padding: 0.6rem 0.5rem; cursor: pointer;
   font-family: var(--serif); font-size: 0.98rem; color: inherit; line-height: 1.35;
 }
-.rd-toc-item:hover { background: rgba(196,163,90,0.14); }
+.rd-toc-item:hover { background: color-mix(in srgb, var(--gold) 14%, transparent); }
 .rd-toc-item .n { font-family: var(--sans); font-size: 0.78rem; opacity: 0.5; min-width: 1.6em; }
 
 /* Reader top bar must fit every control on a phone — the Share chip was being
@@ -145,6 +147,7 @@ export default function ReaderView({
   signedIn = false,
   locked = false,
   price = null,
+  inUnlimited = false,
 }: {
   bookId: string;
   title: string;
@@ -158,6 +161,7 @@ export default function ReaderView({
   signedIn?: boolean;
   locked?: boolean;
   price?: number | null;
+  inUnlimited?: boolean;
 }) {
   const router = useRouter();
   const [theme, setTheme] = useState<Theme>("dark");
@@ -224,6 +228,11 @@ export default function ReaderView({
       document.getElementById(`rd-ch-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
+
+  // Guests: remember this book so it carries over to "Continue reading" at sign-up.
+  useEffect(() => {
+    if (!userEmail) markGuestBook(bookId);
+  }, [bookId, userEmail]);
 
   // Restore saved progress once on mount (not while reading a sample).
   useEffect(() => {
@@ -612,7 +621,7 @@ export default function ReaderView({
         <div className="rd-kicker">{sample ? "Free sample" : "Now reading"}</div>
         <h1 className="rd-title">{title}</h1>
         <div className="rd-byline">by {author || "Unknown author"}</div>
-        <div className="rd-meta">{readingMinutes} min read{sample ? " · first chapter" : ""}</div>
+        <div className="rd-meta">{readingMinutes} min read{sample ? " · free sample" : ""}</div>
         <div className="rd-rule" aria-hidden="true"><span>❦</span></div>
       </header>
 
@@ -682,17 +691,23 @@ export default function ReaderView({
           {locked ? (
             <>
               <p style={{ color: pal.muted, marginBottom: "1.4rem", maxWidth: 460, marginInline: "auto", lineHeight: 1.6 }}>
-                That&apos;s the free first chapter. Buy the book to keep reading — it&apos;s yours forever.
+                {inUnlimited
+                  ? "That's the end of the free sample. Buy it, or keep it free with an Unlimited trial (no card). Either way it's yours for good."
+                  : "That's the end of the free sample. Buy the book to keep reading. It's yours forever."}
               </p>
               <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
-                <a href={`/book/${bookId}`} className="btn btn-gold">Buy to keep reading{price && price > 0 ? ` — $${Number(price).toFixed(2)}` : ""}</a>
-                <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
+                <a href={`/book/${bookId}`} className="btn btn-gold">Buy to keep reading{price && price > 0 ? ` — ${formatPrice(Number(price))}` : ""}</a>
+                {inUnlimited ? (
+                  <a href={signedIn ? `/book/${bookId}` : "/login?next=/unlimited"} className="btn btn-outline">Keep it free with a trial</a>
+                ) : (
+                  <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
+                )}
               </div>
             </>
           ) : (
             <>
               <p style={{ color: pal.muted, marginBottom: "1.4rem", maxWidth: 460, marginInline: "auto", lineHeight: 1.6 }}>
-                {signedIn ? "That's the free first chapter. Keep going to read the rest." : "That's the free first chapter — create a free account to keep reading. No card required."}
+                {signedIn ? "That's the end of the free sample. Keep going to read the rest." : "That's the end of the free sample. Create a free account to keep reading. No card needed."}
               </p>
               <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
                 <a href={signedIn ? `/reader/${bookId}` : "/onboarding"} className="btn btn-gold">{signedIn ? "Continue reading →" : "Create free account →"}</a>
@@ -726,7 +741,7 @@ export default function ReaderView({
   const topBar = (
     <>
       <div style={{ position: "sticky", top: 0, height: 4, background: pal.bar, zIndex: 60, flexShrink: 0 }}>
-        <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#C4A35A,#B45309)", transition: "width 0.3s ease" }} />
+        <div style={{ height: "100%", width: `${progress}%`, background: "var(--accent)", transition: "width 0.3s ease" }} />
       </div>
       <div
         className="rd-topbar"
@@ -749,7 +764,7 @@ export default function ReaderView({
           {/* All the reading controls live in one tidy dropdown now. */}
           <div className="rd-menu-wrap" style={{ position: "relative" }}>
             <button type="button" onClick={() => setMenuOpen((v) => !v)} style={ctrl(pal)} aria-haspopup="true" aria-expanded={menuOpen} aria-label="Reading options" title="Reading options">
-              Aa <span style={{ fontSize: "0.6rem" }}>▾</span>
+              Aa <span style={{ fontSize: "0.7rem" }}>▾</span>
             </button>
             {menuOpen ? (
               <div className="rd-menu" style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, minWidth: 220, background: pal.bg, color: pal.fg, border: `1px solid ${pal.bar}`, borderRadius: 12, padding: "0.5rem", boxShadow: "0 20px 50px rgba(0,0,0,0.45)", zIndex: 80 }} role="menu">
@@ -878,7 +893,7 @@ export default function ReaderView({
           <div className="rd-kicker">{sample ? "Free sample" : "Now reading"}</div>
           <h1 className="rd-title">{title}</h1>
           <div className="rd-byline">by {author || "Unknown author"}</div>
-          <div className="rd-meta">{readingMinutes} min read{sample ? " · first chapter" : ""}</div>
+          <div className="rd-meta">{readingMinutes} min read{sample ? " · free sample" : ""}</div>
           <div className="rd-rule" aria-hidden="true"><span>❦</span></div>
         </header>
 
@@ -956,21 +971,27 @@ export default function ReaderView({
             {locked ? (
               <>
                 <p style={{ color: pal.muted, marginBottom: "1.4rem", maxWidth: 460, marginInline: "auto", lineHeight: 1.6 }}>
-                  That&apos;s the free first chapter. Buy the book to keep reading — it&apos;s yours forever.
+                  {inUnlimited
+                  ? "That's the end of the free sample. Buy it, or keep it free with an Unlimited trial (no card). Either way it's yours for good."
+                  : "That's the end of the free sample. Buy the book to keep reading. It's yours forever."}
                 </p>
                 <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
                   <a href={`/book/${bookId}`} className="btn btn-gold">
-                    Buy to keep reading{price && price > 0 ? ` — $${Number(price).toFixed(2)}` : ""}
+                    Buy to keep reading{price && price > 0 ? ` — ${formatPrice(Number(price))}` : ""}
                   </a>
-                  <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
+                  {inUnlimited ? (
+                    <a href={signedIn ? `/book/${bookId}` : "/login?next=/unlimited"} className="btn btn-outline">Keep it free with a trial</a>
+                  ) : (
+                    <a href={`/book/${bookId}`} className="btn btn-outline">Back to book</a>
+                  )}
                 </div>
               </>
             ) : (
               <>
                 <p style={{ color: pal.muted, marginBottom: "1.4rem", maxWidth: 460, marginInline: "auto", lineHeight: 1.6 }}>
                   {signedIn
-                    ? "That's the free first chapter. Keep going to read the rest."
-                    : "That's the free first chapter — create a free account to keep reading. No card required."}
+                    ? "That's the end of the free sample. Keep going to read the rest."
+                    : "That's the end of the free sample. Create a free account to keep reading. No card needed."}
                 </p>
                 <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
                   <a href={signedIn ? `/reader/${bookId}` : "/onboarding"} className="btn btn-gold">

@@ -56,7 +56,11 @@ async function persistOnboardingPrefs() {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    await supabase.from("profiles").update({ prefs }).eq("id", user.id);
+    // Merge, never replace: the profile may already hold other settings
+    // (shared access, leaderboard opt-in) that the guest cookie knows nothing about.
+    const cur = await supabase.from("my_profile").select("prefs").eq("id", user.id).maybeSingle();
+    const existing = cur.data?.prefs && typeof cur.data.prefs === "object" ? (cur.data.prefs as Record<string, unknown>) : {};
+    await supabase.from("profiles").update({ prefs: { ...existing, ...prefs } }).eq("id", user.id);
   }
   cookieStore.delete("libry_prefs");
 }

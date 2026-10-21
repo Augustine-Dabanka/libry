@@ -172,7 +172,7 @@ export default function QuickUpload({ userId, authorName }: { userId: string; au
         </button>
       </div>
 
-      {status ? <p style={{ color: "#7DBE86", fontFamily: "var(--sans)", fontSize: "0.86rem", marginTop: "0.9rem" }}>{status}</p> : null}
+      {status ? <p style={{ color: "var(--success)", fontFamily: "var(--sans)", fontSize: "0.86rem", marginTop: "0.9rem" }}>{status}</p> : null}
       {err ? <p style={{ color: "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.86rem", marginTop: "0.9rem" }}>{err}</p> : null}
 
       <div style={{ borderTop: "1px solid var(--border)", marginTop: "1.4rem", paddingTop: "1.2rem" }}>

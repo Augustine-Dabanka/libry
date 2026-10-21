@@ -59,7 +59,7 @@ export default function PageDesigner({
     c.requestRenderAll();
   };
 
-  const GOLD = "#C5A059";
+  const GOLD = "#C8471F";
 
   function addRect() {
     const f = fabRef.current;

@@ -4,7 +4,8 @@ import CommunityCreate from "@/components/CommunityCreate";
 import CommunityCover from "@/components/CommunityCover";
 
 import Glyph from "@/components/Glyph";
-export const metadata = { title: "Discover communities — Leep" };
+import { formatPrice } from "@/lib/types";
+export const metadata = { title: "Discover communities — Lybry" };
 
 type Community = { id: number; slug: string; name: string; description: string | null; emoji: string | null; cover_url: string | null; category: string | null; price: number | null; price_period: string | null; member_count: number };
 
@@ -12,7 +13,7 @@ const CATS = ["All", "Stories", "Comics", "Hobbies", "Tech", "Self-Improvement",
 
 function priceLabel(c: Community) {
   const p = Number(c.price) || 0;
-  return p > 0 ? `$${p.toFixed(2)}/${(c.price_period || "month").replace("month", "mo").replace("year", "yr")}` : "Free";
+  return p > 0 ? `${formatPrice(p)}/${(c.price_period || "month").replace("month", "mo").replace("year", "yr")}` : "Free";
 }
 
 export default async function CommunitiesPage({ searchParams }: { searchParams: Promise<{ cat?: string }> }) {
@@ -79,7 +80,7 @@ export default async function CommunitiesPage({ searchParams }: { searchParams: 
                       <div style={{ position: "relative", height: 96 }}>
                         <CommunityCover name={c.name} emoji={c.emoji} coverUrl={c.cover_url} />
                         <span style={{ position: "absolute", top: 8, left: 8, zIndex: 1, background: paid ? "var(--gold)" : "rgba(18,16,14,0.75)", color: paid ? "#12100E" : "var(--ivory)", fontFamily: "var(--sans)", fontSize: "0.7rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: 6 }}>{priceLabel(c)}</span>
-                        {mine.has(c.id) ? <span style={{ position: "absolute", top: 8, right: 8, zIndex: 1, background: "rgba(95,160,104,0.9)", color: "#0c1a0e", fontFamily: "var(--sans)", fontSize: "0.68rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: 6 }}>Joined</span> : null}
+                        {mine.has(c.id) ? <span style={{ position: "absolute", top: 8, right: 8, zIndex: 1, background: "color-mix(in srgb, var(--gold) 90%, transparent)", color: "var(--on-gold)", fontFamily: "var(--sans)", fontSize: "0.68rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: 6 }}>Joined</span> : null}
                       </div>
                       <div style={{ padding: "0.9rem 1rem 1.1rem" }}>
                         <div style={{ fontFamily: "var(--serif)", color: "var(--ivory)", fontSize: "1.02rem", marginBottom: "0.25rem" }}>{c.name}</div>

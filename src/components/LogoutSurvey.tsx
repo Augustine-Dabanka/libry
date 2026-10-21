@@ -76,7 +76,7 @@ export default function LogoutSurvey({ style, className }: { style?: React.CSSPr
                       padding: "0.4rem 0.8rem", borderRadius: 999, cursor: "pointer",
                       fontFamily: "var(--sans)", fontSize: "0.82rem", fontWeight: 600,
                       border: `1px solid ${on ? "var(--gold)" : "var(--border)"}`,
-                      background: on ? "rgba(197,160,89,0.16)" : "transparent",
+                      background: on ? "color-mix(in srgb, var(--gold) 16%, transparent)" : "transparent",
                       color: on ? "var(--ivory)" : "var(--muted)",
                     }}
                   >

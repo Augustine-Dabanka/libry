@@ -6,6 +6,7 @@ import ProductBuy from "@/components/ProductBuy";
 import ProductReviews, { type PReview } from "@/components/ProductReviews";
 import Stars from "@/components/Stars";
 import { formatPrice, genCover } from "@/lib/types";
+import { productsOn } from "@/lib/features";
 
 const TYPE_LABEL: Record<string, string> = {
   download: "Download", template: "Template", audio: "Audio", ebook: "E-book",
@@ -30,7 +31,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   // Creator name.
   const { data: prof } = await supabase.from("profiles").select("username, full_name, pen_name").eq("id", p.user_id).maybeSingle();
-  const creatorName = prof?.pen_name || prof?.full_name || prof?.username || "A Leep creator";
+  const creatorName = prof?.pen_name || prof?.full_name || prof?.username || "A Lybry creator";
 
   // Ownership.
   let owned = isOwner;
@@ -47,6 +48,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       : await supabase.from("products").select("external_url").eq("id", pid).maybeSingle();
     externalUrl = (ex.data as { external_url?: string | null } | null)?.external_url ?? null;
   }
+  // Products are switched off: only the creator and people who bought it can open it.
+  if (!owned && !(await productsOn())) notFound();
   const isVideo = p.type === "video" || p.type === "course";
   const price = Number(p.price) || 0;
 
@@ -72,7 +75,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             </div>
 
             <div>
-              <span className="badge" style={{ background: "rgba(196,163,90,0.16)", color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.7rem", fontWeight: 700 }}>
+              <span className="badge" style={{ background: "color-mix(in srgb, var(--gold) 16%, transparent)", color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.7rem", fontWeight: 700 }}>
                 {TYPE_LABEL[p.type] || "Product"}
               </span>
               <h1 style={{ fontSize: "2rem", margin: "0.7rem 0 0.4rem", lineHeight: 1.15 }}>{p.title}</h1>

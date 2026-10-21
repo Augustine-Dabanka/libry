@@ -1,163 +1,63 @@
 "use client";
 
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Mascot from "@/components/Mascot";
 import styles from "./onboarding.module.css";
-
 import Glyph from "@/components/Glyph";
+import { saveGuestPrefs } from "@/lib/guest";
+
+// Three questions, then straight to books. Everything else we used to ask
+// (age, country, budget, how you heard about us…) is either not used or can be
+// asked later inside the app, one question at a time. Answers are kept on this
+// device and copied to the account if the reader signs up later.
+
 type Option = { v: string; label: string; sub?: string; icon?: string };
-type Question = {
-  key: string;
-  line: string;
-  q: string;
-  type?: "country" | "trial";
-  multi?: boolean;
-  options?: Option[];
-};
+type Question = { key: "genre" | "format" | "goal"; line: string; q: string; multi?: boolean; options: Option[] };
 
-// Interactive micro-trial: a 2-sentence taste of a Leep interactive story, so a
-// newcomer feels the "you choose" magic before they ever sign up. Every choice is
-// "right" — it just changes the wink you get back.
-const TRIAL = {
-  story:
-    "The library’s oldest door has no handle — only a brass keyhole shaped like a leaf. As you lean close, a whisper drifts through the wood: “Say what you seek, and I will open.”",
-  prompt: "What do you whisper?",
-  choices: [
-    { v: "story", label: "“A story I’ve never read.”", note: "The lock turns at once. Of course it does — that’s exactly why you’re here." },
-    { v: "truth", label: "“The truth.”", note: "A long pause… then a click. Bold answer. The door seems to respect that." },
-    { v: "escape", label: "“A way out.”", note: "It swings wide immediately — but opens toward somewhere new, not back the way you came." },
-  ],
-} as const;
-
+// Genre values match books.category exactly, so they can drive /catalog?genre=…
 const QUESTIONS: Question[] = [
   {
-    key: "draw",
-    line: "First things first…",
-    q: "What pulls you into a story?",
-    options: [
-      { v: "interactive", label: "Interactive adventures", sub: "Stories that let you choose" },
-      { v: "literary", label: "Literary fiction", sub: "Beautiful, character-driven" },
-      { v: "nonfiction", label: "Non-fiction & ideas", sub: "Learn something new" },
-      { v: "variety", label: "A bit of everything", sub: "Surprise me" },
-    ],
-  },
-  {
-    key: "audience",
-    line: "Good to know.",
-    q: "Who are you reading for?",
-    options: [
-      { v: "self", label: "Myself" },
-      { v: "child", label: "A child" },
-      { v: "both", label: "Both of us" },
-    ],
-  },
-  {
-    key: "mood",
-    line: "Setting the tone…",
-    q: "Pick tonight’s mood",
-    options: [
-      { v: "cozy", label: "Cozy & warm" },
-      { v: "thrilling", label: "Thrilling & mysterious" },
-      { v: "thoughtful", label: "Thoughtful & quiet" },
-      { v: "adventurous", label: "Bold & adventurous" },
-    ],
-  },
-  {
     key: "genre",
-    line: "Pick your worlds…",
-    q: "What kind of stories do you want to read?",
+    line: "First things first…",
+    q: "What do you love to read?",
     multi: true,
     options: [
-      { v: "fantasy", label: "Fantasy", icon: "🐉" },
-      { v: "scifi", label: "Sci-Fi", icon: "🚀" },
-      { v: "romance", label: "Romance", icon: "💌" },
-      { v: "thriller", label: "Thriller", icon: "🔪" },
+      { v: "Romance", label: "Romance", icon: "💌" },
+      { v: "Fantasy", label: "Fantasy", icon: "🐉" },
+      { v: "Thriller", label: "Thriller", icon: "🔪" },
+      { v: "Mystery", label: "Mystery", icon: "🔍" },
+      { v: "Sci-Fi", label: "Sci-Fi", icon: "🚀" },
+      { v: "Contemporary", label: "Real life", icon: "☕" },
+      { v: "Horror", label: "Horror", icon: "👻" },
+      { v: "Adventure", label: "Adventure", icon: "🎒" },
     ],
   },
   {
-    key: "pace",
-    line: "Almost there.",
-    q: "How do you like to read?",
+    key: "format",
+    line: "Good taste.",
+    q: "How do you like your stories?",
     options: [
-      { v: "short", label: "Short & sweet" },
-      { v: "epic", label: "Epic & immersive" },
+      { v: "novels", label: "Chapter by chapter", sub: "Novels and serials" },
+      { v: "interactive", label: "I choose what happens", sub: "Interactive stories" },
+      { v: "comics", label: "With pictures", sub: "Comics" },
+      { v: "variety", label: "A bit of everything" },
     ],
   },
   {
     key: "goal",
-    line: "Let’s build a gentle habit.",
-    q: "What’s your daily reading goal?",
+    line: "Last one.",
+    q: "How long do you want to read each day?",
     options: [
-      { v: "casual", label: "Casual", sub: "5 minutes a day" },
-      { v: "regular", label: "Regular", sub: "15 minutes a day" },
-      { v: "bookworm", label: "Bookworm", sub: "30 minutes a day" },
+      { v: "casual", label: "5 minutes", sub: "A page on the bus" },
+      { v: "regular", label: "15 minutes", sub: "A chapter a day" },
+      { v: "bookworm", label: "30 minutes", sub: "Lost in a book" },
     ],
   },
-  {
-    key: "budget",
-    line: "Almost done…",
-    q: "And your reading budget?",
-    options: [
-      { v: "free", label: "Free reads", sub: "Show me what’s free first" },
-      { v: "paid", label: "Happy to pay for a gem" },
-      { v: "any", label: "Either’s fine" },
-    ],
-  },
-  {
-    key: "source",
-    line: "One quick thing.",
-    q: "How did you hear about Leep?",
-    options: [
-      { v: "friend", label: "A friend or family", sub: "Word of mouth" },
-      { v: "social", label: "Social media", sub: "TikTok, Instagram, X…" },
-      { v: "search", label: "A search engine" },
-      { v: "other", label: "Somewhere else" },
-    ],
-  },
-  {
-    key: "age",
-    line: "A little about you…",
-    q: "How old are you?",
-    options: [
-      { v: "Under 13", label: "Under 13" },
-      { v: "13-17", label: "13–17" },
-      { v: "18-24", label: "18–24" },
-      { v: "25-34", label: "25–34" },
-      { v: "35-49", label: "35–49" },
-      { v: "50+", label: "50 or older" },
-    ],
-  },
-  { key: "country", type: "country", line: "Nearly there.", q: "Where are you reading from?" },
-  { key: "trial", type: "trial", line: "Now — a tiny taste.", q: "Try a Leep interactive story" },
 ];
 
-const COUNTRIES = [
-  "Argentina","Australia","Austria","Bangladesh","Belgium","Brazil","Canada","Chile","China",
-  "Colombia","Denmark","Egypt","Ethiopia","Finland","France","Germany","Ghana","Greece","India",
-  "Indonesia","Iran","Iraq","Ireland","Israel","Italy","Japan","Kenya","Malaysia","Mexico","Morocco",
-  "Nepal","Netherlands","New Zealand","Nigeria","Norway","Pakistan","Peru","Philippines","Poland",
-  "Portugal","Qatar","Romania","Russia","Saudi Arabia","Singapore","South Africa","South Korea","Spain",
-  "Sweden","Switzerland","Tanzania","Thailand","Turkey","Uganda","Ukraine","United Arab Emirates",
-  "United Kingdom","United States","Vietnam","Zimbabwe","Other",
-];
-
-const CHEERS = ["Lovely choice.", "Ooh, good taste.", "Noted!", "That tells me a lot.", "Perfect."];
-
-// Fixed confetti burst for the "shelf is ready" screen — warm brand colours.
-const CONFETTI_COLORS = ["#C4A35A", "#B45309", "#97692F", "#E0B84C", "#8B8680", "#D2793B"];
-const CONFETTI = Array.from({ length: 46 }, (_, i) => ({
-  left: (i * 37) % 100,
-  color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-  dur: 2.6 + ((i * 7) % 18) / 10,
-  delay: ((i * 13) % 12) / 10,
-}));
+const CHEERS = ["Nice.", "Noted.", "Good one.", "Got it."];
 
 type KoalaMood = "idle" | "think" | "cheer";
-
-// Onboarding koala. It reacts like a coach, using classic animation principles:
-// thinks (head tilt + thought dots) while a question is open, hops with
-// squash-and-stretch when you pick something, and breathes and blinks when idle.
-// All motion is CSS on SVG groups (see .k* in onboarding.module.css).
 function Koala({ mood = "idle" }: { mood?: KoalaMood }) {
   return (
     <div style={{ width: 120, margin: "0 auto 1.2rem" }}>
@@ -166,41 +66,23 @@ function Koala({ mood = "idle" }: { mood?: KoalaMood }) {
   );
 }
 
-// Endowment step: presets the reader customises (and keeps) before signing up.
-const THEMES = [
-  { key: "obsidian", name: "Obsidian Neon", accent: "#7C83FF" },
-  { key: "emerald", name: "Emerald Royale", accent: "#34D399" },
-  { key: "gold", name: "Cyber Gold", accent: "#D4AF37" },
-  { key: "amethyst", name: "Amethyst Glow", accent: "#C084FC" },
-];
-// Sensible recommended answers for the "recommended picks" fast path.
-const DEFAULT_ANSWERS: Record<string, string> = {
-  draw: "interactive",
-  audience: "self",
-  mood: "adventurous",
-  genre: "scifi,fantasy",
-  pace: "epic",
-  goal: "regular",
-  budget: "any",
-  source: "friend",
-  age: "18-24",
-  country: "United States",
-  trial: "story",
-};
+function firstShelf(answers: Record<string, string>): string {
+  const format = answers.format;
+  if (format === "interactive") return "/catalog?type=Interactive";
+  if (format === "comics") return "/comics";
+  const g = (answers.genre || "").split(",").filter(Boolean)[0];
+  return g ? `/catalog?genre=${encodeURIComponent(g)}` : "/discover";
+}
 
 export default function OnboardingPage() {
-  const [idx, setIdx] = useState(-1); // -1 intro · 0..n-1 questions · n customise
+  const [idx, setIdx] = useState(-1); // -1 intro · 0..n-1 questions · n done
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [cheer, setCheer] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
   const [genreSel, setGenreSel] = useState<string[]>([]);
-  const [trialChoice, setTrialChoice] = useState<string | null>(null);
-  const [theme, setTheme] = useState("obsidian"); // default effect: Obsidian Neon
-  const [frame, setFrame] = useState("gold");
-  // Brief "cheer" window after each pick so the koala hops, then settles.
   const [cheering, setCheering] = useState(false);
   const cheerTimer = useRef<number | null>(null);
+
   function celebrate() {
     setCheering(true);
     if (cheerTimer.current) window.clearTimeout(cheerTimer.current);
@@ -208,42 +90,21 @@ export default function OnboardingPage() {
   }
   useEffect(() => () => { if (cheerTimer.current) window.clearTimeout(cheerTimer.current); }, []);
 
-  function applyTheme(k: string) {
-    setTheme(k);
-    try {
-      document.documentElement.setAttribute("data-brand", k);
-    } catch {}
-  }
-
   const total = QUESTIONS.length;
   const answered = Object.keys(answers).length;
-  const pct = idx < 0 ? 0 : Math.round((answered / total) * 100);
+  // Starts at 20%: opening Lybry and saying yes already counts as the first step.
+  const pct = 20 + Math.round((answered / total) * 80);
+  const q = idx >= 0 && idx < total ? QUESTIONS[idx] : null;
+  const koalaMood: KoalaMood = cheering ? "cheer" : q && !picked && genreSel.length === 0 ? "think" : "idle";
 
-  const filteredCountries = useMemo(() => {
-    const s = search.trim().toLowerCase();
-    return s ? COUNTRIES.filter((c) => c.toLowerCase().includes(s)) : COUNTRIES;
-  }, [search]);
-
-  function finish(next: Record<string, string>) {
-    // Endowment: the reader keeps the theme + frame they customised. Apply the
-    // theme now (so it's theirs immediately) and carry both into the profile.
-    const prefs = { ...next, theme, avatar_frame: frame };
-    try {
-      localStorage.setItem("libry-brand", theme);
-      document.documentElement.setAttribute("data-brand", theme);
-      document.cookie = `libry_prefs=${encodeURIComponent(JSON.stringify(prefs))}; path=/; max-age=1800; samesite=lax`;
-      document.cookie = `libry_seen_onboarding=1; path=/; max-age=31536000; samesite=lax`;
-    } catch {
-      /* cookies disabled — proceed anyway */
+  function advance(next: Record<string, string>) {
+    setAnswers(next);
+    if (idx + 1 >= total) {
+      saveGuestPrefs(next);
+      setIdx(total);
+    } else {
+      setIdx(idx + 1);
     }
-    // Onboarding runs BEFORE signup: hand off to the gate's Sign up tab, then home.
-    window.location.assign("/login?auth=signup&next=%2F");
-  }
-
-  // Default effect: fill sensible recommended answers and jump to the last step.
-  function useRecommended() {
-    setAnswers(DEFAULT_ANSWERS);
-    setIdx(total);
   }
 
   function pick(key: string, value: string) {
@@ -251,28 +112,12 @@ export default function OnboardingPage() {
     celebrate();
     setCheer(CHEERS[Math.floor(Math.random() * CHEERS.length)]);
     const next = { ...answers, [key]: value };
-    setAnswers(next);
     window.setTimeout(() => {
       setPicked(null);
-      setSearch("");
       setCheer("");
-      if (idx + 1 >= total) {
-        setIdx(total); // done screen
-      } else {
-        setIdx(idx + 1);
-      }
-    }, 520);
+      advance(next);
+    }, 480);
   }
-
-  function skip() {
-    try {
-      document.cookie = `libry_seen_onboarding=1; path=/; max-age=31536000; samesite=lax`;
-    } catch {}
-    window.location.assign("/login");
-  }
-
-  const q = idx >= 0 && idx < total ? QUESTIONS[idx] : null;
-  const koalaMood: KoalaMood = cheering ? "cheer" : q && !picked && genreSel.length === 0 && !trialChoice ? "think" : "idle";
 
   function toggleGenre(v: string) {
     if (!genreSel.includes(v)) celebrate();
@@ -282,75 +127,67 @@ export default function OnboardingPage() {
     if (!q || genreSel.length === 0) return;
     const next = { ...answers, [q.key]: genreSel.join(",") };
     setGenreSel([]);
-    setPicked(null);
-    setCheer("");
-    setAnswers(next);
-    if (idx + 1 >= total) setIdx(total);
-    else setIdx(idx + 1);
+    advance(next);
   }
 
-  function finishTrial() {
-    if (!q || !trialChoice) return;
-    const next = { ...answers, [q.key]: trialChoice };
-    setTrialChoice(null);
-    setAnswers(next);
-    if (idx + 1 >= total) setIdx(total);
-    else setIdx(idx + 1);
+  function skip() {
+    saveGuestPrefs({});
+    window.location.assign("/discover");
   }
 
   return (
     <div className={styles.root}>
       <div className={styles.bg} />
       <div className={styles.header}>
-        <div className={styles.progress}>
+        <div className={styles.progress} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label="Setup progress" style={{ position: "relative" }}>
           <div className={styles.progressFill} style={{ width: `${pct}%` }} />
+          {[20, 47, 73, 100].map((at, i) => (
+            <span key={at} aria-hidden="true" className={pct >= at ? "su-stamp" : undefined}
+              style={{ position: "absolute", top: "50%", left: `${at}%`, transform: "translate(-50%, -50%)", width: 18, height: 18, borderRadius: "50%", display: "grid", placeItems: "center",
+                background: pct >= at ? "var(--gold)" : "var(--surface)", border: `3px solid ${pct >= at ? "var(--gold)" : "var(--line)"}`, color: "#fff" }}>
+              {i === 3 ? (
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 21V4" /><path d="M5 4h11l-2 4 2 4H5" /></svg>
+              ) : pct >= at ? (
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              ) : null}
+            </span>
+          ))}
         </div>
-        <span className={styles.pctLabel}>{pct}% complete</span>
+        <span className={styles.pctLabel}>{idx >= 0 && idx < total ? `${idx + 1} of ${total}` : idx >= total ? "Done" : ""}</span>
       </div>
 
       <div className={styles.stage}>
-        {/* Intro */}
         {idx === -1 && (
           <div className={styles.screen} key="intro">
             <Koala mood={koalaMood} />
             <h1 className={styles.introTitle}>
-              Before you begin,
+              Three quick questions,
               <br />
-              let’s make Leep
-              <br />
-              <span>yours</span>.
+              then <span>your shelf</span>.
             </h1>
-            <p className={styles.tag}>
-              A few quick questions and we’ll set up a shelf that feels handpicked for you.
-            </p>
+            <p className={styles.tag}>No account needed. You can start reading straight after.</p>
             <button className={styles.btn} onClick={() => setIdx(0)}>
               Let’s go
             </button>
             <br />
-            <button className={styles.skip} onClick={useRecommended} style={{ color: "var(--gold-dark)" }}>
-              ★ Use recommended picks
-            </button>
-            <br />
             <button className={styles.skip} onClick={skip}>
-              Skip for now
+              Skip, just let me browse
             </button>
           </div>
         )}
 
-        {/* Genre multi-select (the tactile grid) */}
         {q && q.multi && (
           <div className={styles.screen} key={q.key}>
             <Koala mood={koalaMood} />
             <div className={styles.mascotLine}>{q.line}</div>
-            <div className={styles.count}>
-              Question {idx + 1} of {total}
-            </div>
             <h1 className={styles.q}>{q.q}</h1>
+            <p className={styles.tag} style={{ marginTop: "-0.4rem" }}>Pick as many as you like.</p>
             <div className={styles.genreGrid}>
-              {q.options!.map((o) => (
+              {q.options.map((o) => (
                 <button
                   key={o.v}
                   type="button"
+                  aria-pressed={genreSel.includes(o.v)}
                   className={`${styles.genreCard} ${genreSel.includes(o.v) ? styles.selected : ""}`}
                   onClick={() => toggleGenre(o.v)}
                 >
@@ -362,19 +199,16 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Single-select questions */}
-        {q && q.type !== "country" && q.type !== "trial" && !q.multi && (
+        {q && !q.multi && (
           <div className={styles.screen} key={q.key}>
             <Koala mood={koalaMood} />
             <div className={styles.mascotLine}>{cheer || q.line}</div>
-            <div className={styles.count}>
-              Question {idx + 1} of {total}
-            </div>
             <h1 className={styles.q}>{q.q}</h1>
             <div className={styles.options}>
-              {q.options!.map((o) => (
+              {q.options.map((o) => (
                 <button
                   key={o.v}
+                  type="button"
                   className={`${styles.opt} ${picked === o.v ? styles.picked : ""}`}
                   onClick={() => pick(q.key, o.v)}
                 >
@@ -386,152 +220,30 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Country step */}
-        {q && q.type === "country" && (
-          <div className={styles.screen} key="country">
-            <Koala mood={koalaMood} />
-            <div className={styles.mascotLine}>{cheer || q.line}</div>
-            <div className={styles.count}>
-              Question {idx + 1} of {total}
-            </div>
-            <h1 className={styles.q}>{q.q}</h1>
-            <input
-              className={styles.search}
-              placeholder="Search countries…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              autoComplete="off"
-              aria-label="Search countries"
-            />
-            <div className={styles.countryList}>
-              {filteredCountries.map((c) => (
-                <button
-                  key={c}
-                  className={styles.countryOpt}
-                  onClick={() => pick("country", c)}
-                >
-                  <span aria-hidden="true"><Glyph e="🌍" /></span> {c}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Interactive micro-trial */}
-        {q && q.type === "trial" && (
-          <div className={styles.screen} key="trial">
-            <Koala mood={koalaMood} />
-            <div className={styles.mascotLine}>{q.line}</div>
-            <div className={styles.count}>Question {idx + 1} of {total}</div>
-            <h1 className={styles.q}>{q.q}</h1>
-            <p className={styles.trialStory}>{TRIAL.story}</p>
-            <div className={styles.trialPrompt}>{TRIAL.prompt}</div>
-            <div className={styles.options}>
-              {TRIAL.choices.map((c) => (
-                <button
-                  key={c.v}
-                  type="button"
-                  className={`${styles.opt} ${trialChoice === c.v ? styles.picked : ""}`}
-                  onClick={() => setTrialChoice(c.v)}
-                >
-                  <span>{c.label}</span>
-                </button>
-              ))}
-            </div>
-            {trialChoice ? (
-              <>
-                <p className={styles.trialFeedback}>
-                  {TRIAL.choices.find((c) => c.v === trialChoice)?.note}
-                </p>
-                <button className={styles.btn} type="button" onClick={finishTrial} style={{ marginTop: "0.4rem" }}>
-                  That&apos;s the idea — finish up →
-                </button>
-              </>
-            ) : (
-              <p className={styles.trialHint}>Pick one — there&apos;s no wrong answer.</p>
-            )}
-          </div>
-        )}
-
-        {/* Customise & sign up (endowment) */}
         {idx >= total && (
           <div className={styles.screen} key="done">
-            <div className={styles.confetti} aria-hidden="true">
-              {CONFETTI.map((c, i) => (
-                <span
-                  key={i}
-                  className={styles.confettiPiece}
-                  style={{ left: `${c.left}%`, background: c.color, animationDuration: `${c.dur}s`, animationDelay: `${c.delay}s` }}
-                />
-              ))}
-            </div>
-            <div className={styles.xpBadge}>
-              <span className={styles.xpMark}>✦</span>
-              <div className={styles.xpText}>
-                <strong>+50 XP earned</strong>
-                <span>“First Chapter” badge unlocked</span>
-              </div>
-            </div>
+            <Koala mood="cheer" />
             <h1 className={styles.doneTitle}>
               Your shelf is <span>ready</span>.
             </h1>
-            <p className={styles.tag}>Save your progress to keep your XP, badge, and handpicked shelf. It&apos;s already set up for you.</p>
-
-            {/* Avatar frame preview */}
-            <div style={{ display: "grid", placeItems: "center", marginBottom: "1.4rem" }}>
-              <div style={{ width: 108, height: 108, borderRadius: "50%", display: "grid", placeItems: "center", padding: 5, background: `conic-gradient(var(--gold), ${THEMES.find((t) => t.key === frame)?.accent ?? "#C4A35A"}, var(--gold))` }}>
-                <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "var(--bg-2, #EFE7D6)", display: "grid", placeItems: "center", overflow: "hidden" }}>
-                  <div style={{ transform: "scale(0.82)" }}><Koala mood={koalaMood} /></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Frame swatches */}
-            <div style={{ fontSize: "0.78rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.5rem" }}>Avatar frame</div>
-            <div style={{ display: "flex", gap: "0.6rem", justifyContent: "center", marginBottom: "1.4rem", flexWrap: "wrap" }}>
-              {THEMES.map((t) => (
-                <button
-                  key={t.key}
-                  type="button"
-                  aria-label={`${t.name} frame`}
-                  onClick={() => setFrame(t.key)}
-                  style={{ width: 34, height: 34, borderRadius: "50%", cursor: "pointer", background: t.accent, border: frame === t.key ? "3px solid var(--text)" : "3px solid transparent", outline: frame === t.key ? "1px solid var(--text)" : "none" }}
-                />
-              ))}
-            </div>
-
-            {/* Theme presets (default: Obsidian Neon) — applied live */}
-            <div style={{ fontSize: "0.78rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.5rem" }}>Theme</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem", maxWidth: 380, margin: "0 auto 1.6rem" }}>
-              {THEMES.map((t) => (
-                <button
-                  key={t.key}
-                  type="button"
-                  onClick={() => applyTheme(t.key)}
-                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.7rem 0.9rem", borderRadius: 12, cursor: "pointer", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem", background: "var(--surface, #fff)", color: "var(--text)", border: theme === t.key ? `2px solid ${t.accent}` : "1.5px solid rgba(43,38,34,0.12)" }}
-                >
-                  <span style={{ width: 20, height: 20, borderRadius: 6, background: t.accent, flexShrink: 0 }} />
-                  {t.name}
-                </button>
-              ))}
-            </div>
-
-            <button className={styles.btn} onClick={() => finish(answers)}>
-              Save My Customized Profile &amp; Sign Up
-            </button>
+            <p className={styles.tag}>
+              Start reading now. Make a free account any time to keep your place, your streak and these picks on every device.
+            </p>
+            <a className={styles.btn} href={firstShelf(answers)} style={{ textDecoration: "none" }}>
+              Start reading
+            </a>
+            <br />
+            <a className={styles.skip} href="/login?auth=signup&next=%2Fhome" style={{ textDecoration: "none", display: "inline-block" }}>
+              Save my picks with a free account
+            </a>
           </div>
         )}
       </div>
 
       {q && q.multi && (
         <div className={styles.continueBar}>
-          <button
-            className={styles.continueBtn}
-            type="button"
-            disabled={genreSel.length === 0}
-            onClick={continueMulti}
-          >
-            {genreSel.length === 0 ? "Select at least one" : "Continue"}
+          <button className={styles.continueBtn} type="button" disabled={genreSel.length === 0} onClick={continueMulti}>
+            {genreSel.length === 0 ? "Pick at least one" : "Continue"}
           </button>
         </div>
       )}

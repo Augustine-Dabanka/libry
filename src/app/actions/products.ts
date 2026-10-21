@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { paymentsLive } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
+import { productsOn } from "@/lib/features";
 import { serviceClient } from "@/lib/supabase/service";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 
@@ -130,9 +132,10 @@ export async function buyProduct(productId: number, reference: string) {
   if (pErr || !prod) return { error: "Product not found." };
   if (!prod.is_published && prod.user_id !== user.id) return { error: "This product isn't available." };
   const price = Number(prod.price) || 0;
+  if (prod.user_id !== user.id && !(await productsOn())) return { error: "This product isn't available right now." };
 
   // Demo references only while real payments are off, and they record no revenue.
-  const live = !!process.env.PAYSTACK_SECRET_KEY && process.env.NEXT_PUBLIC_PAYSTACK_ENABLED === "true";
+  const live = paymentsLive();
   const isSimulated = /^(demo|free)-/.test(reference);
   if (price > 0 && isSimulated && live) return { error: "Please complete payment to continue." };
   const svc = serviceClient();

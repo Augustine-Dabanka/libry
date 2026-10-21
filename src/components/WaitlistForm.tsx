@@ -68,9 +68,9 @@ export default function WaitlistForm({ initialRef, role = "reader", cta = "Join 
     // signup type a distinct subject line in your inbox.
     if (FORMSPREE_ENDPOINT) {
       const subject =
-        role === "unlimited" ? "New Leep Unlimited interest"
-        : role === "investor" ? "New Leep investor signup"
-        : "New Leep waitlist signup";
+        role === "unlimited" ? "New Lybry Unlimited interest"
+        : role === "investor" ? "New Lybry investor signup"
+        : "New Lybry waitlist signup";
       fetch(FORMSPREE_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },

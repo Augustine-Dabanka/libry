@@ -164,7 +164,7 @@ export default function ChapterEditor({ bookId, initial }: { bookId: number; ini
         <button type="button" className="btn btn-outline" onClick={add}>＋ Add chapter</button>
         <button type="button" className="btn btn-gold" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save chapters"}</button>
       </div>
-      {msg ? <p style={{ color: msg.includes("✓") ? "#7DBE86" : "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.86rem", marginTop: "0.9rem" }}>{msg}</p> : null}
+      {msg ? <p style={{ color: msg.includes("✓") ? "var(--success)" : "var(--terracotta)", fontFamily: "var(--sans)", fontSize: "0.86rem", marginTop: "0.9rem" }}>{msg}</p> : null}
     </div>
   );
 }

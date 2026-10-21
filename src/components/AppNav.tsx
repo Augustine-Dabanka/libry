@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import NavClient from "@/components/NavClient";
 import { GENRES } from "@/lib/content";
 
-// The full Leep navbar (ported from the original app.js renderNavbar): category
+// The full Lybry navbar (ported from the original app.js renderNavbar): category
 // dropdown, Interactive badge, search, Write button, theme cycle, user menu.
 export default async function AppNav() {
   const supabase = await createClient();

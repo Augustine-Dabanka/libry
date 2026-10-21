@@ -5,25 +5,22 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { sanitizeSeasons } from "@/lib/themes";
+import { getStaff, requirePerm, audit, type Perm } from "@/lib/staff";
 
-// Staff area. Access = a real, signed-in Leep account whose email is on the
-// ADMIN_EMAILS allowlist (comma-separated, set in Vercel env vars, never in code).
-// There is no shared passcode and no default: if ADMIN_EMAILS is empty, nobody
-// gets in. Every admin action re-checks this on the server.
-function staffEmails(): string[] {
-  return (process.env.ADMIN_EMAILS || "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
+async function guard(perm: Perm, action: string, target: string | null = null) {
+  const g = await requirePerm(perm);
+  if ("error" in g) return g.error;
+  await audit(g.userId, action, target);
+  return null;
 }
 
+// Staff area. Access = a signed-in account that is an owner (ADMIN_EMAILS,
+// set in Vercel, never in code) or holds a staff rank (0049). There is no
+// shared passcode. Every action re-checks the caller's permission.
+// Any staff rank (0049) or an owner email gets into /admin; what they can do
+// there is checked per action with requirePerm (see src/lib/staff.ts).
 export async function isAdmin(): Promise<boolean> {
-  const allow = staffEmails();
-  if (allow.length === 0) return false;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user?.email || !user.email_confirmed_at) return false;
-  return allow.includes(user.email.toLowerCase());
+  return !!(await getStaff());
 }
 
 // Who is looking at /admin, so the gate can show the right message.
@@ -45,7 +42,7 @@ function admin() {
 
 // ---- Partnership Program review ------------------------------------------
 export async function setPartnerStatus(userId: string, status: "approved" | "rejected" | "pending" | "none") {
-  if (!(await isAdmin())) return { error: "Not authorized." };
+  { const deny = await guard("creators.review", "setPartnerStatus"); if (deny) return { error: deny }; }
   const { error } = await admin()
     .from("profiles")
     .update({ partner_status: status, partner_reviewed_at: new Date().toISOString() })
@@ -56,14 +53,14 @@ export async function setPartnerStatus(userId: string, status: "approved" | "rej
 
 // ---- Payout processing ----------------------------------------------------
 export async function markPayoutPaid(payoutId: number) {
-  if (!(await isAdmin())) return { error: "Not authorized." };
+  { const deny = await guard("finance.send", "markPayoutPaid"); if (deny) return { error: deny }; }
   const { error } = await admin().from("payouts").update({ status: "paid", paid_at: new Date().toISOString() }).eq("id", payoutId);
   if (error) return { error: error.message };
   return { ok: true };
 }
 
 export async function rejectPayout(payoutId: number) {
-  if (!(await isAdmin())) return { error: "Not authorized." };
+  { const deny = await guard("finance.send", "rejectPayout"); if (deny) return { error: deny }; }
   const { error } = await admin().from("payouts").update({ status: "rejected" }).eq("id", payoutId);
   if (error) return { error: error.message };
   return { ok: true };
@@ -72,7 +69,7 @@ export async function rejectPayout(payoutId: number) {
 // Auto-send a payout to the creator's account via Paystack Transfers, and mark
 // it paid on success. Falls back to a clear error so staff can send manually.
 export async function sendPayoutNow(payoutId: number) {
-  if (!(await isAdmin())) return { error: "Not authorized." };
+  { const deny = await guard("finance.send", "sendPayoutNow"); if (deny) return { error: deny }; }
   const sb = admin();
   const { data: po } = await sb.from("payouts").select("id, creator_id, amount, status").eq("id", payoutId).maybeSingle();
   if (!po) return { error: "Payout not found." };
@@ -81,7 +78,7 @@ export async function sendPayoutNow(payoutId: number) {
   if (!acct) return { error: "This creator hasn't added payout details." };
 
   const { sendPaystackTransfer } = await import("@/lib/paystack-transfer");
-  const res = await sendPaystackTransfer(Number(po.amount), acct, `Leep payout #${payoutId}`);
+  const res = await sendPaystackTransfer(Number(po.amount), acct, `Lybry payout #${payoutId}`);
   if (!res.ok) {
     await sb.from("payouts").update({ note: res.error ?? "Transfer failed" }).eq("id", payoutId);
     return { error: res.error };
@@ -93,7 +90,7 @@ export async function sendPayoutNow(payoutId: number) {
 
 // Save the seasonal theme schedule (Halloween, Christmas, ...). Staff only.
 export async function saveThemeSchedule(input: unknown) {
-  if (!(await isAdmin())) return { error: "Not authorised." };
+  { const deny = await guard("site.settings", "saveThemeSchedule"); if (deny) return { error: deny }; }
   const seasons = sanitizeSeasons(input);
   const { data: { user } } = await (await createClient()).auth.getUser();
   const { error } = await admin()

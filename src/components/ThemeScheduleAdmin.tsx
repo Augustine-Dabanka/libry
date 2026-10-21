@@ -33,7 +33,7 @@ export default function ThemeScheduleAdmin({ initial }: { initial: Season[] }) {
               </>
             )}
             {s.key === "collab" ? (
-              <label style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)" }}>Partner / event <input aria-label="Collab partner or event name" maxLength={40} value={s.label || ""} onChange={(e) => set(i, { label: e.target.value })} style={{ ...input, width: 160 }} placeholder="e.g. Kumasi Book Fair" /></label>
+              <label style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)" }}>Partner / event <input aria-label="Collab partner or event name" maxLength={40} value={s.label || ""} onChange={(e) => set(i, { label: e.target.value })} style={{ ...input, width: 160 }} placeholder="e.g. Brooklyn Book Festival" /></label>
             ) : null}
             <button type="button" role="switch" aria-checked={s.enabled} aria-label={`${s.name} enabled`} onClick={() => set(i, { enabled: !s.enabled })}
               style={{ width: 52, height: 32, borderRadius: 16, border: "none", padding: 3, cursor: "pointer", background: s.enabled ? "var(--gold)" : "var(--border)", display: "flex" }}>

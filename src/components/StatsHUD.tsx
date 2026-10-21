@@ -43,7 +43,7 @@ export default function StatsHUD({ stats, quests }: { stats: Stats; quests: Ques
           <span className="lb-pop" style={{ ...pill("rgba(180,83,9,0.16)", "#E08A3C"), animationDelay: "0.05s" }}><Glyph e="🔥" /> {stats.streak_count}-day streak</span>
           <TokenBadge tokens={stats.tokens} cap={TOKEN_CAP} updatedAt={stats.tokens_updated_at} />
           <span className="lb-pop" style={{ ...pill("rgba(124,124,180,0.16)", "#B7B7E6"), animationDelay: "0.19s" }}>✦ {stats.xp} XP</span>
-          <span className="lb-pop" style={{ ...pill("rgba(78,122,82,0.18)", "#7DBE86"), animationDelay: "0.26s" }}><Glyph e="🏆" /> {stats.league} League</span>
+          <span className="lb-pop" style={{ ...pill("color-mix(in srgb, var(--success) 18%, transparent)", "var(--success)"), animationDelay: "0.26s" }}><Glyph e="🏆" /> {stats.league} League</span>
         </div>
 
         {stats.streak_broken ? (

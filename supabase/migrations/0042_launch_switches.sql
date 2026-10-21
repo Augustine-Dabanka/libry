@@ -1,4 +1,4 @@
--- Leep: launch switches. Risky money features start OFF and are turned on
+-- Lybry: launch switches. Risky money features start OFF and are turned on
 -- deliberately, in the database, where a modified browser can't bypass them.
 --
 --   rewarded_ads       : watch-to-earn coins. OFF until a real ad network pays

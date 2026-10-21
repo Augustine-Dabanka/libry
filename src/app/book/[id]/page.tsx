@@ -3,6 +3,8 @@ import AppNav from "@/components/AppNav";
 import BackButton from "@/components/BackButton";
 import AddToCartButton from "@/components/AddToCartButton";
 import CoinUnlockButton from "@/components/CoinUnlockButton";
+import KeepWithUnlimited from "@/components/KeepWithUnlimited";
+import { getBoxStatus } from "@/app/actions/trial";
 import { coinCost } from "@/lib/coins";
 import WishlistButton from "@/components/WishlistButton";
 import LikeButton from "@/components/LikeButton";
@@ -79,7 +81,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   if (isMatureRating(book.age_rating)) {
     let showMature = false;
     if (user) {
-      const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+      const sm = await supabase.from("my_profile").select("show_mature").eq("id", user.id).maybeSingle();
       showMature = !!sm.data?.show_mature;
     }
     if (!showMature) {
@@ -144,6 +146,15 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   if (user && !owned && (book.price ?? 0) > 0) {
     const w = await supabase.from("coin_wallets").select("bonus, paid").eq("user_id", user.id).maybeSingle();
     if (!w.error) coinBalance = Number(w.data?.bonus ?? 0) + Number(w.data?.paid ?? 0);
+  }
+
+  // Unlimited (migration 0044): separate query so the page still works before it runs.
+  let inUnlimited = false;
+  let boxStatus: Awaited<ReturnType<typeof getBoxStatus>> = null;
+  if ((book.price ?? 0) > 0) {
+    const au = await supabase.from("books").select("allow_unlimited").eq("id", book.id).maybeSingle();
+    inUnlimited = !au.error && !!(au.data as { allow_unlimited?: boolean } | null)?.allow_unlimited;
+    if (inUnlimited) boxStatus = await getBoxStatus();
   }
 
   // Likes (public read; guarded).
@@ -245,7 +256,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
             ) : null}
             <div style={{ display: "flex", gap: "0.6rem", margin: "1rem 0", flexWrap: "wrap", alignItems: "center" }}>
               <span className="price" style={{ fontSize: "1.1rem" }}>{formatPrice(book.price)}</span>
-              {(() => { const f = bookFormat(book.type); return <span className="badge" style={{ background: "rgba(196,163,90,0.14)", color: "var(--gold)", borderColor: "rgba(196,163,90,0.35)" }}>{f.icon} {f.label}</span>; })()}
+              {(() => { const f = bookFormat(book.type); return <span className="badge" style={{ background: "color-mix(in srgb, var(--gold) 14%, transparent)", color: "var(--gold)", borderColor: "color-mix(in srgb, var(--gold) 35%, transparent)" }}>{f.icon} {f.label}</span>; })()}
               {book.category ? <span className="badge">{book.category}</span> : null}
               {book.status ? <span className="badge">{book.status}</span> : null}
               <span
@@ -260,7 +271,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
               return tags.length ? (
                 <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginTop: "0.2rem" }}>
                   {tags.slice(0, 8).map((t) => (
-                    <a key={t} href={`/catalog?tag=${encodeURIComponent(t)}`} style={{ textDecoration: "none", fontFamily: "var(--sans)", fontSize: "0.75rem", fontWeight: 600, color: "var(--gold)", background: "rgba(196,163,90,0.12)", border: "1px solid rgba(196,163,90,0.3)", borderRadius: 999, padding: "0.2rem 0.6rem" }}>
+                    <a key={t} href={`/catalog?tag=${encodeURIComponent(t)}`} style={{ textDecoration: "none", fontFamily: "var(--sans)", fontSize: "0.75rem", fontWeight: 600, color: "var(--gold)", background: "color-mix(in srgb, var(--gold) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--gold) 30%, transparent)", borderRadius: 999, padding: "0.2rem 0.6rem" }}>
                       #{t}
                     </a>
                   ))}
@@ -292,6 +303,9 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
                   ⬇ Download EPUB
                 </a>
               ) : null}
+              {inUnlimited && !owned && (!user || book.user_id !== user.id) ? (
+                <KeepWithUnlimited bookId={Number(book.id)} status={boxStatus} />
+              ) : null}
               {(book.price ?? 0) > 0 && !owned ? (
                 <AddToCartButton item={{ id: book.id, title: book.title, author: book.author, price: book.price }} />
               ) : null}
@@ -306,7 +320,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
             {hasProgress ? (
               <div style={{ marginTop: "0.4rem", maxWidth: 320 }}>
                 <div style={{ height: 5, borderRadius: 999, background: "var(--border)", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${progressPct}%`, background: "linear-gradient(90deg,#5FA068,#C5A059)" }} />
+                  <div style={{ height: "100%", width: `${progressPct}%`, background: "var(--accent)" }} />
                 </div>
                 <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.76rem", marginTop: "0.35rem" }}>
                   You&apos;re {progressPct}% through — pick up where you left off.

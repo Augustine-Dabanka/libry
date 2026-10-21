@@ -23,13 +23,13 @@ export default function EndingShare({
 
   const url = typeof window !== "undefined" ? `${window.location.origin}/book/${bookId}` : `/book/${bookId}`;
   const nLabel = totalEndings > 1 ? `Ending ${endingNumber} of ${totalEndings}` : "an ending";
-  const shareText = `I reached ${nLabel} in "${title}" on Leep. Which ending will you get?`;
+  const shareText = `I reached ${nLabel} in "${title}" on Lybry. Which ending will you get?`;
 
   async function share() {
     const nav = typeof navigator !== "undefined" ? navigator : undefined;
     if (nav && typeof nav.share === "function") {
       try {
-        await nav.share({ title: `${title} — Leep`, text: shareText, url });
+        await nav.share({ title: `${title} — Lybry`, text: shareText, url });
         return;
       } catch {
         /* user dismissed — fall through to copy */
@@ -54,8 +54,8 @@ export default function EndingShare({
           maxWidth: 340,
           borderRadius: 16,
           padding: "1.2rem 1.4rem",
-          background: "radial-gradient(120% 90% at 80% 0%, rgba(196,163,90,0.22), transparent 60%), linear-gradient(160deg,#2a2118,#141019)",
-          border: "1px solid rgba(196,163,90,0.35)",
+          background: "radial-gradient(120% 90% at 80% 0%, color-mix(in srgb, var(--gold) 22%, transparent), transparent 60%), linear-gradient(160deg,#2a2118,#141019)",
+          border: "1px solid color-mix(in srgb, var(--gold) 35%, transparent)",
           textAlign: "center",
         }}
       >

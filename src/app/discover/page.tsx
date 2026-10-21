@@ -3,11 +3,12 @@ import AppNav from "@/components/AppNav";
 import BookMini from "@/components/BookMini";
 import BookCarousel from "@/components/BookCarousel";
 import ProductMini, { type ProductCard } from "@/components/ProductMini";
+import { productsOn } from "@/lib/features";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
 import Glyph from "@/components/Glyph";
-export const metadata = { title: "Discover — Leep" };
+export const metadata = { title: "Discover — Lybry" };
 
 // Distinct discovery modes (spec §7/§20). Each is a SEPARATE, documented ranking
 // over real signals — never one universal score. Scoring rules are in code below.
@@ -37,7 +38,7 @@ export default async function Discover({ searchParams }: { searchParams: Promise
 
   let showMature = false;
   if (user) {
-    const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+    const sm = await supabase.from("my_profile").select("show_mature").eq("id", user.id).maybeSingle();
     showMature = sm.data?.show_mature ?? false;
   }
   const allowed = allowedRatings(showMature);
@@ -62,16 +63,13 @@ export default async function Discover({ searchParams }: { searchParams: Promise
   const readers = new Map<number, number>();
   const finishers = new Map<number, number>();
   {
-    const prog = await supabase.from("reading_progress").select("book_id, user_email, progress_percentage").limit(8000);
-    if (!prog.error && prog.data) {
-      const seen = new Map<number, Set<string>>();
-      for (const r of prog.data as { book_id: number; user_email: string; progress_percentage: number | null }[]) {
-        const id = Number(r.book_id);
-        if (!seen.has(id)) seen.set(id, new Set());
-        seen.get(id)!.add(r.user_email);
-        if (Number(r.progress_percentage ?? 0) >= 100) finishers.set(id, (finishers.get(id) ?? 0) + 1);
+    // One aggregate row per book (0048) instead of downloading everyone's progress.
+    const stats = await supabase.rpc("book_reading_stats");
+    if (!stats.error && stats.data) {
+      for (const r of stats.data as { book_id: number; readers: number; finishers: number }[]) {
+        readers.set(Number(r.book_id), r.readers);
+        finishers.set(Number(r.book_id), r.finishers);
       }
-      for (const [id, set] of seen) readers.set(id, set.size);
     }
   }
   // Review counts (proxy for discussion).
@@ -145,7 +143,7 @@ export default async function Discover({ searchParams }: { searchParams: Promise
 
   // Digital products + creator spotlight (guarded pre-migration).
   let products: ProductCard[] = [];
-  {
+  if (await productsOn()) {
     const pp = await supabase.from("products").select("id, title, type, price, cover_url, category").eq("is_published", true).order("created_at", { ascending: false }).limit(18);
     if (!pp.error && pp.data) products = pp.data as ProductCard[];
   }

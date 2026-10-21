@@ -1,18 +1,18 @@
 import Glyph from "@/components/Glyph";
 // Animated hero — a four-scene story that loops (styles live in globals.css so
 // they always load): 1) the daily 3 km walk to the library (a week of dots
-// fills), 2) a friend shares Leep, 3) the app's features fan out — read books,
+// fills), 2) a friend shares Lybry, 3) the app's features fan out — read books,
 // digital products, get paid to create, 4) reading happily at home. Respects
 // prefers-reduced-motion (settles on the payoff scene).
 export default function HeroArt() {
   return (
     <div className="heroart-scene" style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
-      <svg viewBox="0 0 400 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A daily 3km walk to the library, then a friend shares Leep — read books, get digital products, and get paid to create, all from your phone">
+      <svg viewBox="0 0 400 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A daily 3km walk to the library, then a friend shares Lybry — read books and get paid to write, all from your phone">
         <rect x="8" y="8" width="384" height="444" rx="16" fill="#22201E" stroke="rgba(250,247,242,0.08)" />
 
         {/* ── Scene 1 — the daily 3 km trek ── */}
         <g className="sc sc1" opacity="0">
-          <circle className="s1-sun" cx="200" cy="70" r="16" fill="#C4A35A" opacity="0.85" />
+          <circle className="s1-sun" cx="200" cy="70" r="16" fill="#C8471F" opacity="0.85" />
           {[0, 1, 2, 3, 4, 5, 6].map((d) => (
             <circle key={d} className={`s1-dot s1-dot-${d}`} cx={120 + d * 27} cy="112" r="6" fill="#44403C" stroke="#5a5048" />
           ))}
@@ -29,7 +29,7 @@ export default function HeroArt() {
             <rect x="324" y="300" width="12" height="56" fill="#6E6259" />
             <rect x="344" y="300" width="12" height="56" fill="#645a51" />
             <rect x="360" y="300" width="8" height="56" fill="#6E6259" />
-            <text x="336" y="292" textAnchor="middle" fill="#C4A35A" fontFamily="Georgia, serif" fontSize="8" letterSpacing="1.5">LIBRARY</text>
+            <text x="336" y="292" textAnchor="middle" fill="#C8471F" fontFamily="Georgia, serif" fontSize="8" letterSpacing="1.5">LIBRARY</text>
           </g>
           <rect x="104" y="356" width="196" height="6" rx="3" fill="#3a332e" />
           <text x="202" y="384" textAnchor="middle" fill="#8a7d70" fontFamily="sans-serif" fontSize="12">3 km</text>
@@ -43,7 +43,7 @@ export default function HeroArt() {
           <text x="200" y="430" textAnchor="middle" fill="#78716C" fontFamily="Georgia, serif" fontStyle="italic" fontSize="16">3 km, every single day</text>
         </g>
 
-        {/* ── Scene 2 — a friend shares Leep ── */}
+        {/* ── Scene 2 — a friend shares Lybry ── */}
         <g className="sc sc2" opacity="0">
           <g>
             <circle cx="150" cy="250" r="16" fill="#E0B48C" />
@@ -54,37 +54,37 @@ export default function HeroArt() {
             <rect x="236" y="268" width="32" height="52" rx="12" fill="#3E7C8C" />
           </g>
           <g className="s2-bubble">
-            <rect x="120" y="196" width="120" height="38" rx="12" fill="#2c2925" stroke="#C4A35A" strokeWidth="1.2" />
+            <rect x="120" y="196" width="120" height="38" rx="12" fill="#2c2925" stroke="#C8471F" strokeWidth="1.2" />
             <path d="M150 234 l0 12 l12 -12 Z" fill="#2c2925" />
-            <text x="180" y="220" textAnchor="middle" fill="#E7E5E4" fontFamily="sans-serif" fontSize="13">You have to try Leep!</text>
+            <text x="180" y="220" textAnchor="middle" fill="#E7E5E4" fontFamily="sans-serif" fontSize="13">You have to try Lybry!</text>
           </g>
           <g className="s2-app">
-            <rect x="-15" y="-15" width="30" height="30" rx="8" fill="#C4A35A" />
+            <rect x="-15" y="-15" width="30" height="30" rx="8" fill="#C8471F" />
             <text x="0" y="6" textAnchor="middle" fontFamily="Georgia, serif" fontSize="18" fontWeight="700" fill="#22201E">L</text>
           </g>
-          <text x="200" y="430" textAnchor="middle" fill="#78716C" fontFamily="Georgia, serif" fontStyle="italic" fontSize="16">then a friend shared Leep</text>
+          <text x="200" y="430" textAnchor="middle" fill="#78716C" fontFamily="Georgia, serif" fontStyle="italic" fontSize="16">then a friend shared Lybry</text>
         </g>
 
         {/* ── Scene 3 — the features ── */}
         <g className="sc sc3" opacity="0">
-          <rect x="150" y="96" width="100" height="200" rx="16" fill="#1a1917" stroke="#C4A35A" strokeWidth="1.5" />
-          <text x="200" y="130" textAnchor="middle" fontFamily="Georgia, serif" fontSize="20" fontWeight="700" fill="#C4A35A">Leep<tspan fill="#7C6BF5">.</tspan></text>
+          <rect x="150" y="96" width="100" height="200" rx="16" fill="#1a1917" stroke="#C8471F" strokeWidth="1.5" />
+          <text x="200" y="130" textAnchor="middle" fontFamily="Georgia, serif" fontSize="20" fontWeight="700" fill="#C8471F">Lybry<tspan fill="#F5B731">.</tspan></text>
           <g className="s3-f1">
             <rect x="162" y="150" width="76" height="34" rx="8" fill="#2c2925" />
-            <g transform="translate(176 158)" style={{ color: "#C4A35A" }}><Glyph e="📖" size={16} /></g>
+            <g transform="translate(176 158)" style={{ color: "var(--gold)" }}><Glyph e="📖" size={16} /></g>
             <text x="196" y="171" fill="#E7E5E4" fontFamily="sans-serif" fontSize="11">Read books</text>
           </g>
           <g className="s3-f2">
             <rect x="162" y="192" width="76" height="34" rx="8" fill="#2c2925" />
-            <g transform="translate(176 200)" style={{ color: "#C4A35A" }}><Glyph e="🎧" size={16} /></g>
+            <g transform="translate(176 200)" style={{ color: "var(--gold)" }}><Glyph e="🎧" size={16} /></g>
             <text x="196" y="209" fill="#E7E5E4" fontFamily="sans-serif" fontSize="9">Audiobooks,</text>
             <text x="196" y="220" fill="#E7E5E4" fontFamily="sans-serif" fontSize="9">templates, PDFs</text>
           </g>
           <g className="s3-f3">
             <rect x="162" y="234" width="76" height="34" rx="8" fill="#2c2925" />
-            <g transform="translate(176 242)" style={{ color: "#C4A35A" }}><Glyph e="✍" size={16} /></g>
-            <text x="196" y="251" fill="#C4A35A" fontFamily="sans-serif" fontSize="9" fontWeight="700">Create &amp; get</text>
-            <text x="196" y="262" fill="#C4A35A" fontFamily="sans-serif" fontSize="9" fontWeight="700">paid</text>
+            <g transform="translate(176 242)" style={{ color: "var(--gold)" }}><Glyph e="✍" size={16} /></g>
+            <text x="196" y="251" fill="#C8471F" fontFamily="sans-serif" fontSize="9" fontWeight="700">Create &amp; get</text>
+            <text x="196" y="262" fill="#C8471F" fontFamily="sans-serif" fontSize="9" fontWeight="700">paid</text>
           </g>
           <text x="200" y="430" textAnchor="middle" fill="#78716C" fontFamily="Georgia, serif" fontStyle="italic" fontSize="16">read · collect · get paid</text>
         </g>
@@ -99,14 +99,14 @@ export default function HeroArt() {
           <circle cx="205" cy="271" r="1.6" fill="#3a2f28" />
           <path d="M194 277 q6 6 12 0" fill="none" stroke="#3a2f28" strokeWidth="1.8" strokeLinecap="round" />
           <rect x="184" y="288" width="32" height="26" rx="10" fill="#3E7C8C" />
-          <rect x="216" y="296" width="26" height="40" rx="5" fill="#1a1917" stroke="#C4A35A" strokeWidth="1.2" />
-          <text x="229" y="320" textAnchor="middle" fontFamily="Georgia, serif" fontSize="12" fontWeight="700" fill="#C4A35A">L<tspan fill="#7C6BF5">.</tspan></text>
-          <g transform="translate(150 252)" style={{ color: "#C4A35A" }}><g className="s4-thumb"><Glyph e="👍" size={22} /></g></g>
-          <g fill="#C4A35A">
+          <rect x="216" y="296" width="26" height="40" rx="5" fill="#1a1917" stroke="#C8471F" strokeWidth="1.2" />
+          <text x="229" y="320" textAnchor="middle" fontFamily="Georgia, serif" fontSize="12" fontWeight="700" fill="#C8471F">L<tspan fill="#F5B731">.</tspan></text>
+          <g transform="translate(150 252)" style={{ color: "var(--gold)" }}><g className="s4-thumb"><Glyph e="👍" size={22} /></g></g>
+          <g fill="#C8471F">
             <path className="s4-spark" d="M264 250 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2Z" />
             <path className="s4-spark s4-spark2" d="M176 244 l1.4 3.5 3.5 1.4 -3.5 1.4 -1.4 3.5 -1.4 -3.5 -3.5 -1.4 3.5 -1.4Z" />
           </g>
-          <text x="200" y="430" textAnchor="middle" fill="#C4A35A" fontFamily="Georgia, serif" fontStyle="italic" fontSize="17">the library, in your pocket</text>
+          <text x="200" y="430" textAnchor="middle" fill="#C8471F" fontFamily="Georgia, serif" fontStyle="italic" fontSize="17">the library, in your pocket</text>
         </g>
       </svg>
     </div>

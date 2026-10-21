@@ -80,7 +80,7 @@ export default function PromotePanel({ email, books, active }: { email?: string;
   const card: React.CSSProperties = { background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.1rem" };
   const pill = (on: boolean): React.CSSProperties => ({
     padding: "0.5rem 0.9rem", borderRadius: 999, cursor: "pointer", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem",
-    border: `1px solid ${on ? "var(--gold)" : "var(--border)"}`, background: on ? "rgba(95,160,104,0.14)" : "transparent", color: on ? "var(--gold)" : "var(--ivory-muted)",
+    border: `1px solid ${on ? "var(--gold)" : "var(--border)"}`, background: on ? "color-mix(in srgb, var(--gold) 14%, transparent)" : "transparent", color: on ? "var(--gold)" : "var(--ivory-muted)",
   });
 
   if (books.length === 0) {
@@ -107,7 +107,7 @@ export default function PromotePanel({ email, books, active }: { email?: string;
                     <div style={{ fontFamily: "var(--serif)", color: "var(--ivory)" }}>{p.title}</div>
                     <div style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", color: "var(--muted)" }}>{promoLabel(p.kind as PromoKind)}</div>
                   </div>
-                  <span className="badge" style={{ background: "rgba(95,160,104,0.2)", color: "#7DBE86", fontWeight: 700 }}>{left} day{left === 1 ? "" : "s"} left</span>
+                  <span className="badge" style={{ background: "color-mix(in srgb, var(--gold) 20%, transparent)", color: "var(--success)", fontWeight: 700 }}>{left} day{left === 1 ? "" : "s"} left</span>
                 </div>
               );
             })}
@@ -118,7 +118,7 @@ export default function PromotePanel({ email, books, active }: { email?: string;
       <div style={card}>
         {done ? (
           <div style={{ textAlign: "center", padding: "1.4rem 0.5rem", fontFamily: "var(--sans)" }}>
-            <div style={{ fontSize: "2rem", color: "#7DBE86", marginBottom: "0.5rem" }}>✓</div>
+            <div style={{ fontSize: "2rem", color: "var(--success)", marginBottom: "0.5rem" }}>✓</div>
             <p style={{ color: "var(--ivory)", marginBottom: "0.9rem" }}>Your book is now in the Discover Spotlight.</p>
             <button type="button" className="btn btn-outline" onClick={() => setDone(false)}>Promote another</button>
           </div>

@@ -3,7 +3,7 @@ import { SocialIcon } from "@/components/SocialIcons";
 
 import Glyph from "@/components/Glyph";
 export const metadata = {
-  title: "Leep — links",
+  title: "Lybry — links",
   description: "The bookstore that actually pays its writers. Read free, join the waitlist, or publish your own story.",
 };
 
@@ -12,7 +12,7 @@ const LINKS = [
   { emoji: "⭐", title: "Join the early-access waitlist", sub: "Be first through the door", href: "/waitlist", primary: true },
   { emoji: "📚", title: "Read free", sub: "Classics & interactive stories, no card", href: "/catalog" },
   { emoji: "🌿", title: "Interactive stories", sub: "Choose-your-path tales", href: "/catalog?type=Interactive" },
-  { emoji: "✦", title: "Leep Unlimited", sub: "One price, the whole library — coming soon", href: "/unlimited" },
+  { emoji: "✦", title: "Lybry Unlimited", sub: "Your genres, your book box. Try it free for 7 days", href: "/unlimited" },
   { emoji: "✍️", title: "Become a creator", sub: "Publish in minutes · keep 65%", href: "/creator" },
 ];
 
@@ -21,7 +21,7 @@ export default function LinksPage() {
     <main
       style={{
         minHeight: "100dvh",
-        background: "radial-gradient(1200px 600px at 50% -10%, rgba(197,160,89,0.10), transparent 60%), var(--charcoal)",
+        background: "radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--gold) 10%, transparent), transparent 60%), var(--charcoal)",
         display: "flex",
         justifyContent: "center",
         padding: "clamp(2rem, 7vw, 4rem) 1.2rem 3rem",
@@ -31,7 +31,7 @@ export default function LinksPage() {
         {/* header */}
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
           <div style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: "2.4rem", color: "var(--ivory)", letterSpacing: "-0.02em" }}>
-            Leep<span style={{ color: "var(--gold)" }}>.</span>
+            Lybry<span style={{ color: "var(--gold)" }}>.</span>
           </div>
           <p style={{ fontFamily: "var(--sans)", color: "var(--ivory-muted)", fontSize: "1rem", margin: "0.5rem auto 0", maxWidth: 320, lineHeight: 1.5 }}>
             The bookstore that actually{" "}
@@ -55,7 +55,7 @@ export default function LinksPage() {
                 border: `1px solid ${l.primary ? "var(--gold)" : "var(--border)"}`,
                 borderRadius: 14,
                 padding: "0.95rem 1.1rem",
-                boxShadow: l.primary ? "0 10px 30px rgba(197,160,89,0.18)" : "none",
+                boxShadow: l.primary ? "0 10px 30px color-mix(in srgb, var(--gold) 18%, transparent)" : "none",
               }}
             >
               <span style={{ fontSize: "1.35rem", lineHeight: 1, flexShrink: 0, display: "inline-flex" }}><Glyph e={l.emoji} /></span>

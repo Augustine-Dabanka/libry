@@ -49,7 +49,7 @@ function Controls({ q, active, sort, genre }: { q: string; active: string; sort:
   // Show the curated genres, plus the active one if it isn't in the shortlist.
   const genreChips = [...new Set([...BROWSE_GENRES, ...(genre && !BROWSE_GENRES.includes(genre) ? [genre] : [])])].filter((g) => GENRES.includes(g as (typeof GENRES)[number]) || g === genre);
   const chip = (label: string, href: string, on: boolean) => (
-    <a key={label} href={href} style={{ textDecoration: "none", padding: "0.4rem 0.95rem", fontSize: "0.85rem", borderRadius: 999, fontFamily: "var(--sans)", fontWeight: 600, background: on ? "var(--gold)" : "rgba(95,160,104,0.12)", color: on ? "#12100E" : "var(--ivory-muted)", border: "1px solid var(--border)", whiteSpace: "nowrap" }}>{label}</a>
+    <a key={label} href={href} style={{ textDecoration: "none", padding: "0.4rem 0.95rem", fontSize: "0.85rem", borderRadius: 999, fontFamily: "var(--sans)", fontWeight: 600, background: on ? "var(--gold)" : "color-mix(in srgb, var(--gold) 12%, transparent)", color: on ? "#12100E" : "var(--ivory-muted)", border: "1px solid var(--border)", whiteSpace: "nowrap" }}>{label}</a>
   );
   return (
     <section className="section" style={{ paddingTop: "1.2rem", paddingBottom: 0 }}>
@@ -93,9 +93,10 @@ function Controls({ q, active, sort, genre }: { q: string; active: string; sort:
 export default async function Catalog({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; type?: string; free?: string; paid?: string; sort?: string; genre?: string; tag?: string }>;
+  searchParams: Promise<{ q?: string; type?: string; free?: string; paid?: string; sort?: string; genre?: string; tag?: string; unlimited?: string }>;
 }) {
-  const { q, type, free, paid, sort, genre, tag } = await searchParams;
+  const { q, type, free, paid, sort, genre, tag, unlimited } = await searchParams;
+  const unlimitedOnly = unlimited === "1" || unlimited === "true";
   const supabase = await createClient();
   const {
     data: { user },
@@ -103,7 +104,7 @@ export default async function Catalog({
   // Guests can browse; mature titles stay hidden unless a signed-in reader opts in.
   let showMature = false;
   if (user) {
-    const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+    const sm = await supabase.from("my_profile").select("show_mature").eq("id", user.id).maybeSingle();
     showMature = sm.data?.show_mature ?? false;
   }
   const allowed = allowedRatings(showMature);
@@ -118,7 +119,7 @@ export default async function Catalog({
   const sortKey = (sort ?? "").trim();
   // A chosen sort also switches to the flat grid — otherwise the shelf view
   // buckets books and the sort order is invisible (that's why sort "did nothing").
-  const filtered = !!(safe || typeFilter || genreFilter || tagFilter || freeOnly || paidOnly || sortKey);
+  const filtered = !!(safe || typeFilter || genreFilter || tagFilter || freeOnly || paidOnly || sortKey || unlimitedOnly);
   const activeChip = typeFilter === "Interactive" ? "Interactive" : typeFilter === "Fiction" ? "Fiction" : typeFilter === "Non-Fiction" ? "Non-Fiction" : freeOnly ? "free" : paidOnly ? "paid" : "all";
 
   const runQuery = (withAge: boolean) => {
@@ -136,6 +137,8 @@ export default async function Catalog({
     if (tagFilter) query = query.contains("tags", [tagFilter]);
     if (freeOnly) query = query.or("price.eq.0,is_free.eq.true");
     if (paidOnly) query = query.gt("price", 0);
+    // Books you can keep with an Unlimited trial or box (migration 0044).
+    if (unlimitedOnly) query = query.gt("price", 0).eq("allow_unlimited", true);
     if (safe) query = query.or(`title.ilike.%${safe}%,author.ilike.%${safe}%`);
     if (sortKey === "title") query = query.order("title", { ascending: true });
     else if (sortKey === "rating") query = query.order("rating", { ascending: false });

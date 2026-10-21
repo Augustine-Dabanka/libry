@@ -3,7 +3,7 @@ import LegalDoc from "@/components/LegalDoc";
 import { LEGAL } from "@/lib/legal";
 import { ContactLink } from "@/components/LegalDoc";
 
-export const metadata: Metadata = { title: "Refund Policy — Leep" };
+export const metadata: Metadata = { title: "Refund Policy — Lybry" };
 
 export default function RefundsPage() {
   return (
@@ -11,11 +11,11 @@ export default function RefundsPage() {
       title="Refund Policy"
       updated={LEGAL.effectiveDate}
       current="/refunds"
-      intro="Leep sells digital stories that are delivered instantly. This policy explains when refunds do and don't apply, and how creator payouts relate to them."
+      intro="Lybry sells digital stories that are delivered instantly. This policy explains when refunds do and don't apply, and how creator payouts relate to them."
     >
       <h2>1. Digital goods are delivered immediately</h2>
       <p>
-        When you buy a book on Leep, you get access — and any downloadable copy — <strong>right away</strong>. Because the goods are digital and delivered on purchase, <strong>we do not offer refunds on delivered digital goods</strong>, except where required by law or in the limited cases below.
+        When you buy a book on Lybry, you get access — and any downloadable copy — <strong>right away</strong>. Because the goods are digital and delivered on purchase, <strong>we do not offer refunds on delivered digital goods</strong>, except where required by law or in the limited cases below.
       </p>
 
       <h2>2. When we will put it right</h2>
@@ -27,13 +27,15 @@ export default function RefundsPage() {
 
       <h2>3. Your local rights</h2>
       <p>
-        Some countries give consumers a statutory cancellation right for digital purchases <em>unless</em> you agreed that delivery begins immediately and thereby waived that right. Where such mandatory rights apply, they are unaffected by this policy. Because Leep operates <strong>internationally</strong>, the exact rights depend on your country.
+        Some countries give consumers a statutory cancellation right for digital purchases <em>unless</em> you agreed that delivery begins immediately and thereby waived that right. Where such mandatory rights apply, they are unaffected by this policy. Because Lybry operates <strong>internationally</strong>, the exact rights depend on your country.
       </p>
 
-      <h2>4. Subscriptions</h2>
-      <p>Any subscription (e.g. Leep Unlimited) can be cancelled to stop future renewals; already-billed periods are non-refundable except as required by law.</p>
+      <h2>4. Free trial &amp; Lybry Unlimited</h2>
+      <p>
+        The free trial costs nothing and needs no payment details, so there is nothing to cancel or refund. Lybry Unlimited is a <strong>one-off payment for a fixed period</strong> and <strong>does not renew automatically</strong>, so you are never charged again unless you choose to pay. A paid period is non-refundable once it has started, except as required by law or where it didn&apos;t work: if a paid period didn&apos;t unlock and we can&apos;t fix it, we&apos;ll refund it or extend it. Books you kept with a trial or plan stay in your library and are not refundable, because nothing was charged for them individually.
+      </p>
       <h2>4a. Coins</h2>
-      <p>Coins are a store credit for Leep only. They have <strong>no cash value</strong>, can&rsquo;t be withdrawn, sold or transferred, and are spent bought-coins first. Earned coins (ads, coupons, rewards) are never refundable. Bought coins that are still <strong>unspent</strong> can be refunded within <strong>{LEGAL.refundWindow}</strong> of purchase; spent coins follow the rules for the item they unlocked. We may remove coins gained through fraud, abuse or a refunded payment.</p>
+      <p>Coins are a store credit for Lybry only. They have <strong>no cash value</strong>, can&rsquo;t be withdrawn, sold or transferred, and are spent bought-coins first. Earned coins (ads, coupons, rewards) are never refundable. Bought coins that are still <strong>unspent</strong> can be refunded within <strong>{LEGAL.refundWindow}</strong> of purchase; spent coins follow the rules for the item they unlocked. We may remove coins gained through fraud, abuse or a refunded payment.</p>
 
       <h2>5. Creator payouts &amp; chargebacks</h2>
       <p>

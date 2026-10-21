@@ -149,7 +149,7 @@ export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
   const fg = dark ? "#FAF7F2" : "#2B2622";
   const muted = dark ? "#A8A29E" : "#6B645E";
   const border = dark ? "rgba(250,247,242,0.12)" : "rgba(43,38,34,0.14)";
-  const accent = "#5FA068";
+  const accent = "var(--gold)";
 
   return (
     <>
@@ -160,7 +160,7 @@ export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
           onClick={() => { if (chip.simpler || chip.word) { setOpen(true); ask(`meaning of ${chip.word}`); } setChip(null); }}
           style={{
             position: "fixed", left: chip.x, top: chip.y, transform: "translate(-50%,-100%)", zIndex: 1400,
-            background: accent, color: "#0f130f", border: "none", borderRadius: 999, padding: "0.32rem 0.7rem",
+            background: accent, color: "var(--on-gold)", border: "none", borderRadius: 999, padding: "0.32rem 0.7rem",
             fontFamily: "var(--sans)", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap",
             boxShadow: "0 8px 24px rgba(0,0,0,0.35)", animation: "rc-pop 0.18s ease",
           }}
@@ -193,16 +193,16 @@ export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
               <label style={{ display: "block", fontFamily: "var(--sans)", fontSize: "0.78rem", color: muted, margin: "0.9rem 0 0.4rem" }}>Avatar</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
                 {AVATARS.map((a) => (
-                  <button key={a} type="button" onClick={() => setComp({ ...comp, avatar: a })} style={{ fontSize: "1.25rem", width: 40, height: 40, borderRadius: 10, cursor: "pointer", background: comp.avatar === a ? "rgba(95,160,104,0.2)" : "transparent", border: `1px solid ${comp.avatar === a ? accent : border}`, display: "grid", placeItems: "center", color: "inherit" }} aria-label="Pick avatar"><Glyph e={a} /></button>
+                  <button key={a} type="button" onClick={() => setComp({ ...comp, avatar: a })} style={{ fontSize: "1.25rem", width: 40, height: 40, borderRadius: 10, cursor: "pointer", background: comp.avatar === a ? "color-mix(in srgb, var(--gold) 20%, transparent)" : "transparent", border: `1px solid ${comp.avatar === a ? accent : border}`, display: "grid", placeItems: "center", color: "inherit" }} aria-label="Pick avatar"><Glyph e={a} /></button>
                 ))}
               </div>
               <label style={{ display: "block", fontFamily: "var(--sans)", fontSize: "0.78rem", color: muted, margin: "0.9rem 0 0.4rem" }}>Role</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
                 {ROLES.map((r) => (
-                  <button key={r} type="button" onClick={() => setComp({ ...comp, role: r })} style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", fontWeight: 600, padding: "0.4rem 0.6rem", borderRadius: 999, cursor: "pointer", background: comp.role === r ? "rgba(95,160,104,0.16)" : "transparent", color: comp.role === r ? fg : muted, border: `1px solid ${comp.role === r ? accent : border}` }}>{r}</button>
+                  <button key={r} type="button" onClick={() => setComp({ ...comp, role: r })} style={{ fontFamily: "var(--sans)", fontSize: "0.8rem", fontWeight: 600, padding: "0.4rem 0.6rem", borderRadius: 999, cursor: "pointer", background: comp.role === r ? "color-mix(in srgb, var(--gold) 16%, transparent)" : "transparent", color: comp.role === r ? fg : muted, border: `1px solid ${comp.role === r ? accent : border}` }}>{r}</button>
                 ))}
               </div>
-              <button type="button" onClick={() => persist({ ...comp, setup: true })} style={{ width: "100%", marginTop: "1.1rem", padding: "0.7rem", borderRadius: 12, border: "none", background: accent, color: "#0f130f", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}>
+              <button type="button" onClick={() => persist({ ...comp, setup: true })} style={{ width: "100%", marginTop: "1.1rem", padding: "0.7rem", borderRadius: 12, border: "none", background: accent, color: "var(--on-gold)", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}>
                 Meet {comp.name.trim() || "my companion"}
               </button>
             </div>
@@ -210,7 +210,7 @@ export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
             <>
               <div ref={bodyRef} style={{ flex: 1, overflowY: "auto", padding: "0.9rem 1rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
                 {msgs.map((m, i) => (
-                  <div key={i} style={{ alignSelf: m.from === "you" ? "flex-end" : "flex-start", maxWidth: "85%", padding: "0.55rem 0.75rem", borderRadius: 14, whiteSpace: "pre-wrap", lineHeight: 1.45, fontFamily: "var(--sans)", fontSize: "0.88rem", background: m.from === "you" ? accent : dark ? "rgba(255,255,255,0.06)" : "#fff", color: m.from === "you" ? "#0f130f" : fg, border: m.from === "you" ? "none" : `1px solid ${border}` }}>
+                  <div key={i} style={{ alignSelf: m.from === "you" ? "flex-end" : "flex-start", maxWidth: "85%", padding: "0.55rem 0.75rem", borderRadius: 14, whiteSpace: "pre-wrap", lineHeight: 1.45, fontFamily: "var(--sans)", fontSize: "0.88rem", background: m.from === "you" ? accent : dark ? "rgba(255,255,255,0.06)" : "#fff", color: m.from === "you" ? "var(--on-gold)" : fg, border: m.from === "you" ? "none" : `1px solid ${border}` }}>
                     {m.text}
                   </div>
                 ))}
@@ -218,7 +218,7 @@ export default function ReaderCompanion({ dark = true }: { dark?: boolean }) {
               </div>
               <form onSubmit={(e) => { e.preventDefault(); ask(input); }} style={{ display: "flex", gap: "0.4rem", padding: "0.7rem", borderTop: `1px solid ${border}` }}>
                 <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask for a meaning or simpler word…" style={{ flex: 1, minWidth: 0, padding: "0.55rem 0.7rem", borderRadius: 10, border: `1px solid ${border}`, background: dark ? "rgba(255,255,255,0.05)" : "#fff", color: fg, fontFamily: "var(--sans)", fontSize: "0.88rem", outline: "none" }} />
-                <button type="submit" disabled={busy || !input.trim()} aria-label="Send" style={{ flexShrink: 0, width: 40, borderRadius: 10, border: "none", background: accent, color: "#0f130f", cursor: input.trim() ? "pointer" : "default", opacity: input.trim() ? 1 : 0.5, fontSize: "1rem" }}>➤</button>
+                <button type="submit" disabled={busy || !input.trim()} aria-label="Send" style={{ flexShrink: 0, width: 40, borderRadius: 10, border: "none", background: accent, color: "var(--on-gold)", cursor: input.trim() ? "pointer" : "default", opacity: input.trim() ? 1 : 0.5, fontSize: "1rem" }}>➤</button>
               </form>
               <button type="button" onClick={() => persist({ ...comp, setup: false })} style={{ background: "transparent", border: "none", color: muted, fontFamily: "var(--sans)", fontSize: "0.72rem", cursor: "pointer", padding: "0 0 0.7rem" }}>
                 Edit companion

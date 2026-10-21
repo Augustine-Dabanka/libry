@@ -57,35 +57,80 @@ function cap(s: string): string {
 // sample / "Look Inside" flow. Books are stored with chapter headings like
 // "Chapter One — The Winding"; we cut at the SECOND heading. When a book has no
 // detectable chapter headings, we fall back to a healthy opening slice.
+// How much a free sample shows: at least SAMPLE_MIN_WORDS or SAMPLE_SHARE of the
+// book, whichever is longer, but never more than SAMPLE_MAX_SHARE. Whole
+// chapters are used where the book has them (always at least chapter 1), so a
+// sample never stops mid-scene.
+export const SAMPLE_MIN_WORDS = 2500;
+export const SAMPLE_SHARE = 0.1;
+export const SAMPLE_MAX_SHARE = 0.5;
+
+function wordCount(text: string): number {
+  const plain = text.replace(/<[^>]+>/g, " ");
+  const m = plain.match(/[^\s]+/g);
+  return m ? m.length : 0;
+}
+
+function sampleTarget(totalWords: number): number {
+  const want = Math.max(SAMPLE_MIN_WORDS, Math.ceil(totalWords * SAMPLE_SHARE));
+  return Math.min(want, Math.floor(totalWords * SAMPLE_MAX_SHARE));
+}
+
+// Take whole parts from the front until the target is reached (at least one).
+function takeParts(parts: string[], target: number): number {
+  let words = 0;
+  let n = 0;
+  for (const p of parts) {
+    if (n >= 1 && words >= target) break;
+    words += wordCount(p);
+    n++;
+  }
+  return n;
+}
+
 export function firstChapterExcerpt(content: string): { excerpt: string; truncated: boolean } {
   if (!content) return { excerpt: "", truncated: false };
+  const total = wordCount(content);
+  const target = sampleTarget(total);
 
   // Rich HTML books compile each chapter into a <section class="ch">…</section>.
-  // The free sample is simply the first section.
   if (/<section[^>]*class=["'][^"']*\bch\b/i.test(content)) {
     const secs = content.match(/<section[\s\S]*?<\/section>/gi) || [];
-    if (secs[0]) return { excerpt: secs[0], truncated: secs.length > 1 };
+    if (secs.length) {
+      const n = takeParts(secs, target);
+      return { excerpt: secs.slice(0, n).join("\n"), truncated: secs.length > n };
+    }
   }
 
+  // Plain text with "Chapter …" headings: split into chapters (text before the
+  // first heading belongs to chapter 1).
   const lines = content.split(/\r?\n/);
   const headingRe = /^\s*chapter\b/i;
-  const headings: number[] = [];
+  const starts: number[] = [];
   lines.forEach((l, i) => {
-    if (headingRe.test(l)) headings.push(i);
+    if (headingRe.test(l)) starts.push(i);
   });
-
-  if (headings.length >= 2) {
-    const excerpt = lines.slice(0, headings[1]).join("\n").trim();
-    if (excerpt) return { excerpt, truncated: true };
+  if (starts.length >= 2) {
+    const bounds = [0, ...starts.slice(1), lines.length];
+    const parts: string[] = [];
+    for (let i = 0; i < bounds.length - 1; i++) parts.push(lines.slice(bounds[i], bounds[i + 1]).join("\n"));
+    const n = takeParts(parts, target);
+    const excerpt = parts.slice(0, n).join("\n").trim();
+    if (excerpt) return { excerpt, truncated: parts.length > n };
   }
 
-  // No chapters detected — offer a generous opening slice ending on a paragraph.
-  const LIMIT = 1600;
-  if (content.length > LIMIT + 300) {
-    let cut = content.lastIndexOf("\n\n", LIMIT);
-    if (cut < 600) cut = content.indexOf("\n\n", LIMIT);
-    if (cut < 600) cut = LIMIT;
-    return { excerpt: content.slice(0, cut).trim(), truncated: true };
+  // No chapters: cut on the paragraph break nearest the target.
+  if (total > target + 150) {
+    const paras = content.split(/(\n\s*\n)/);
+    let words = 0;
+    let out = "";
+    for (const p of paras) {
+      if (words >= target && /\S/.test(p)) break;
+      out += p;
+      words += wordCount(p);
+    }
+    const excerpt = out.trim();
+    if (excerpt && excerpt.length < content.trim().length) return { excerpt, truncated: true };
   }
 
   return { excerpt: content, truncated: false };

@@ -11,7 +11,7 @@ function Content({ tab }: { tab: string }) {
     return (
       <>
         <h3>Creator Guidelines</h3>
-        <p>How to publish well on Leep and grow a readership.</p>
+        <p>How to publish well on Lybry and grow a readership.</p>
         <h4>Metadata that ranks</h4>
         <ul>
           <li>Write a punchy description — it&apos;s the hook on every card.</li>
@@ -61,7 +61,7 @@ Prefer: return=representation
         </pre>
         <h4>EPUB imports</h4>
         <p>
-          Standard <code>.epub</code> import is on the roadmap: upload an EPUB and Leep extracts chapters
+          Standard <code>.epub</code> import is on the roadmap: upload an EPUB and Lybry extracts chapters
           into the reader format automatically. Until then, paste chapter text (Markdown-style images with
           <code> ![caption](url) </code> are supported inline).
         </p>

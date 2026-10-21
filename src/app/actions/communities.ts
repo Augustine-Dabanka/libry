@@ -74,7 +74,7 @@ export async function createStoryCommunity(bookId: number) {
     await supabase.from("community_posts").insert({
       user_id: user.id,
       author_name: book.author || "The author",
-      body: `Welcome to the ${book.title} community. Share theories, favourite moments and chapter reactions here — please flag spoilers before you post them.`,
+      body: `Welcome to the ${book.title} community. Share theories, favorite moments and chapter reactions here — please flag spoilers before you post them.`,
       community_id: created.id,
       channel: "general",
     });

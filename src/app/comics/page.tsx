@@ -5,7 +5,7 @@ import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
 import Glyph from "@/components/Glyph";
-export const metadata = { title: "Comics — Leep" };
+export const metadata = { title: "Comics — Lybry" };
 
 // First-class Comics browse surface. Comics are ordinary books with a comic
 // `type`; the reader routes them to the panel/webtoon ComicReader.
@@ -15,7 +15,7 @@ export default async function ComicsPage() {
 
   let allowed = allowedRatings(false);
   if (user) {
-    const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+    const sm = await supabase.from("my_profile").select("show_mature").eq("id", user.id).maybeSingle();
     allowed = allowedRatings(sm.data?.show_mature ?? false);
   }
 

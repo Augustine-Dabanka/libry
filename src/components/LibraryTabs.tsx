@@ -29,7 +29,7 @@ function ReadingCard({ b }: { b: LibBook }) {
       </div>
       <div style={{ marginTop: "auto", paddingTop: "0.7rem" }}>
         <div style={{ height: 6, borderRadius: 999, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${Math.max(2, pct)}%`, background: "linear-gradient(90deg,#C4A35A,#B45309)" }} />
+          <div style={{ height: "100%", width: `${Math.max(2, pct)}%`, background: "var(--accent)" }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.55rem" }}>
           <span style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem" }}>{pct}% read</span>

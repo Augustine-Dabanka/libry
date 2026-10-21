@@ -110,7 +110,7 @@ export default function ProductBuy({
         showTerms ? (
           <div style={{ border: "1px solid var(--border)", borderRadius: 14, padding: "1rem 1.1rem", background: "var(--charcoal)" }}>
             <p style={{ fontFamily: "var(--sans)", fontSize: "0.86rem", color: "var(--ivory-muted)", lineHeight: 1.6, margin: "0 0 0.9rem" }}>
-              This file is saved in your library. By downloading it you accept that <strong style={{ color: "var(--ivory)" }}>you are responsible for how you store and use it</strong>, that downloads are non-refundable, and that Leep is not liable for anything that happens to the file once it leaves the platform.
+              This file is saved in your library. By downloading it you accept that <strong style={{ color: "var(--ivory)" }}>you are responsible for how you store and use it</strong>, that downloads are non-refundable, and that Lybry is not liable for anything that happens to the file once it leaves the platform.
             </p>
             <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
               <button type="button" onClick={acceptAndDownload} disabled={busy} style={{ ...btn, width: "auto", flex: "1 1 auto" }}>{busy ? "Preparing…" : "I understand — download"}</button>

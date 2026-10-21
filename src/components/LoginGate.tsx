@@ -10,8 +10,11 @@ import GoogleButton from "@/components/GoogleButton";
 import DiscordButton from "@/components/DiscordButton";
 
 import Glyph from "@/components/Glyph";
+import SignupFlow, { type SignupStep } from "@/components/SignupFlow";
+import LoginKoala from "@/components/LoginKoala";
+import { play } from "@/lib/sound";
 type Tab = "login" | "signup";
-type View = "LOGIN" | "REGISTER" | "FORGOT" | "QR";
+type View = "LOGIN" | "REGISTER" | "FORGOT" | "QR" | "MFA";
 
 const SPRING = { type: "spring" as const, stiffness: 300, damping: 30 };
 
@@ -26,10 +29,10 @@ const pick = <T,>(a: readonly T[]): T => a[Math.floor(Math.random() * a.length)]
 const field: React.CSSProperties = {
   width: "100%",
   padding: "0.72rem 0.95rem 0.72rem 2.55rem",
-  background: "#E9E6EE",
-  border: "1px solid rgba(43,38,34,0.10)",
+  background: "var(--charcoal)",
+  border: "2px solid var(--edge)",
   borderRadius: 14,
-  color: "#2B2622",
+  color: "var(--ivory)",
   fontFamily: "var(--sans)",
   fontSize: "0.96rem",
   outline: "none",
@@ -42,8 +45,9 @@ const labelStyle: React.CSSProperties = {
   marginTop: "0.85rem",
   marginBottom: "0.35rem",
 };
-const iconWrap: React.CSSProperties = { position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#8a8178", display: "grid", placeItems: "center", pointerEvents: "none" };
-const eyeBtn: React.CSSProperties = { position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", cursor: "pointer", color: "#8a8178", padding: 6, display: "grid", placeItems: "center", lineHeight: 0 };
+const badField: React.CSSProperties = { borderColor: "var(--danger)", boxShadow: "0 0 0 3px color-mix(in srgb, var(--danger) 14%, transparent)" };
+const iconWrap: React.CSSProperties = { position: "absolute", zIndex: 1, left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", display: "grid", placeItems: "center", pointerEvents: "none" };
+const eyeBtn: React.CSSProperties = { position: "absolute", zIndex: 1, right: 8, top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", cursor: "pointer", color: "var(--muted)", padding: 6, display: "grid", placeItems: "center", lineHeight: 0 };
 
 // Password strength → a 4-segment red/amber/green meter. Weak..Strong.
 function strengthOf(pw: string): { score: number; label: string; color: string } {
@@ -58,7 +62,7 @@ function strengthOf(pw: string): { score: number; label: string; color: string }
   if (score <= 1) return { score: 1, label: "Weak", color: "#C4553F" };
   if (score === 2) return { score: 2, label: "Fair", color: "#D9A441" };
   if (score === 3) return { score: 3, label: "Good", color: "#B7A93C" };
-  return { score: 4, label: "Strong", color: "#5FA068" };
+  return { score: 4, label: "Strong", color: "var(--gold)" };
 }
 
 export default function LoginGate({
@@ -101,6 +105,11 @@ export default function LoginGate({
   const [genBusy, setGenBusy] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [marketing, setMarketing] = useState(false);
+  const [signupStep, setSignupStep] = useState<SignupStep>("details");
+  const [loginBad, setLoginBad] = useState(0);
+  const [focusField, setFocusField] = useState<"id" | "pw" | null>(null);
+  const [mfaFactor, setMfaFactor] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
 
   const dest = next && /^[a-z0-9_\-./?=&%]+$/i.test(next) && !/^https?:|^\/\//i.test(next) ? next : "/home";
 
@@ -109,6 +118,12 @@ export default function LoginGate({
       setRemember(localStorage.getItem("libry-remember") !== "0");
     } catch {}
   }, []);
+
+  // Sent here by the app because this session still needs its 6-digit code
+  // (e.g. after signing in with Google on an account with two-step on).
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mfa") === "1") needsSecondStep();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cycle the loading copy while a submit is in flight.
   useEffect(() => {
@@ -119,10 +134,62 @@ export default function LoginGate({
   }, [busy]);
 
   // Flash a success checkmark, then navigate.
-  function finish(to: string) {
+  // Bring up the glass welcome right here, then move to the app underneath it.
+  async function finish(to: string) {
     setDone(true);
-    armWelcomeSplash();
-    setTimeout(() => window.location.assign(to), 720);
+    play("success");
+    let who: { name?: string | null; dob?: string | null; look?: unknown } | undefined;
+    try {
+      const sb = createClient();
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) {
+        const [p, pv] = await Promise.all([
+          sb.from("profiles").select("full_name, username, avatar").eq("id", user.id).maybeSingle(),
+          sb.from("profile_private").select("date_of_birth").eq("user_id", user.id).maybeSingle(),
+        ]);
+        const pd = p.data as { full_name?: string; username?: string; avatar?: unknown } | null;
+        who = { name: pd?.full_name || pd?.username || null, dob: (pv.data as { date_of_birth?: string } | null)?.date_of_birth ?? null, look: pd?.avatar ?? null };
+      }
+    } catch { /* the welcome still works without a name */ }
+    armWelcomeSplash(who);
+    setTimeout(() => window.location.assign(to), 380);
+  }
+
+  // Two-step sign-in: if this account has an authenticator app, ask for its code.
+  async function needsSecondStep(): Promise<boolean> {
+    const supabase = createClient();
+    try {
+      const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (!data || data.nextLevel !== "aal2" || data.currentLevel === "aal2") return false;
+      const f = await supabase.auth.mfa.listFactors();
+      const totp = f.data?.totp?.find((x) => x.status === "verified");
+      if (!totp) return false;
+      setMfaFactor(totp.id);
+      setMfaCode("");
+      setBusy(false);
+      setView("MFA");
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  async function submitMfa(e: React.FormEvent) {
+    e.preventDefault();
+    setMsg(null);
+    const code = mfaCode.replace(/\D/g, "");
+    if (code.length !== 6 || !mfaFactor) { setMsg("Enter the 6-digit code from your authenticator app."); setLoginBad((n) => n + 1); return; }
+    setBusy(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: mfaFactor, code });
+    if (error) {
+      setBusy(false);
+      setLoginBad((n) => n + 1);
+      play("error");
+      setMsg("That code didn't work. Codes change every 30 seconds, so try the newest one.");
+      return;
+    }
+    await persistOnboardingPrefs();
+    finish(dest);
   }
 
   // Find a username that isn't taken (case-insensitive).
@@ -165,15 +232,15 @@ export default function LoginGate({
   }
 
   // On opening REGISTER with empty fields, pre-fill a valid identity.
-  useEffect(() => {
-    if (view === "REGISTER" && !fullName && !username) generateIdentity();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view]);
+  // (Sign-up no longer pre-fills a random name: SignupFlow suggests a
+  // username from the name the reader types.)
 
   function switchView(v: View) {
     setView(v);
     setMsg(null);
     setInfo(null);
+    setLoginBad(0);
+    setSignupStep("details");
   }
 
   async function submit(e: React.FormEvent) {
@@ -282,21 +349,26 @@ export default function LoginGate({
 
     // LOGIN
     if (!identifier.trim() || !password) {
-      setMsg("Enter your username or email and password.");
+      setMsg("Enter your email and password.");
+      setLoginBad((n) => n + 1);
       return;
     }
     setBusy(true);
     try {
-      const lookup = await supabase.rpc("login_email", { identifier: identifier.trim() });
-      const loginEmail = (lookup.data as string | null) || (identifier.includes("@") ? identifier.trim() : null);
-      if (!loginEmail) {
+      // Email only: looking a username up in the browser would hand out
+      // other people's emails (fixed in 0048).
+      const loginEmail = identifier.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(loginEmail)) {
         setBusy(false);
-        setMsg("No account found for that username.");
+        setMsg("Sign in with the email address on your account.");
+        setLoginBad((n) => n + 1);
         return;
       }
       const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
       if (error) {
         setBusy(false);
+        setLoginBad((n) => n + 1);
+        play("error");
         setMsg(
           /invalid login credentials/i.test(error.message)
             ? "Incorrect details — or you haven’t confirmed your email yet."
@@ -304,6 +376,7 @@ export default function LoginGate({
         );
         return;
       }
+      if (await needsSecondStep()) return;
       await persistOnboardingPrefs();
       finish(dest);
     } catch (err) {
@@ -340,7 +413,7 @@ export default function LoginGate({
   const qrCells = useMemo(() => Array.from({ length: 121 }, (_, i) => ((i * 1103515245 + 12345) >> 4) % 3 === 0), []);
 
   const segShown = view === "LOGIN" || view === "REGISTER";
-  const providersShown = (view === "LOGIN" || view === "REGISTER") && !busy;
+  const providersShown = (view === "LOGIN" || (view === "REGISTER" && signupStep === "details")) && !busy;
 
   return (
     <main
@@ -351,10 +424,7 @@ export default function LoginGate({
         padding: "2rem",
         position: "relative",
         overflow: "hidden",
-        background:
-          "radial-gradient(circle at 22% 18%, rgba(95,160,104,0.20), transparent 42%)," +
-          "radial-gradient(circle at 80% 84%, rgba(180,83,9,0.16), transparent 46%)," +
-          "#1C1917",
+        background: "var(--charcoal)",
       }}
     >
       {/* ambient floating motes */}
@@ -369,7 +439,7 @@ export default function LoginGate({
             key={i}
             animate={{ y: [0, -14, 0], opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 6 + i, repeat: Infinity, ease: "easeInOut" }}
-            style={{ position: "absolute", top: m.top, left: m.left, width: m.s, height: m.s, borderRadius: 5, background: "rgba(95,160,104,0.16)", transform: `rotate(${m.r}deg)`, filter: "blur(0.5px)" }}
+            style={{ position: "absolute", top: m.top, left: m.left, width: m.s, height: m.s, borderRadius: 5, background: "color-mix(in srgb, var(--gold) 16%, transparent)", transform: `rotate(${m.r}deg)`, filter: "blur(0.5px)" }}
           />
         ))}
       </div>
@@ -381,12 +451,11 @@ export default function LoginGate({
           position: "relative",
           width: "100%",
           maxWidth: 440,
-          background: "rgba(34,28,24,0.82)",
-          border: "1px solid rgba(250,247,242,0.10)",
+          background: "var(--stone)",
+          border: "2px solid var(--border)",
           borderRadius: 28,
           padding: "2.3rem 2.1rem",
-          boxShadow: "0 30px 90px rgba(0,0,0,0.6)",
-          backdropFilter: "blur(18px)",
+          boxShadow: "0 6px 0 var(--edge)",
           overflow: "hidden",
         }}
       >
@@ -396,23 +465,33 @@ export default function LoginGate({
             type="button"
             onClick={() => (view === "FORGOT" || view === "QR" ? switchView("LOGIN") : window.location.assign("/"))}
             style={{ position: "absolute", top: "1.1rem", left: "1.1rem", display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.82rem", background: "transparent", border: "none", cursor: "pointer" }}
-            aria-label={view === "FORGOT" || view === "QR" ? "Back to sign in" : "Back to the Leep home page"}
+            aria-label={view === "FORGOT" || view === "QR" ? "Back to sign in" : "Back to the Lybry home page"}
           >
             <ArrowLeft size={15} /> {view === "FORGOT" || view === "QR" ? "Back" : "Home"}
           </button>
         ) : null}
 
+        {view === "LOGIN" || view === "MFA" || view === "FORGOT" ? (
+          <div style={{ display: "grid", placeItems: "center", marginTop: "0.2rem" }}>
+            <LoginKoala
+              look={focusField === "id" ? Math.min(1, identifier.length / 18) * 2 - 1 : 0}
+              cover={focusField === "pw" && !showPw}
+              peek={focusField === "pw" && showPw}
+              happy={done}
+            />
+          </div>
+        ) : null}
         <motion.div layout="position" style={{ textAlign: "center", marginBottom: "1.2rem", marginTop: "0.4rem" }}>
           <span className="logo" style={{ fontSize: "2rem" }}>
-            Leep<span>.</span>
+            Lybry<span>.</span>
           </span>
-          <p style={{ color: "var(--muted)", fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.92rem", marginTop: "0.25rem" }}>
-            Stories worth lingering in
+          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontWeight: 600, fontSize: "0.92rem", marginTop: "0.25rem" }}>
+            {view === "LOGIN" ? "Welcome back. Your shelf is waiting." : view === "MFA" ? "One more step to keep your account safe." : "Stories worth lingering in"}
           </p>
         </motion.div>
 
         {/* Segmented control (login / signup) */}
-        {segShown && !busy ? (
+        {segShown && !busy && (view === "LOGIN" || signupStep === "details") ? (
           <motion.div
             layout
             style={{ display: "flex", gap: "0.3rem", background: "var(--charcoal)", border: "1px solid var(--border)", borderRadius: 999, padding: "0.25rem", marginBottom: "1.3rem" }}
@@ -435,45 +514,7 @@ export default function LoginGate({
 
         {/* ── The morphing content region ── */}
         <AnimatePresence mode="wait" initial={false}>
-          {busy ? (
-            <motion.div
-              key="processing"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.35 }}
-              style={{ display: "grid", placeItems: "center", gap: "1.1rem", padding: "1.6rem 0 1.2rem", textAlign: "center" }}
-            >
-              <div style={{ position: "relative", width: 88, height: 88, display: "grid", placeItems: "center" }}>
-                <motion.span
-                  animate={done ? { scale: 1 } : { scale: [1, 1.08, 1] }}
-                  transition={done ? SPRING : { duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ position: "absolute", inset: 0, borderRadius: "50%", background: done ? "rgba(95,160,104,0.22)" : "rgba(95,160,104,0.12)", border: "1px solid rgba(95,160,104,0.4)" }}
-                />
-                {!done ? (
-                  <motion.span animate={{ rotate: [0, 8, -8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} style={{ color: "var(--gold)", display: "grid", placeItems: "center" }}>
-                    <BookOpen size={38} />
-                  </motion.span>
-                ) : (
-                  <motion.span initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={SPRING} style={{ color: "var(--gold)", display: "grid", placeItems: "center" }}>
-                    <Check size={44} strokeWidth={3} />
-                  </motion.span>
-                )}
-              </div>
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={done ? "done" : statusIdx}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ color: "var(--ivory)", fontFamily: "var(--sans)", fontWeight: 600, fontSize: "1rem", margin: 0 }}
-                >
-                  {done ? "Welcome to Leep!" : LOADING_LINES[statusIdx]}
-                </motion.p>
-              </AnimatePresence>
-            </motion.div>
-          ) : (
+          {(
             <motion.div
               key={view}
               initial={{ opacity: 0, x: 24 }}
@@ -481,7 +522,24 @@ export default function LoginGate({
               exit={{ opacity: 0, x: -24 }}
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             >
-              {view === "FORGOT" ? (
+              {view === "MFA" ? (
+                <form onSubmit={submitMfa} style={{ textAlign: "center" }}>
+                  <h2 style={{ margin: "0 0 0.3rem", fontSize: "1.3rem" }}>Two-step sign-in</h2>
+                  <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", margin: "0 auto 1rem", maxWidth: 320, lineHeight: 1.5 }}>
+                    Open your authenticator app (Google Authenticator, Authy, 1Password…) and enter the 6-digit code for Lybry.
+                  </p>
+                  <CodeBoxes value={mfaCode} onChange={(v) => { setMfaCode(v); if (loginBad) setLoginBad(0); }} bad={loginBad > 0} />
+                  <button className="btn btn-gold" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center", marginTop: "1.1rem" }}>
+                    {busy ? "Checking…" : "Verify and sign in"}
+                  </button>
+                  <button type="button" onClick={async () => { await createClient().auth.signOut(); switchView("LOGIN"); }} style={{ display: "block", margin: "1rem auto 0", background: "transparent", border: "none", color: "var(--gold)", fontFamily: "var(--sans)", fontSize: "0.85rem", fontWeight: 700, cursor: "pointer" }}>
+                    Use a different account
+                  </button>
+                  <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.78rem", margin: "0.8rem auto 0", maxWidth: 320, lineHeight: 1.5 }}>
+                    Lost your phone? Email support from the address on your account and we&apos;ll help you back in after checking it&apos;s you.
+                  </p>
+                </form>
+              ) : view === "FORGOT" ? (
                 <form onSubmit={sendReset}>
                   <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", marginBottom: "0.4rem", textAlign: "center" }}>
                     Enter your account email and we&apos;ll send a link to reset your password.
@@ -507,101 +565,34 @@ export default function LoginGate({
                   </div>
                   <p style={{ color: "var(--ivory)", fontFamily: "var(--sans)", fontWeight: 600, fontSize: "0.95rem", margin: "0 0 0.3rem" }}>Sign in from your phone</p>
                   <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", margin: "0 auto", maxWidth: 300, lineHeight: 1.55 }}>
-                    Point-and-scan device sign-in is rolling out with the Leep mobile app. For now, continue with email or a provider below.
+                    Point-and-scan device sign-in is rolling out with the Lybry mobile app. For now, continue with email or a provider below.
                   </p>
                   <button type="button" onClick={() => switchView("LOGIN")} style={{ display: "block", margin: "1.1rem auto 0", background: "transparent", border: "none", color: "var(--gold)", fontFamily: "var(--sans)", fontSize: "0.85rem", fontWeight: 600, cursor: "pointer" }}>
                     ← Back to sign in
                   </button>
                 </div>
               ) : (
+                view === "REGISTER" ? (
+                  <SignupFlow
+                    dest={dest}
+                    referrer={referrer}
+                    onStep={setSignupStep}
+                    onFinish={(to) => finish(to)}
+                    onUseLogin={(em, note) => { switchView("LOGIN"); if (em) setIdentifier(em); if (note) setInfo(note); }}
+                  />
+                ) : (
                 <form onSubmit={submit}>
-                  {view === "REGISTER" ? (
+                  {(
                     <>
-                      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.2rem" }}>
-                        {(["reader", "writer"] as const).map((r) => (
-                          <button
-                            key={r}
-                            type="button"
-                            onClick={() => setAccountType(r)}
-                            style={{ flex: 1, borderRadius: 12, padding: "0.6rem", cursor: "pointer", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem", border: `1px solid ${accountType === r ? "var(--gold)" : "var(--border)"}`, background: accountType === r ? "rgba(95,160,104,0.12)" : "transparent", color: accountType === r ? "var(--ivory)" : "var(--muted)" }}
-                          >
-                            <Glyph e={r === "reader" ? "📖" : "✍"} /> {r === "reader" ? "I'm a reader" : "I'm a writer"}
-                          </button>
-                        ))}
-                      </div>
-                      <label style={{ ...labelStyle, marginTop: "0.6rem" }}>Full name</label>
-                      <div style={{ position: "relative" }}>
-                        <span style={iconWrap}><User size={17} /></span>
-                        <input className="auth-input" style={field} placeholder="Ada Lovelace" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.85rem", marginBottom: "0.35rem" }}>
-                        <label style={{ ...labelStyle, marginTop: 0, marginBottom: 0 }}>Username</label>
-                        <button type="button" onClick={regenerateUsername} disabled={genBusy} title="Generate a new username" style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "transparent", border: "none", color: "var(--gold)", fontFamily: "var(--sans)", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", padding: 0 }}>
-                          <Dices size={14} /> {genBusy ? "…" : "New"}
-                        </button>
-                      </div>
-                      <div style={{ position: "relative" }}>
-                        <span style={iconWrap}><Sparkles size={17} /></span>
-                        <input className="auth-input" style={field} placeholder="ada" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} />
-                      </div>
-                      <label style={labelStyle}>Email</label>
+                      <label style={{ ...labelStyle, marginTop: 0 }}>Email</label>
                       <div style={{ position: "relative" }}>
                         <span style={iconWrap}><Mail size={17} /></span>
-                        <input className="auth-input" style={field} type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                        <input key={`id-${loginBad}`} className={`auth-input${loginBad ? " su-shake" : ""}`} style={{ ...field, ...(loginBad ? badField : null) }} placeholder="you@example.com" type="email" inputMode="email" autoComplete="username email" aria-invalid={loginBad > 0} onFocus={() => setFocusField("id")} onBlur={() => setFocusField(null)} value={identifier} onChange={(e) => { setIdentifier(e.target.value); if (loginBad) setLoginBad(0); }} />
                       </div>
                       <label style={labelStyle}>Password</label>
                       <div style={{ position: "relative" }}>
                         <span style={iconWrap}><Lock size={17} /></span>
-                        <input className="auth-input" style={{ ...field, paddingRight: 44 }} type={showPw ? "text" : "password"} placeholder="Create a password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                        <button type="button" onClick={() => setShowPw((v) => !v)} aria-label={showPw ? "Hide password" : "Show password"} style={eyeBtn}>{showPw ? <EyeOff size={18} /> : <Eye size={18} />}</button>
-                      </div>
-                      {password ? (
-                        <div style={{ marginTop: "0.5rem" }}>
-                          <div style={{ display: "flex", gap: 4 }} aria-hidden="true">
-                            {[1, 2, 3, 4].map((i) => (
-                              <div key={i} style={{ flex: 1, height: 5, borderRadius: 999, background: "rgba(250,247,242,0.14)", overflow: "hidden" }}>
-                                <motion.div initial={false} animate={{ scaleX: i <= pwStrength.score ? 1 : 0 }} transition={SPRING} style={{ height: "100%", background: pwStrength.color, transformOrigin: "left" }} />
-                              </div>
-                            ))}
-                          </div>
-                          <div style={{ fontSize: "0.74rem", color: pwStrength.color, fontFamily: "var(--sans)", marginTop: "0.32rem", textAlign: "right" }}>{pwStrength.label} password</div>
-                        </div>
-                      ) : null}
-                      <label style={labelStyle}>Confirm password</label>
-                      <div style={{ position: "relative" }}>
-                        <span style={iconWrap}><Lock size={17} /></span>
-                        <input className="auth-input" style={field} type="password" placeholder="Repeat it" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-                      </div>
-                      {accountType === "writer" ? (
-                        <>
-                          <label style={labelStyle}>Short author bio <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional — readers see this)</span></label>
-                          <textarea className="auth-input" style={{ ...field, paddingLeft: "0.95rem", minHeight: 70, resize: "vertical" }} maxLength={600} placeholder="A couple of sentences about you and your stories…" value={bio} onChange={(e) => setBio(e.target.value)} />
-                        </>
-                      ) : null}
-                      <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", marginTop: "0.8rem", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", cursor: "pointer", lineHeight: 1.5 }}>
-                        <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} style={{ accentColor: "var(--gold)", width: 15, height: 15, marginTop: 2, flexShrink: 0 }} />
-                        <span>
-                          I agree to the <a href="/terms" target="_blank" rel="noreferrer" style={{ color: "var(--gold)" }}>Terms of Service</a> and <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: "var(--gold)" }}>Privacy Policy</a>.
-                        </span>
-                      </label>
-                      <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", marginTop: "0.6rem", color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.85rem", cursor: "pointer", lineHeight: 1.5 }}>
-                        <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} style={{ accentColor: "var(--gold)", width: 15, height: 15, marginTop: 2, flexShrink: 0 }} />
-                        <span>
-                          Email me occasional Leep updates and offers — opt in and get a <strong style={{ color: "var(--ivory)" }}>free month of Leep Unlimited</strong> when it launches.
-                        </span>
-                      </label>
-                    </>
-                  ) : (
-                    <>
-                      <label style={{ ...labelStyle, marginTop: 0 }}>Username or email</label>
-                      <div style={{ position: "relative" }}>
-                        <span style={iconWrap}><User size={17} /></span>
-                        <input className="auth-input" style={field} placeholder="ada  ·  you@example.com" autoComplete="username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
-                      </div>
-                      <label style={labelStyle}>Password</label>
-                      <div style={{ position: "relative" }}>
-                        <span style={iconWrap}><Lock size={17} /></span>
-                        <input className="auth-input" style={{ ...field, paddingRight: 44 }} type={showPw ? "text" : "password"} placeholder="Your password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <input key={`pw-${loginBad}`} className={`auth-input${loginBad ? " su-shake" : ""}`} style={{ ...field, paddingRight: 44, ...(loginBad ? badField : null) }} type={showPw ? "text" : "password"} placeholder="Your password" autoComplete="current-password" aria-invalid={loginBad > 0} onFocus={() => setFocusField("pw")} onBlur={() => setFocusField(null)} value={password} onChange={(e) => { setPassword(e.target.value); if (loginBad) setLoginBad(0); }} />
                         <button type="button" onClick={() => setShowPw((v) => !v)} aria-label={showPw ? "Hide password" : "Show password"} style={eyeBtn}>{showPw ? <EyeOff size={18} /> : <Eye size={18} />}</button>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.75rem" }}>
@@ -617,14 +608,13 @@ export default function LoginGate({
                   )}
 
                   <div style={{ display: "flex", gap: "0.5rem", marginTop: "1.1rem" }}>
-                    <button className="btn btn-gold" type="submit" style={{ flex: 1, justifyContent: "center" }}>
-                      {view === "LOGIN" ? "Sign in" : "Create account"}
+                    <button className="btn btn-gold" type="submit" disabled={busy} style={{ flex: 1, justifyContent: "center", gap: "0.5rem" }}>
+                      {busy ? <><span className="btn-spin" aria-hidden="true" />{done ? "Welcome!" : "Signing in…"}</> : "Sign in"}
                     </button>
-                    <button type="button" onClick={() => switchView("QR")} title="Sign in with a QR code" aria-label="Sign in with a QR code" className="btn" style={{ flexShrink: 0, width: 48, padding: 0, justifyContent: "center", background: "transparent", color: "var(--ivory)", border: "1px solid var(--border)" }}>
-                      <QrCode size={19} />
-                    </button>
+
                   </div>
                 </form>
+                )
               )}
             </motion.div>
           )}
@@ -632,7 +622,7 @@ export default function LoginGate({
 
         <AnimatePresence>
           {msg ? <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} style={{ color: "var(--terracotta)", textAlign: "center", marginTop: "0.9rem", fontSize: "0.88rem" }}>{msg}</motion.p> : null}
-          {info ? <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} style={{ color: "#7DBE86", textAlign: "center", marginTop: "0.9rem", fontSize: "0.88rem" }}>{info}</motion.p> : null}
+          {info ? <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} style={{ color: "var(--success)", textAlign: "center", marginTop: "0.9rem", fontSize: "0.88rem" }}>{info}</motion.p> : null}
         </AnimatePresence>
 
         {/* Providers — Google · Discord · QR */}
@@ -645,7 +635,7 @@ export default function LoginGate({
             </div>
             <div style={{ display: "flex", gap: "0.6rem" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <GoogleButton next={next || "/home"} role={view === "REGISTER" ? accountType : undefined} className="btn" style={{ background: "#E9E6EE", color: "#2B2622", border: "1px solid rgba(43,38,34,0.10)" }} />
+                <GoogleButton next={next || "/home"} role={view === "REGISTER" ? accountType : undefined} className="btn btn-outline" style={{ width: "100%" }} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <DiscordButton next={next || "/home"} role={view === "REGISTER" ? accountType : undefined} />
@@ -661,5 +651,34 @@ export default function LoginGate({
         ) : null}
       </motion.div>
     </main>
+  );
+}
+
+// Six boxes for a one-time code. One real input underneath (so paste,
+// autofill from SMS/OTP apps and screen readers all work), boxes drawn on top.
+function CodeBoxes({ value, onChange, bad }: { value: string; onChange: (v: string) => void; bad?: boolean }) {
+  const digits = value.replace(/\D/g, "").slice(0, 6);
+  return (
+    <label className={bad ? "su-shake" : undefined} style={{ position: "relative", display: "flex", gap: 8, justifyContent: "center", cursor: "text" }}>
+      <input
+        autoFocus
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        aria-label="6-digit code"
+        maxLength={6}
+        value={digits}
+        onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 6))}
+        style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", height: "100%", fontSize: 16 }}
+      />
+      {Array.from({ length: 6 }, (_, i) => {
+        const here = i === Math.min(digits.length, 5);
+        return (
+          <span key={i} aria-hidden="true" style={{ width: 44, height: 54, borderRadius: 12, display: "grid", placeItems: "center", fontFamily: "var(--sans)", fontWeight: 900, fontSize: "1.4rem", color: "var(--ivory)", background: "var(--charcoal)",
+            border: `2px solid ${bad ? "var(--danger)" : here ? "var(--gold)" : digits[i] ? "var(--success)" : "var(--edge)"}`, boxShadow: digits[i] ? "0 3px 0 var(--edge)" : "none", transition: "border-color .15s" }}>
+            {digits[i] ?? ""}
+          </span>
+        );
+      })}
+    </label>
   );
 }

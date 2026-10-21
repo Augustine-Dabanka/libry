@@ -138,7 +138,7 @@ export default function RichDocEditor({
   }
 
   function insertShape(kind: string) {
-    const c = "#C5A059";
+    const c = "#C8471F";
     const shapes: Record<string, string> = {
       rect: `<svg viewBox="0 0 200 120" width="200" height="120"><rect x="4" y="4" width="192" height="112" rx="14" fill="${c}" opacity="0.9"/></svg>`,
       circle: `<svg viewBox="0 0 140 140" width="140" height="140"><circle cx="70" cy="70" r="64" fill="${c}" opacity="0.9"/></svg>`,

@@ -9,6 +9,7 @@ import MovingShelf from "@/components/MovingShelf";
 import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 import s from "./landing.module.css";
+import PreviewClip from "@/components/PreviewClip";
 
 // Public marketing landing. Signed-in users are sent straight to their app home.
 export default async function Landing() {
@@ -58,14 +59,14 @@ export default async function Landing() {
   return (
     <div className={s.page}>
       <div className={s.topbar}>
-        <b>Leep is live in early access</b> — reading is free to start.{" "}
+        <b>Lybry is live in early access</b> — reading is free to start.{" "}
         <a href="/onboarding">Create your free account →</a>
       </div>
 
       <nav className={s.nav}>
         <div className={s.navIn}>
           <a href="/" className={s.logo}>
-            Leep<span>.</span>
+            Lybry<span>.</span>
           </a>
           <div className={s.navLinks}>
             <a href="#features">Features</a>
@@ -94,7 +95,7 @@ export default async function Landing() {
               Stories worth <em>lingering</em> in.
             </h1>
             <p className={s.sub}>
-              Leep is the home of interactive stories, creator voices, and
+              Lybry is the home of interactive stories, creator voices, and
               communities that keep the story going — where readers come first
               and creators keep 65%.
             </p>
@@ -102,7 +103,7 @@ export default async function Landing() {
               <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding">
                 Start your story
               </a>
-              <a className={`${s.btn} ${s.btnGhost} ${s.btnLg}`} href="#interactive">
+              <a className={`${s.btn} ${s.btnGhost} ${s.btnLg}`} href="#preview">
                 ▶ See how it works
               </a>
             </div>
@@ -136,6 +137,26 @@ export default async function Landing() {
         </div>
       </div>
 
+      {/* Try before you sign up: 15 seconds of the real app. */}
+      <section id="preview" className={s.band} style={{ scrollMarginTop: 70 }}>
+        <div className={`${s.wrap} ${s.earn}`}>
+          <div className={s.secHead} style={{ marginBottom: 0 }}>
+            <span className={s.eyebrow}>See it first</span>
+            <h2>Lybry in 15 seconds.</h2>
+            <p>Pick what you like, make your bushbaby, start reading. No account needed for the first two.</p>
+            <ul style={{ margin: "1.1rem 0 0", paddingLeft: "1.1rem", display: "grid", gap: "0.45rem", color: "var(--body)", fontWeight: 600 }}>
+              <li>A real free sample of every book, at least 2,500 words.</li>
+              <li>Interactive stories where your choices change the ending.</li>
+              <li>Unlimited free for 7 days. No card.</li>
+            </ul>
+            <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding" style={{ marginTop: "1.3rem" }}>Try it now</a>
+          </div>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <PreviewClip />
+          </div>
+        </div>
+      </section>
+
       {shelf.length >= 4 ? (
         <section className={s.band} aria-label="Free books">
           <div className={s.wrap}>
@@ -148,27 +169,27 @@ export default async function Landing() {
         </section>
       ) : null}
 
-      {/* Explore rail: Store + Comics as cover-topped cards (mockup) */}
+      {/* Explore rail: Unlimited + Comics + Interactive as cover-topped cards */}
       <section id="comics" className={s.band} style={{ scrollMarginTop: 70 }}>
         <div className={s.wrap}>
           <div className={s.secHead} style={{ marginBottom: "1.4rem" }}>
-            <span className={s.eyebrow}>Explore Leep</span>
+            <span className={s.eyebrow}>Explore Lybry</span>
             <h2 style={{ margin: "0.4rem 0 0" }}>More than books.</h2>
           </div>
           <div className={s.exploreGrid}>
-            <a href="/discover" className={s.xcard}>
-              <div className={s.xcover} style={{ background: "linear-gradient(150deg,#2f2233,#4a2d52 55%,#1c1017)" }}>
-                <span className={s.xemoji}><Icon name="store" size={48} strokeWidth={1.4} /></span>
-                <span className={s.xtag}>Store</span>
+            <a href="/unlimited" className={s.xcard}>
+              <div className={s.xcover} style={{ background: "#FDEDE5", color: "#C8471F" }}>
+                <span className={s.xemoji}><Icon name="book" size={48} strokeWidth={1.4} /></span>
+                <span className={s.xtag}>Unlimited</span>
               </div>
               <div className={s.xbody}>
-                <h3>Digital Store</h3>
-                <p>Templates, audio, courses and downloads. Support creators, grow your collection.</p>
-                <span className={s.xlink}>Browse the store →</span>
+                <h3>Lybry Unlimited</h3>
+                <p>Keep a set number of books every month for one price. Try it free first. It never renews by itself.</p>
+                <span className={s.xlink}>See the plans →</span>
               </div>
             </a>
             <a href="/comics" className={s.xcard}>
-              <div className={s.xcover} style={{ background: "linear-gradient(150deg,#2a3340,#1f4a55 55%,#10222a)" }}>
+              <div className={s.xcover} style={{ background: "#E6F0EC", color: "#2F6B5E" }}>
                 <span className={s.xemoji}><Icon name="comics" size={48} strokeWidth={1.4} /></span>
                 <span className={s.xtag}>Comics</span>
               </div>
@@ -179,7 +200,7 @@ export default async function Landing() {
               </div>
             </a>
             <a href="/catalog?type=Interactive" className={s.xcard}>
-              <div className={s.xcover} style={{ background: "linear-gradient(150deg,#3a2c1a,#7a5230 55%,#241a10)" }}>
+              <div className={s.xcover} style={{ background: "#FBF0D9", color: "#8A5A00" }}>
                 <span className={s.xemoji}><Icon name="interactive" size={48} strokeWidth={1.4} /></span>
                 <span className={s.xtag}>Interactive</span>
               </div>
@@ -225,7 +246,7 @@ export default async function Landing() {
       <section className={`${s.band} ${s.cardBg}`}>
         <div className={s.wrap}>
           <div className={s.secHead} style={{ textAlign: "center", marginInline: "auto" }}>
-            <span className={s.eyebrow}>Why Leep</span>
+            <span className={s.eyebrow}>Why Lybry</span>
             <h2>The bookstore that actually pays its writers.</h2>
             <p>Big platforms treat readers like a feed and writers like inventory. We built the opposite.</p>
           </div>
@@ -343,8 +364,8 @@ export default async function Landing() {
               65%<small>Yours on every sale</small>
             </div>
             <p className={s.sub} style={{ marginTop: "1.2rem", maxWidth: "40ch" }}>
-              Sell books, interactive stories and digital products — keep the
-              majority, and see who&apos;s actually reading you.
+              Sell books and interactive stories, keep the majority, and see
+              who&apos;s actually reading you.
             </p>
             <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding" style={{ marginTop: "1.3rem" }}>
               Start creating
@@ -360,13 +381,13 @@ export default async function Landing() {
             <div className={s.step}>
               <b>2</b>
               <span>
-                <strong>Sell more than books</strong> — add templates, audio, downloads, video &amp; courses as digital products, free or premium.
+                <strong>Set your price</strong> — free, paid, or a free first chapter. You can also include a paid book in Lybry Unlimited.
               </span>
             </div>
             <div className={s.step}>
               <b>3</b>
               <span>
-                <strong>Publish</strong> — it goes live instantly. Keep 65%; withdraw once you join the Leep Partnership Program.
+                <strong>Publish</strong> — it goes live instantly. Keep 65%; withdraw once you join the Lybry Partnership Program.
               </span>
             </div>
           </div>
@@ -392,7 +413,7 @@ export default async function Landing() {
           <div className={s.footGrid}>
             <div>
               <div className={s.footLogo}>
-                Leep<span>.</span>
+                Lybry<span>.</span>
               </div>
               <p className={s.footTag}>Stories worth lingering in.</p>
               <div className={s.news}>
@@ -430,7 +451,7 @@ export default async function Landing() {
           </div>
 
           <div className={s.footBar}>
-            <span>© 2026 Leep. Operated by {operatorLine()}.</span>
+            <span>© 2026 Lybry. Operated by {operatorLine()}.</span>
             <span>Crafted with care for readers &amp; writers.</span>
           </div>
         </div>

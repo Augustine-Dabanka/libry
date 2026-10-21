@@ -42,7 +42,7 @@ export default function BackgroundPicker() {
             fontFamily: "var(--sans)",
             fontWeight: 600,
             fontSize: "0.88rem",
-            background: kind === o.v ? "rgba(196,163,90,0.16)" : "var(--charcoal)",
+            background: kind === o.v ? "color-mix(in srgb, var(--gold) 16%, transparent)" : "var(--charcoal)",
             border: `1.5px solid ${kind === o.v ? "var(--gold)" : "var(--border)"}`,
             color: kind === o.v ? "var(--gold)" : "var(--ivory-muted)",
           }}

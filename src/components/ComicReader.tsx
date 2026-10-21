@@ -1,5 +1,7 @@
 "use client";
 
+import { formatPrice } from "@/lib/types";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { type ComicPage, type ComicMode } from "@/lib/comic";
@@ -132,7 +134,7 @@ export default function ComicReader({
       <div style={{ color: "var(--gold)", marginBottom: "0.6rem" }}><Icon name="lock" size={34} /></div>
       <h2 style={{ marginBottom: "0.5rem" }}>Keep reading {title}</h2>
       <p style={{ color: "var(--muted)", marginBottom: "1.3rem" }}>
-        You&apos;re reading a free preview. {price ? `Unlock the full comic for GHS ${Number(price).toFixed(2)}.` : "Unlock the full comic to continue."}
+        You&apos;re reading a free preview. {price ? `Unlock the full comic for ${formatPrice(Number(price))}.` : "Unlock the full comic to continue."}
       </p>
       <a href={`/book/${bookId}`} className="btn btn-gold">{signedIn ? "Unlock the full comic →" : "Sign up to keep reading →"}</a>
     </div>

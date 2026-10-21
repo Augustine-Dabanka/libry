@@ -5,7 +5,7 @@ import { BRAND } from "@/lib/brand";
 // Reads RESEND_API_KEY / RESEND_FROM from the environment; if the key is
 // missing it no-ops so callers can stay best-effort and never block a flow.
 const KEY = process.env.RESEND_API_KEY;
-const FROM = process.env.RESEND_FROM || "Leep <onboarding@resend.dev>";
+const FROM = process.env.RESEND_FROM || "Lybry <onboarding@resend.dev>";
 
 export async function sendEmail({
   to,
@@ -32,22 +32,22 @@ export async function sendEmail({
   }
 }
 
-// Branded shell so every Leep email looks the same. Keep it inline-styled and
+// Branded shell so every Lybry email looks the same. Keep it inline-styled and
 // simple — email clients strip <style>, <script> and most modern CSS.
 export function libryEmail({ heading, body, cta }: { heading: string; body: string; cta?: { label: string; href: string } }): string {
   return `<!doctype html><html><body style="margin:0;background:#12100E;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
     <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background:#1C1917;border:1px solid #2A2622;border-radius:16px;overflow:hidden;">
       <tr><td style="padding:28px 32px 0;">
-        <div style="font-family:Georgia,serif;font-size:22px;color:#EDE7DE;">Leep<span style="color:#5FA068;">.</span></div>
+        <div style="font-family:Georgia,serif;font-size:22px;color:#EDE7DE;">Lybry<span style="color:#C8471F;">.</span></div>
       </td></tr>
       <tr><td style="padding:20px 32px 8px;">
         <h1 style="margin:0;font-family:Georgia,serif;font-size:26px;line-height:1.25;color:#EDE7DE;font-weight:600;">${heading}</h1>
       </td></tr>
       <tr><td style="padding:6px 32px 20px;color:#A8A29E;font-size:15px;line-height:1.65;">${body}</td></tr>
-      ${cta ? `<tr><td style="padding:0 32px 28px;"><a href="${cta.href}" style="display:inline-block;background:#5FA068;color:#0B0A09;text-decoration:none;font-weight:700;font-size:15px;padding:12px 22px;border-radius:999px;">${cta.label}</a></td></tr>` : ""}
+      ${cta ? `<tr><td style="padding:0 32px 28px;"><a href="${cta.href}" style="display:inline-block;background:#C8471F;color:#0B0A09;text-decoration:none;font-weight:700;font-size:15px;padding:12px 22px;border-radius:999px;">${cta.label}</a></td></tr>` : ""}
       <tr><td style="padding:18px 32px 26px;border-top:1px solid #2A2622;color:#6b6560;font-size:12px;line-height:1.6;">
-        Leep — stories worth lingering in. You're getting this because you joined at ${BRAND.siteUrl.replace(/^https?:\/\//, "")}.
+        Lybry — stories worth lingering in. You're getting this because you joined at ${BRAND.siteUrl.replace(/^https?:\/\//, "")}.
       </td></tr>
     </table>
   </td></tr></table>

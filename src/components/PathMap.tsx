@@ -15,7 +15,7 @@ export default function PathMap({
   totalEndings: number;
 }) {
   return (
-    <div style={{ marginTop: "2rem", padding: "1.4rem", borderRadius: 16, border: "1px solid rgba(196,163,90,0.28)", background: "linear-gradient(160deg,#20191233,#14101933)" }}>
+    <div style={{ marginTop: "2rem", padding: "1.4rem", borderRadius: 16, border: "1px solid color-mix(in srgb, var(--gold) 28%, transparent)", background: "linear-gradient(160deg,#20191233,#14101933)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "1rem", marginBottom: "1rem" }}>
         <h3 style={{ fontFamily: "var(--serif, Georgia, serif)", fontStyle: "italic", fontSize: "1.2rem", color: "#FAF7F2", margin: 0 }}>Your path</h3>
         {totalEndings > 1 ? <span style={{ fontFamily: "var(--sans)", fontSize: "0.76rem", color: "#DCC088" }}>Ending {endingNumber} of {totalEndings} found</span> : null}
@@ -27,7 +27,7 @@ export default function PathMap({
             {/* connector line */}
             <span aria-hidden="true" style={{ position: "absolute", left: "0.42rem", top: "0.5rem", bottom: 0, width: 2, background: "linear-gradient(#c4a35a99, #c4a35a22)" }} />
             {/* node */}
-            <span aria-hidden="true" style={{ position: "absolute", left: 0, top: "0.25rem", width: 12, height: 12, borderRadius: "50%", background: "#C4A35A", boxShadow: "0 0 0 4px rgba(196,163,90,0.16)" }} />
+            <span aria-hidden="true" style={{ position: "absolute", left: 0, top: "0.25rem", width: 12, height: 12, borderRadius: "50%", background: "var(--gold)", boxShadow: "0 0 0 4px color-mix(in srgb, var(--gold) 16%, transparent)" }} />
             <div style={{ fontFamily: "var(--serif, Georgia, serif)", color: "#FAF7F2", fontSize: "0.98rem" }}>{s.chapter}</div>
             {s.choice ? (
               <div style={{ fontFamily: "var(--sans)", fontSize: "0.82rem", color: "#C6BEB2", marginTop: "0.15rem" }}>
@@ -38,7 +38,7 @@ export default function PathMap({
         ))}
         {/* ending node */}
         <li style={{ position: "relative", paddingLeft: "1.8rem" }}>
-          <span aria-hidden="true" style={{ position: "absolute", left: "-1px", top: "0.15rem", width: 14, height: 14, borderRadius: "50%", background: "#FAF7F2", border: "3px solid #C4A35A" }} />
+          <span aria-hidden="true" style={{ position: "absolute", left: "-1px", top: "0.15rem", width: 14, height: 14, borderRadius: "50%", background: "#FAF7F2", border: "3px solid var(--gold)" }} />
           <div style={{ fontFamily: "var(--serif, Georgia, serif)", fontStyle: "italic", color: "#DCC088", fontSize: "1.05rem" }}>{endingLabel}</div>
         </li>
       </ol>

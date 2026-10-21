@@ -46,7 +46,7 @@ export async function submitContact(_prev: ContactState, form: FormData): Promis
     await sendEmail({
       to: staff,
       replyTo: email,
-      subject: `[Leep contact: ${topic}] ${name}`,
+      subject: `[Lybry contact: ${topic}] ${name}`,
       html: `<p><strong>${esc(name)}</strong> &lt;${esc(email)}&gt; — ${topic}</p><p style="white-space:pre-wrap">${esc(body)}</p>`,
     }).catch(() => undefined);
   }

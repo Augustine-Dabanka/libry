@@ -1,4 +1,4 @@
-# Leep: 7-day launch plan
+# Lybry: 7-day launch plan
 
 Each day ends with a "done when" check. Don't move on until it's true.
 Run `npm run check:launch` against your production env vars on Day 3 and Day 6.

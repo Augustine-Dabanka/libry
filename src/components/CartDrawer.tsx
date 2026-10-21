@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { type CartItem, getCart, removeFromCart, clearCart, onCartChange } from "@/lib/cart";
 import { checkoutCart, paystackReady } from "@/app/actions/purchases";
+import { paymentProvider, startBooksCheckout } from "@/app/actions/stripe";
 import { formatPrice } from "@/lib/types";
 
 import Glyph from "@/components/Glyph";
@@ -40,9 +41,11 @@ export default function CartDrawer({ email }: { email?: string }) {
   const [done, setDone] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [live, setLive] = useState(false);
+  const [provider, setProvider] = useState<"stripe" | "paystack" | "demo">("demo");
 
   useEffect(() => {
     paystackReady().then(setLive).catch(() => setLive(false));
+    paymentProvider().then(setProvider).catch(() => setProvider("demo"));
   }, []);
 
   useEffect(() => {
@@ -80,6 +83,15 @@ export default function CartDrawer({ email }: { email?: string }) {
   async function checkout() {
     setErr(null);
     setBusy(true);
+
+    // Stripe (when it's the active provider): hosted checkout, then /checkout/return.
+    if (provider === "stripe") {
+      const res = await startBooksCheckout(items.map((i) => Number(i.id)));
+      if (res.url) { window.location.assign(res.url); return; }
+      setBusy(false);
+      setErr(res.error || "Couldn't start checkout.");
+      return;
+    }
 
     // Real Paystack only when the server confirms it's configured; else simulate.
     if (live && email && PAYSTACK_KEY) {
@@ -140,9 +152,11 @@ export default function CartDrawer({ email }: { email?: string }) {
           width: "min(400px, 92vw)",
           background: "var(--charcoal)",
           borderLeft: "1px solid var(--border)",
-          boxShadow: "-24px 0 60px rgba(0,0,0,0.5)",
+          // No shadow and hidden while closed, so its edge never shades the page.
+          boxShadow: open ? "-24px 0 60px rgba(0,0,0,0.25)" : "none",
+          visibility: open ? "visible" : "hidden",
           transform: open ? "translateX(0)" : "translateX(100%)",
-          transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)",
+          transition: open ? "transform 0.28s cubic-bezier(0.4,0,0.2,1)" : "transform 0.28s cubic-bezier(0.4,0,0.2,1), visibility 0s linear 0.28s",
           zIndex: 1301,
           display: "flex",
           flexDirection: "column",
@@ -163,7 +177,7 @@ export default function CartDrawer({ email }: { email?: string }) {
         <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.4rem" }}>
           {done ? (
             <div style={{ textAlign: "center", fontFamily: "var(--sans)", padding: "3rem 1rem" }}>
-              <div style={{ fontSize: "2.4rem", marginBottom: "0.6rem", color: "#7DBE86" }}>✓</div>
+              <div style={{ fontSize: "2.4rem", marginBottom: "0.6rem", color: "var(--success)" }}>✓</div>
               <p style={{ color: "var(--ivory)", fontSize: "1.05rem", marginBottom: "1rem" }}>{done}</p>
               <a
                 href="/my-library?tab=purchased"
@@ -270,7 +284,7 @@ export default function CartDrawer({ email }: { email?: string }) {
               <p style={{ color: "var(--terracotta)", fontSize: "0.8rem", textAlign: "center", margin: 0 }}>{err}</p>
             ) : (
               <p style={{ color: "var(--muted)", fontSize: "0.76rem", textAlign: "center", margin: 0, lineHeight: 1.5 }}>
-                <Glyph e="🔒" /> {live ? "Secured by Paystack" : "Free while we finish secure payments — no card needed."}
+                <Glyph e="🔒" /> {provider === "stripe" ? "Secure card payment by Stripe" : live ? "Secured by Paystack" : "Free while we finish secure payments — no card needed."}
               </p>
             )}
           </footer>

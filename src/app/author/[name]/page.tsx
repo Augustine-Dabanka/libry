@@ -34,7 +34,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ name: s
   }
 
   // A bio for the header: a real creator's profile bio (matched by pen name or
-  // full name), else the curated bio for classics and the Leep Originals brand.
+  // full name), else the curated bio for classics and the Lybry Originals brand.
   let profileBio: string | null = null;
   let profileAvatar: string | null = null;
   {

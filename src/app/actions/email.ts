@@ -14,7 +14,7 @@ export async function sendWaitlistWelcome(
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) return { ok: false, error: "invalid email" };
 
   const what =
-    role === "unlimited" ? "Leep Unlimited" : role === "investor" ? "Leep early access" : "Leep";
+    role === "unlimited" ? "Lybry Unlimited" : role === "investor" ? "Lybry early access" : "Lybry";
   const spot = position > 0 ? `You're <strong style="color:#EDE7DE;">#${position}</strong> in line.` : "You're on the list.";
 
   const html = libryEmail({
@@ -26,5 +26,5 @@ export async function sendWaitlistWelcome(
     cta: { label: "Share your link", href: `${BRAND.siteUrl}/waitlist` },
   });
 
-  return sendEmail({ to: clean, subject: "You're on the Leep waitlist", html });
+  return sendEmail({ to: clean, subject: "You're on the Lybry waitlist", html });
 }

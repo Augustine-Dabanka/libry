@@ -6,7 +6,7 @@ import { logEvent } from "@/app/actions/analytics";
 import { type Book } from "@/lib/types";
 
 import Glyph from "@/components/Glyph";
-export const metadata = { title: "Search — Leep" };
+export const metadata = { title: "Search — Lybry" };
 
 // Server-side full-text search (Postgres tsvector + GIN via the search_books
 // RPC): title-weighted, typo-forgiving, mature-aware, ranked. Real data only.
@@ -18,7 +18,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   let allowed = allowedRatings(false);
   if (user) {
-    const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+    const sm = await supabase.from("my_profile").select("show_mature").eq("id", user.id).maybeSingle();
     allowed = allowedRatings(sm.data?.show_mature ?? false);
   }
 

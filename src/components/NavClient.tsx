@@ -8,6 +8,8 @@ import StreakCard from "@/components/StreakCard";
 import { cartCount, onCartChange, openCart } from "@/lib/cart";
 import { createClient } from "@/lib/supabase/client";
 import LibryIcon from "@/components/Icon";
+import GuestSync from "@/components/GuestSync";
+import GuestSaveBanner from "@/components/GuestSaveBanner";
 
 /* ── line icons (22px, stroke = currentColor) ─────────────────────────────── */
 type IconName = "home" | "browse" | "spark" | "compass" | "library" | "medal" | "pen" | "heart" | "cart" | "theme" | "cog" | "community" | "bell";
@@ -64,8 +66,6 @@ export default function NavClient({
   const pathname = usePathname() || "/";
   const [railMenu, setRailMenu] = useState<null | "browse" | "user">(null);
   const [mobUser, setMobUser] = useState(false);
-  const [mobile, setMobile] = useState(false);
-  const [mSection, setMSection] = useState<null | "genres" | "discover" | "community">(null);
   const [cartN, setCartN] = useState(0);
   const [wishN, setWishN] = useState(wishCount);
   const [notifN, setNotifN] = useState(notifCount);
@@ -89,7 +89,7 @@ export default function NavClient({
   // top bar takes over below 900px (CSS drops the padding there).
   useEffect(() => {
     document.body.classList.add("has-rail");
-    if (signedIn) document.body.classList.add("has-mobtabs");
+    document.body.classList.add("has-mobtabs");
     return () => {
       document.body.classList.remove("has-rail");
       document.body.classList.remove("has-mobtabs");
@@ -168,7 +168,7 @@ export default function NavClient({
     <>
       {/* ══════════ DESKTOP: Chrome-style vertical rail ══════════ */}
       <aside className="railnav" aria-label="Primary">
-        <a href="/home" className="rail-logo" title="Leep — Home" aria-label="Leep home">
+        <a href="/home" className="rail-logo" title="Lybry — Home" aria-label="Lybry home">
           L<span>.</span>
         </a>
 
@@ -200,7 +200,7 @@ export default function NavClient({
                       <a href="/catalog?type=Interactive"><LibryIcon name="interactive" size={16} /> Interactive</a>
                       <a href="/catalog?free=1">Free to read</a>
                       <a href="/catalog?paid=1">Premium</a>
-                      <a href="/unlimited">Leep Unlimited</a>
+                      <a href="/unlimited">Lybry Unlimited</a>
                     </div>
                   </div>
                 </div>
@@ -300,23 +300,26 @@ export default function NavClient({
         </div>
       </aside>
 
-      {/* ══════════ MOBILE: top bar + slide-in menu ══════════ */}
-      <nav className="navbar" ref={rootRef}>
+      {/* ══════════ MOBILE: slim top bar (logo, search, cart, account) ══════════
+          Phones get ONE navigation system: the bottom tabs. The top bar only
+          holds search and account; there is no hamburger menu any more. */}
+      <nav className="navbar" ref={rootRef} aria-label="Account and search">
         <div className="nav-left">
-          <a href="/home" className="logo">
-            Leep<span>.</span>
+          <a href={signedIn ? "/home" : "/"} className="logo">
+            Lybry<span>.</span>
           </a>
         </div>
 
         <div className="nav-right">
           {signedIn ? <StreakCard compact /> : null}
 
-          {!signedIn ? (
-            <button type="button" className="nav-icon-btn" title="Toggle theme" aria-label="Toggle light or dark" onClick={toggleTheme}>◑</button>
-          ) : null}
+          <a href="/search" className="nav-icon-btn" aria-label="Search" title="Search">
+            <LibryIcon name="search" size={20} />
+          </a>
 
-          <button type="button" className="icon-link" title="Cart" aria-label="Cart" onClick={openCart} style={{ background: "transparent", border: "none", cursor: "pointer", font: "inherit" }}>
-            &#128722; <span className="badge-count">{cartN}</span>
+          <button type="button" className="nav-icon-btn" title="Cart" aria-label={`Cart, ${cartN} item${cartN === 1 ? "" : "s"}`} onClick={openCart} style={{ position: "relative" }}>
+            <Icon name="cart" />
+            {cartN > 0 ? <span className="badge-count" style={{ position: "absolute", top: -4, right: -4 }}>{cartN}</span> : null}
           </button>
 
           {signedIn ? (
@@ -325,151 +328,55 @@ export default function NavClient({
                 <span className="user-avatar">{avatar}</span>
               </button>
               <div className={`mob-user-menu${mobUser ? " open" : ""}`} role="menu">
-                <a href="/home">Home</a>
-                <a href="/my-library">My Library</a>
+                <a href="/profile">Profile</a>
                 <a href="/achievements">Achievements</a>
+                <a href="/notifications">Notifications{notifN > 0 ? ` (${notifN})` : ""}</a>
+                <a href="/my-library?tab=wishlist">Wishlist{wishN > 0 ? ` (${wishN})` : ""}</a>
                 <a href="/wallet">Wallet</a>
-                <a href="/creator">Creator Dashboard</a>
+                <a href="/creator">Write / Creator</a>
+                <a href="/unlimited">Lybry Unlimited</a>
                 <a href="/settings">Settings</a>
-                <button type="button" onClick={toggleTheme} style={menuBtn}>◑ Toggle theme</button>
+                <a href="/about">About</a>
+                <button type="button" onClick={toggleTheme} style={menuBtn}>Light / dark</button>
                 <LogoutSurvey style={menuBtn} />
               </div>
             </div>
           ) : (
             <a href="/login" className="btn-login">Log in</a>
           )}
-
-          <button
-            type="button"
-            className={`hamburger${mobile ? " open" : ""}`}
-            aria-label={mobile ? "Close menu" : "Open menu"}
-            aria-expanded={mobile}
-            aria-controls="mobile-menu"
-            onClick={() => setMobile((v) => !v)}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
         </div>
       </nav>
 
-      <div id="mobile-menu" className={mobile ? "open" : ""} aria-hidden={!mobile}>
-        {signedIn ? (
-          <div className="mm-user">
-            <span className="user-avatar">{avatar}</span>
-            <span className="mm-user-name">{name}</span>
-          </div>
-        ) : null}
+      {/* ══════════ MOBILE: app-style bottom tab bar (everyone; guests get browse tabs + sign up) ══════════ */}
+      <nav className="mobtabs" aria-label="Primary">
+        {(signedIn
+          ? [
+              { href: "/home", label: "Home", icon: "home" as IconName },
+              { href: "/discover", label: "Discover", icon: "compass" as IconName },
+              { href: "/my-library", label: "Library", icon: "library" as IconName },
+              { href: "/communities", label: "Rooms", icon: "community" as IconName },
+              { href: "/profile", label: "Profile", icon: null },
+            ]
+          : [
+              { href: "/discover", label: "Discover", icon: "compass" as IconName },
+              { href: "/catalog", label: "Browse", icon: "browse" as IconName },
+              { href: "/communities", label: "Rooms", icon: "community" as IconName },
+              { href: "/unlimited", label: "Try free", icon: "spark" as IconName },
+              { href: "/login", label: "Sign up", icon: null },
+            ]
+        ).map((t) => {
+          const on = pathname === t.href || pathname.startsWith(t.href + "/");
+          return (
+            <a key={t.href} href={t.href} className={`mobtab${on ? " active" : ""}`} aria-current={on ? "page" : undefined}>
+              <span className="mobtab-ico">{t.icon ? <Icon name={t.icon} /> : <span className="mobtab-avatar">{signedIn ? avatar : "+"}</span>}</span>
+              <span className="mobtab-label">{t.label}</span>
+            </a>
+          );
+        })}
+      </nav>
 
-        <div className="mm-scroll">
-          <a className="mm-link" href="/home">Home</a>
-          <a className="mm-link" href="/search"><LibryIcon name="search" size={16} /> Search</a>
-          <a className="mm-link" href="/catalog">Browse all</a>
-
-          <div className="mm-group">
-            <button
-              type="button"
-              className={`mm-acc${mSection === "genres" ? " open" : ""}`}
-              aria-expanded={mSection === "genres"}
-              onClick={() => setMSection((s) => (s === "genres" ? null : "genres"))}
-            >
-              <span>Genres</span>
-              <span className="mm-caret">▾</span>
-            </button>
-            <div className={`mm-sub${mSection === "genres" ? " open" : ""}`}>
-              <a href="/catalog?type=Interactive"><LibryIcon name="interactive" size={16} /> Interactive</a>
-              {genreList.map((g) => (
-                <a key={g} href={`/catalog?genre=${encodeURIComponent(g)}`}>{g}</a>
-              ))}
-            </div>
-          </div>
-
-          <div className="mm-group">
-            <button
-              type="button"
-              className={`mm-acc${mSection === "discover" ? " open" : ""}`}
-              aria-expanded={mSection === "discover"}
-              onClick={() => setMSection((s) => (s === "discover" ? null : "discover"))}
-            >
-              <span>Discover</span>
-              <span className="mm-caret">▾</span>
-            </button>
-            <div className={`mm-sub${mSection === "discover" ? " open" : ""}`}>
-              <a href="/discover">Trending</a>
-              <a href="/discover?filter=editors-pick">Editor&apos;s Pick</a>
-              <a href="/catalog?free=1">Free to read</a>
-              <a href="/catalog?paid=1">Premium</a>
-              <a href="/unlimited">Leep Unlimited</a>
-            </div>
-          </div>
-
-          <div className="mm-divider" />
-
-          <div className="mm-group">
-            <button
-              type="button"
-              className={`mm-acc${mSection === "community" ? " open" : ""}`}
-              aria-expanded={mSection === "community"}
-              onClick={() => setMSection((s) => (s === "community" ? null : "community"))}
-            >
-              <span>Community{notifN > 0 ? <span className="mm-count">{notifN}</span> : null}</span>
-              <span className="mm-caret">▾</span>
-            </button>
-            <div className={`mm-sub${mSection === "community" ? " open" : ""}`}>
-              <a href="/community">Feed</a>
-              <a href="/communities">Communities</a>
-              <a href="/notifications">
-                Notifications{notifN > 0 ? <span className="mm-count">{notifN}</span> : null}
-              </a>
-            </div>
-          </div>
-
-          <a className="mm-link" href="/my-library">My Library</a>
-          <a className="mm-link" href="/my-library?tab=wishlist">
-            Wishlist{wishN > 0 ? <span className="mm-count">{wishN}</span> : null}
-          </a>
-          <a className="mm-link" href="/cart" onClick={(e) => { e.preventDefault(); setMobile(false); openCart(); }}>
-            Cart{cartN > 0 ? <span className="mm-count">{cartN}</span> : null}
-          </a>
-          <a className="mm-link" href="/achievements">Achievements</a>
-          <a className="mm-link" href="/wallet">Wallet</a>
-          <a className="mm-link" href="/creator"><LibryIcon name="write" size={16} /> Write / Creator</a>
-
-          <div className="mm-divider" />
-
-          <a className="mm-link" href="/about">About</a>
-          <a className="mm-link" href="/settings">Settings</a>
-        </div>
-
-        {signedIn ? (
-          <LogoutSurvey className="mm-signout" />
-        ) : (
-          <a className="btn btn-gold mm-cta" href="/login">Log in</a>
-        )}
-      </div>
-
-      {/* ══════════ MOBILE: app-style bottom tab bar (signed-in) ══════════ */}
-      {signedIn ? (
-        <nav className="mobtabs" aria-label="Primary">
-          {([
-            { href: "/home", label: "Home", icon: "home" as IconName },
-            { href: "/discover", label: "Discover", icon: "compass" as IconName },
-            { href: "/my-library", label: "Library", icon: "library" as IconName },
-            { href: "/creator", label: "Create", icon: "pen" as IconName },
-            { href: "/profile", label: "Profile", icon: null },
-          ]).map((t) => {
-            const on = pathname === t.href || pathname.startsWith(t.href + "/");
-            return (
-              <a key={t.href} href={t.href} className={`mobtab${on ? " active" : ""}`} aria-current={on ? "page" : undefined}>
-                <span className="mobtab-ico">{t.icon ? <Icon name={t.icon} /> : <span className="mobtab-avatar">{avatar}</span>}</span>
-                <span className="mobtab-label">{t.label}</span>
-              </a>
-            );
-          })}
-        </nav>
-      ) : null}
-
+      {signedIn && email ? <GuestSync email={email} /> : null}
+      {!signedIn ? <GuestSaveBanner /> : null}
       <CartDrawer email={email} />
     </>
   );

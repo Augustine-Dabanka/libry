@@ -53,6 +53,21 @@ export async function updateSession(request: NextRequest) {
     return redirect
   }
 
+  // Two-step sign-in: an account with an authenticator app isn't fully signed
+  // in until it has entered a code (AAL2). Until then, only the sign-in page
+  // and public pages load. Read from the session token; no extra network call.
+  if (user && !isPublic) {
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+      const u = request.nextUrl.clone()
+      u.pathname = '/login'
+      u.search = ''
+      u.searchParams.set('mfa', '1')
+      u.searchParams.set('next', path)
+      return NextResponse.redirect(u)
+    }
+  }
+
   // Clickjacking protection: only allow the app to be framed by its own origin.
   supabaseResponse.headers.set('X-Frame-Options', 'SAMEORIGIN')
   // Stop browsers from MIME-sniffing responses away from their declared type.
@@ -91,6 +106,8 @@ const PUBLIC_PREFIXES = [
   // Without this, signed-out visitors got login redirects instead of cover
   // images, and server-to-server webhooks (push, Paystack) could never arrive.
   '/api',
+  // Static media in /public/media (the landing page's preview clip and poster).
+  '/media',
   '/terms',
   '/privacy',
   '/cookies',

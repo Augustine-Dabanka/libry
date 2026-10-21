@@ -1,4 +1,4 @@
-// Leep theme system (shared by server and client; no "use client").
+// Lybry theme system (shared by server and client; no "use client").
 //
 // Three layers, applied as attributes on <html> by the inline script in layout.tsx:
 //   data-brand  – accent presets the reader picked (existing)
@@ -14,7 +14,7 @@ export type Season = {
   end: string;   // "MM-DD", inclusive (may wrap past New Year)
   enabled: boolean;
   accent: string;
-  // Collabs/events only: the partner or event name shown on loaders ("Leep × ...").
+  // Collabs/events only: the partner or event name shown on loaders ("Lybry × ...").
   label?: string;
 };
 
@@ -25,9 +25,12 @@ export const DEFAULT_SEASONS: Season[] = [
   { key: "collab", name: "Collab / special event", start: "01-01", end: "01-01", enabled: false, accent: "#7C83FF", label: "" },
   { key: "newyear", name: "New Year", start: "12-31", end: "01-02", enabled: true, accent: "#E8C170" },
   { key: "valentines", name: "Valentine’s week", start: "02-10", end: "02-15", enabled: true, accent: "#FF6B8A" },
-  { key: "independence", name: "Independence Day (Ghana)", start: "03-05", end: "03-07", enabled: true, accent: "#2F9E44" },
+  { key: "independence", name: "Independence Day (Ghana)", start: "03-05", end: "03-07", enabled: false, accent: "#2F9E44" },
+  { key: "july4", name: "Independence Day (US)", start: "07-02", end: "07-05", enabled: true, accent: "#2B59C3" },
   { key: "easter", name: "Easter (dates set automatically)", start: "easter", end: "easter", enabled: true, accent: "#B197FC" },
   { key: "halloween", name: "Halloween", start: "10-25", end: "11-01", enabled: true, accent: "#FF7A1A" },
+  // 4th Thursday of November always falls on the 22nd–28th.
+  { key: "thanksgiving", name: "Thanksgiving week (US)", start: "11-22", end: "11-28", enabled: true, accent: "#C8471F" },
   { key: "christmas", name: "Christmas", start: "12-18", end: "12-27", enabled: true, accent: "#D7263D" },
 ];
 

@@ -1,4 +1,7 @@
 import { redirect } from "next/navigation";
+import CreatorMilestones from "@/components/CreatorMilestones";
+import ChannelEditor from "@/components/ChannelEditor";
+import type { ChannelVideo } from "@/components/ChannelView";
 import { createClient } from "@/lib/supabase/server";
 import { serviceClient } from "@/lib/supabase/service";
 import QuickUpload from "@/components/QuickUpload";
@@ -13,6 +16,7 @@ import CreatorTabs, { type CreatorTab } from "@/components/CreatorTabs";
 import PromotePanel from "@/components/PromotePanel";
 import FinancePanel from "@/components/FinancePanel";
 import ProductsPanel from "@/components/ProductsPanel";
+import { productsOn } from "@/lib/features";
 import PartnerCard from "@/components/PartnerCard";
 import { type ProductType } from "@/app/actions/products";
 import { isCreatorActive, creatorStatusMeta } from "@/lib/creatorStatus";
@@ -46,6 +50,19 @@ export default async function CreatorDashboard() {
     ? ((await supabase.from("profiles").select("full_name, username").eq("id", user.id).maybeSingle()).data as Prof | null)
     : (primaryProfile.data as Prof | null);
   const authorName = profile?.pen_name || profile?.full_name || profile?.username || user.email || "Independent Creator";
+
+  // Channel (0049): banner, tagline, linked videos. Guarded until the SQL runs.
+  let chBanner: string | null = null, chTagline: string | null = null, chVideos: ChannelVideo[] = [], channelReady = false;
+  {
+    const ch = await supabase.from("profiles").select("banner, tagline").eq("id", user.id).maybeSingle();
+    if (!ch.error) {
+      channelReady = true;
+      chBanner = (ch.data as { banner?: string | null } | null)?.banner ?? null;
+      chTagline = (ch.data as { tagline?: string | null } | null)?.tagline ?? null;
+      const vq = await supabase.from("creator_videos").select("id, provider, video_id, title, created_at").eq("user_id", user.id).order("created_at", { ascending: false });
+      if (!vq.error && vq.data) chVideos = vq.data as ChannelVideo[];
+    }
+  }
   const refCode = profile?.username || user.id;
   // Readers can't publish. If the column isn't migrated, default to allowing
   // (so nothing breaks before the migration is run).
@@ -60,7 +77,7 @@ export default async function CreatorDashboard() {
   type PartnerStatus = "none" | "pending" | "approved" | "rejected";
   let partnerStatus: PartnerStatus = "none";
   {
-    const st = await supabase.from("profiles").select("creator_status, creator_status_reason, creator_status_until, payout_frozen, partner_status").eq("id", user.id).maybeSingle();
+    const st = await supabase.from("my_profile").select("creator_status, creator_status_reason, creator_status_until, payout_frozen, partner_status").eq("id", user.id).maybeSingle();
     if (!st.error && st.data) {
       const d = st.data as { creator_status?: string; creator_status_reason?: string | null; creator_status_until?: string | null; payout_frozen?: boolean; partner_status?: string };
       creatorStatus = d.creator_status ?? "active";
@@ -115,23 +132,15 @@ export default async function CreatorDashboard() {
   let totalReaders = 0;
   let countriesReached = 0;
   let topCountry = "—";
+  // Totals only, from creator_audience() (0048): readers' emails never leave the database.
   if (ownedIds.length) {
-    const { data: prog } = await supabase
-      .from("reading_progress")
-      .select("user_email")
-      .in("book_id", ownedIds);
-    const emails = [...new Set((prog ?? []).map((p: { user_email: string }) => p.user_email).filter(Boolean))];
-    totalReaders = emails.length;
-    if (emails.length) {
-      const { data: readers } = await supabase.from("profiles").select("prefs").in("email", emails);
-      const counts = new Map<string, number>();
-      (readers ?? []).forEach((r: { prefs: { country?: string } | null }) => {
-        const c = r.prefs?.country;
-        if (c) counts.set(c, (counts.get(c) ?? 0) + 1);
-      });
-      countriesReached = counts.size;
-      let best = 0;
-      counts.forEach((n, c) => { if (n > best) { best = n; topCountry = c; } });
+    const aud = await supabase.rpc("creator_audience");
+    if (!aud.error && aud.data) {
+      const a = aud.data as { readers?: number; countries?: { country: string; n: number }[] };
+      totalReaders = a.readers ?? 0;
+      const cs = a.countries ?? [];
+      countriesReached = cs.length;
+      if (cs[0]) topCountry = cs[0].country;
     }
   }
 
@@ -219,6 +228,10 @@ export default async function CreatorDashboard() {
     }
   }
 
+  // Products are switched off while Lybry focuses on reading; creators who already
+  // have products still see the tab so they can manage or unpublish them.
+  const showProducts = myProducts.length > 0 || (await productsOn());
+
   const stat = (label: string, value: string, sub: string) => (
     <div className="stat-card">
       <div className="label">{label}</div>
@@ -250,6 +263,12 @@ export default async function CreatorDashboard() {
           <BecomeCreator />
         ) : (
           <>
+            {/* Badges + milestone awards (0047) */}
+            <div style={{ marginBottom: "1.6rem", padding: "1.2rem 1.3rem", borderRadius: 18, border: "2px solid var(--border)", background: "var(--stone)" }}>
+              <h3 style={{ margin: "0 0 0.8rem", fontSize: "1.05rem" }}>Milestones</h3>
+              <CreatorMilestones author={authorName} />
+            </div>
+
             {/* Account-standing banner (only when suspended/banned) */}
             {!active ? (
               <div style={{ marginBottom: "2rem", padding: "1.1rem 1.3rem", borderRadius: 14, border: `1px solid ${statusMeta.tone === "bad" ? "rgba(196,85,63,0.5)" : "rgba(217,164,65,0.5)"}`, background: statusMeta.tone === "bad" ? "rgba(196,85,63,0.10)" : "rgba(217,164,65,0.10)" }}>
@@ -281,12 +300,12 @@ export default async function CreatorDashboard() {
                     </p>
                     <div style={{ display: "flex", height: 40, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "0.85rem" }}>
                       <div style={{ flex: 65, background: "var(--gold)", color: "#12100E", display: "flex", alignItems: "center", justifyContent: "center" }}>You keep 65%</div>
-                      <div style={{ flex: 35, background: "var(--charcoal)", color: "var(--ivory-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>Leep 35%</div>
+                      <div style={{ flex: 35, background: "var(--charcoal)", color: "var(--ivory-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>Lybry 35%</div>
                     </div>
                     <ul style={{ margin: "1.2rem 0 0", paddingLeft: "1.1rem", color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.7 }}>
                       <li>Every purchase of your book credits <strong style={{ color: "var(--ivory)" }}>65% of the price</strong> to you — the &ldquo;Projected earnings&rdquo; figure above.</li>
-                      <li>Leep keeps 35% to run the platform — a 30% platform cut plus a 5% platform &amp; infrastructure fee (hosting, payments, discovery).</li>
-                      <li>Payments are <strong style={{ color: "var(--ivory)" }}>live via Paystack</strong>. Earnings accrue on every sale; withdraw them once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Leep Partnership Program</a> (a quick verification of your identity and payout details).</li>
+                      <li>Lybry keeps 35% to run the platform — a 30% platform cut plus a 5% platform &amp; infrastructure fee (hosting, payments, discovery).</li>
+                      <li>Payments are <strong style={{ color: "var(--ivory)" }}>live via Paystack</strong>. Earnings accrue on every sale; withdraw them once you join the <a href="/creator#account" style={{ color: "var(--gold)" }}>Lybry Partnership Program</a> (a quick verification of your identity and payout details).</li>
                       <li>You keep your readers — followers, reviews, and the relationship — always.</li>
                     </ul>
                   </div>
@@ -311,7 +330,7 @@ export default async function CreatorDashboard() {
                               <td>{formatPrice(salesByBook.get(Number(b.id))?.revenue ?? 0)}</td>
                               <td>{(b.rating ?? 0) > 0 ? (b.rating ?? 0).toFixed(1) : "—"}</td>
                               <td>
-                                <span className="badge" style={b.is_published ? { background: "rgba(78,122,82,0.2)", color: "#7DBE86" } : { background: "rgba(168,162,158,0.2)", color: "var(--muted)" }}>
+                                <span className="badge" style={b.is_published ? { background: "color-mix(in srgb, var(--success) 20%, transparent)", color: "var(--success)" } : { background: "rgba(168,162,158,0.2)", color: "var(--muted)" }}>
                                   {b.is_published ? "Live" : "Draft"}
                                 </span>
                               </td>
@@ -448,14 +467,14 @@ export default async function CreatorDashboard() {
                 <PartnerCard status={partnerStatus} />
                 <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.6rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.8rem" }}>
-                    <span className="badge" style={{ background: statusMeta.tone === "ok" ? "rgba(78,122,82,0.2)" : statusMeta.tone === "warn" ? "rgba(217,164,65,0.2)" : "rgba(196,85,63,0.2)", color: statusMeta.tone === "ok" ? "#7DBE86" : statusMeta.tone === "warn" ? "#D9A441" : "#E0836B", fontWeight: 700 }}>{statusMeta.label}</span>
+                    <span className="badge" style={{ background: statusMeta.tone === "ok" ? "color-mix(in srgb, var(--success) 20%, transparent)" : statusMeta.tone === "warn" ? "rgba(217,164,65,0.2)" : "rgba(196,85,63,0.2)", color: statusMeta.tone === "ok" ? "var(--success)" : statusMeta.tone === "warn" ? "#D9A441" : "#E0836B", fontWeight: 700 }}>{statusMeta.label}</span>
                     <strong style={{ fontFamily: "var(--sans)", color: "var(--ivory)" }}>{statusMeta.heading}</strong>
                   </div>
                   <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.9rem", lineHeight: 1.6, marginBottom: "1.3rem" }}>{statusMeta.blurb}</p>
                   <div style={{ display: "grid", gap: "0.7rem", fontFamily: "var(--sans)", fontSize: "0.9rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Reading &amp; library</span><span style={{ color: "#7DBE86" }}>Always available</span></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Publishing new work</span><span style={{ color: active ? "#7DBE86" : "var(--muted)" }}>{active ? "Available" : "Paused"}</span></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Payouts</span><span style={{ color: partnerStatus === "approved" && active && !payoutFrozen ? "#7DBE86" : "var(--muted)" }}>{payoutFrozen || !active ? "Frozen" : partnerStatus === "approved" ? "Enabled" : "Unlocks with Partner status"}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Reading &amp; library</span><span style={{ color: "var(--success)" }}>Always available</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Publishing new work</span><span style={{ color: active ? "var(--success)" : "var(--muted)" }}>{active ? "Available" : "Paused"}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.7rem" }}><span style={{ color: "var(--muted)" }}>Payouts</span><span style={{ color: partnerStatus === "approved" && active && !payoutFrozen ? "var(--success)" : "var(--muted)" }}>{payoutFrozen || !active ? "Frozen" : partnerStatus === "approved" ? "Enabled" : "Unlocks with Partner status"}</span></div>
                   </div>
                   <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", marginTop: "1.3rem", lineHeight: 1.6 }}>
                     Standing is governed by our <a href="/terms" style={{ color: "var(--gold)" }}>Terms</a>. If you believe this is a mistake, contact support and we&apos;ll review.
@@ -480,10 +499,11 @@ export default async function CreatorDashboard() {
                 { id: "overview", label: "Overview", icon: "📊", node: overview },
                 { id: "earnings", label: "Earnings", icon: "💰", node: financeNode },
                 { id: "books", label: "Your Books", icon: "📚", node: booksNode },
-                { id: "products", label: "Products", icon: "🎁", node: productsNode },
+                ...(showProducts ? [{ id: "products", label: "Products", icon: "🎁", node: productsNode }] : []),
                 { id: "create", label: "Create", icon: "✍️", node: createNode },
                 { id: "audience", label: "Audience", icon: "🌍", node: audienceNode },
                 { id: "promote", label: "Promote", icon: "📣", node: promoteNode },
+                ...(channelReady ? [{ id: "channel", label: "Channel", icon: "🎬", node: <ChannelEditor userId={user.id} initialBanner={chBanner} initialTagline={chTagline} initialVideos={chVideos} username={profile?.username ?? null} /> }] : []),
                 { id: "profile", label: "Profile", icon: "👤", node: profileNode },
                 { id: "account", label: "Account", icon: "🛡️", node: accountNode },
               ];

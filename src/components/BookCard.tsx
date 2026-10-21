@@ -2,23 +2,23 @@ import { type Book, formatPrice, bookCover } from "@/lib/types";
 import Stars from "@/components/Stars";
 
 // Two-tone card: a real cover image when the book has one, otherwise a
-// gold-framed "LEEP" inset (mark, serif title, author), above a compact info
+// gold-framed "LYBRY" inset (mark, serif title, author), above a compact info
 // row (title, author, price, type).
 export default function BookCard({ book }: { book: Book }) {
   const cover = bookCover(book);
   return (
     <a className="book-card book-card-v2" href={`/book/${book.id}`} style={{ textDecoration: "none", display: "block", padding: "1rem" }}>
       {cover ? (
-        <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", aspectRatio: "2 / 3", background: "linear-gradient(160deg, rgba(197,160,89,0.07), rgba(0,0,0,0.22))", border: "1px solid rgba(197,160,89,0.28)" }}>
+        <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", aspectRatio: "2 / 3", background: "linear-gradient(160deg, color-mix(in srgb, var(--gold) 7%, transparent), rgba(0,0,0,0.22))", border: "1px solid color-mix(in srgb, var(--gold) 28%, transparent)" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={cover} alt={`Cover of ${book.title}`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
       ) : (
         <div
           style={{
-            border: "1px solid rgba(197,160,89,0.45)",
+            border: "1px solid color-mix(in srgb, var(--gold) 45%, transparent)",
             borderRadius: 10,
-            background: "linear-gradient(160deg, rgba(197,160,89,0.07), rgba(0,0,0,0.22))",
+            background: "linear-gradient(160deg, color-mix(in srgb, var(--gold) 7%, transparent), rgba(0,0,0,0.22))",
             padding: "1.2rem 1rem",
             textAlign: "center",
             aspectRatio: "2 / 3",
@@ -29,7 +29,7 @@ export default function BookCard({ book }: { book: Book }) {
             gap: "0.85rem",
           }}
         >
-          <span style={{ fontFamily: "var(--sans)", fontSize: "0.66rem", letterSpacing: "0.28em", color: "var(--gold-hi)", fontWeight: 600 }}>LEEP</span>
+          <span style={{ fontFamily: "var(--sans)", fontSize: "0.7rem", letterSpacing: "0.28em", color: "var(--gold-hi)", fontWeight: 600 }}>LYBRY</span>
           <h3 style={{ fontFamily: "var(--serif)", fontWeight: 600, fontSize: "1.2rem", color: "var(--ivory)", lineHeight: 1.2, margin: 0 }}>{book.title}</h3>
           <span style={{ width: 34, height: 1, background: "var(--gold-hi)", opacity: 0.55 }} />
           <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "0.82rem", color: "var(--muted)" }}>{book.author || "Unknown author"}</span>

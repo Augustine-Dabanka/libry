@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { paymentsLive } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 import { serviceClient } from "@/lib/supabase/service";
 import { promoPrice, type PromoKind } from "@/lib/promo";
@@ -46,7 +47,7 @@ export async function createPromotion(input: { bookId: number; kind: PromoKind; 
   const amountUsd = promoPrice(kind, days);
   const isSimulated = /^(demo|free)-/.test(reference);
   // Demo references only work while real payments are switched off.
-  if (amountUsd > 0 && isSimulated && !!process.env.PAYSTACK_SECRET_KEY && process.env.NEXT_PUBLIC_PAYSTACK_ENABLED === "true") return { error: "Please complete payment to continue." };
+  if (amountUsd > 0 && isSimulated && paymentsLive()) return { error: "Please complete payment to continue." };
   if (amountUsd > 0 && !isSimulated) {
     const v = await verifyPaystack(reference, Math.round(amountUsd * RATE * 100));
     if (!v.ok) return { error: v.error };

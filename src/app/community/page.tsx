@@ -4,7 +4,7 @@ import AppNav from "@/components/AppNav";
 import CommunityFeed from "@/components/CommunityFeed";
 
 import Glyph from "@/components/Glyph";
-export const metadata = { title: "Community — Leep" };
+export const metadata = { title: "Community — Lybry" };
 
 export default async function CommunityPage() {
   const supabase = await createClient();
@@ -28,7 +28,7 @@ export default async function CommunityPage() {
         <div className="dashboard-header" style={{ marginBottom: "1.2rem" }}>
           <h1>Community</h1>
           <p style={{ color: "var(--muted)", fontFamily: "var(--sans)" }}>
-            Jump into a room, or share to the whole of Leep below.
+            Jump into a room, or share to the whole of Lybry below.
           </p>
         </div>
 
@@ -48,7 +48,7 @@ export default async function CommunityPage() {
           </div>
         ) : null}
 
-        <h2 style={{ fontSize: "1.05rem", marginBottom: "0.8rem" }}>Everyone on Leep</h2>
+        <h2 style={{ fontSize: "1.05rem", marginBottom: "0.8rem" }}>Everyone on Lybry</h2>
         <CommunityFeed userId={user.id} userName={name} avatarUrl={profile?.avatar_url ?? null} />
       </section>
     </>

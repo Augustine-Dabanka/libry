@@ -54,7 +54,7 @@ export default async function ReaderPage({
   if (isMatureRating((book as { age_rating?: string }).age_rating)) {
     let showMature = false;
     if (user) {
-      const sm = await supabase.from("profiles").select("show_mature").eq("id", user.id).maybeSingle();
+      const sm = await supabase.from("my_profile").select("show_mature").eq("id", user.id).maybeSingle();
       showMature = !!sm.data?.show_mature;
     }
     if (!showMature) {
@@ -166,6 +166,13 @@ export default async function ReaderPage({
     userName = pr.data?.full_name || pr.data?.username || (user.email ? user.email.split("@")[0] : null);
   }
 
+  // Is this paid book part of Unlimited? (column from 0044; false if not migrated yet)
+  let inUnlimited = false;
+  if (locked && (book.price ?? 0) > 0) {
+    const au = await supabase.from("books").select("allow_unlimited").eq("id", book.id).maybeSingle();
+    inUnlimited = !au.error && !!(au.data as { allow_unlimited?: boolean } | null)?.allow_unlimited;
+  }
+
   return (
     <ReaderView
       bookId={String(book.id)}
@@ -180,6 +187,7 @@ export default async function ReaderPage({
       signedIn={!!user}
       locked={locked}
       price={book.price}
+      inUnlimited={inUnlimited}
     />
   );
 }

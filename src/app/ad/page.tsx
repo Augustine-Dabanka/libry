@@ -2,7 +2,7 @@ import { BRAND } from "@/lib/brand";
 import PromoAd from "@/components/PromoAd";
 
 export const metadata = {
-  title: "Leep — the library, in your pocket",
+  title: "Lybry — the library, in your pocket",
   description: "Read interactive stories, comics and books, join communities, and get paid to create. Creators keep 65%.",
 };
 
@@ -10,7 +10,7 @@ export const metadata = {
 // screen-recorded or screenshotted for social, with a real CTA underneath.
 export default function AdPage() {
   return (
-    <main style={{ minHeight: "100vh", background: "radial-gradient(700px 380px at 50% -6%, rgba(196,163,90,0.14), transparent 70%), #14110d", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2.2rem 1.1rem", gap: "1.8rem", fontFamily: "var(--sans, 'Plus Jakarta Sans', system-ui, sans-serif)" }}>
+    <main style={{ minHeight: "100vh", background: "radial-gradient(700px 380px at 50% -6%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 70%), #14110d", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2.2rem 1.1rem", gap: "1.8rem", fontFamily: "var(--sans, 'Plus Jakarta Sans', system-ui, sans-serif)" }}>
       <div style={{ width: "100%", maxWidth: 400 }}>
         <PromoAd />
       </div>
@@ -23,16 +23,16 @@ export default function AdPage() {
           Interactive stories, comics and books — plus communities that keep the story going. Creators keep 65%.
         </p>
         <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
-          <a href="/onboarding" style={{ background: "#C4A35A", color: "#20180a", fontWeight: 800, textDecoration: "none", padding: "0.85rem 1.7rem", borderRadius: 999, boxShadow: "0 10px 26px rgba(196,163,90,0.28)" }}>
+          <a href="/onboarding" style={{ background: "var(--gold)", color: "#20180a", fontWeight: 800, textDecoration: "none", padding: "0.85rem 1.7rem", borderRadius: 999, boxShadow: "0 10px 26px color-mix(in srgb, var(--gold) 28%, transparent)" }}>
             Start reading free →
           </a>
           <a href="/" style={{ background: "transparent", color: "#FAF7F2", fontWeight: 700, textDecoration: "none", padding: "0.85rem 1.7rem", borderRadius: 999, border: "1.5px solid rgba(250,247,242,0.16)" }}>
-            Explore Leep
+            Explore Lybry
           </a>
         </div>
         {BRAND.socialHandle ? (
           <p style={{ color: "#6b625a", fontSize: "0.8rem", marginTop: "1.4rem", letterSpacing: "0.04em" }}>
-            Follow <a href={`https://www.instagram.com/${BRAND.socialHandle}`} target="_blank" rel="noopener noreferrer" style={{ color: "#C4A35A" }}>@{BRAND.socialHandle}</a>
+            Follow <a href={`https://www.instagram.com/${BRAND.socialHandle}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--gold)" }}>@{BRAND.socialHandle}</a>
           </p>
         ) : null}
       </div>

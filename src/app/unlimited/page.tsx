@@ -3,9 +3,11 @@ import AppNav from "@/components/AppNav";
 import Icon, { type IconName } from "@/components/Icon";
 import UnlimitedPlans, { type ActiveSub } from "@/components/UnlimitedPlans";
 import { type Plan } from "@/lib/plans";
+import TrialCard from "@/components/TrialCard";
+import { getBoxStatus } from "@/app/actions/trial";
 
 export const metadata = {
-  title: "Leep Unlimited — your book box, your genres",
+  title: "Lybry Unlimited — your book box, your genres",
   description: "Pick your genres, choose weekly, monthly or yearly, and keep the books you want each cycle. Reading is always free to start.",
 };
 
@@ -28,12 +30,14 @@ export default async function UnlimitedPage() {
     }
   }
 
+  const box = await getBoxStatus();
+
   return (
     <>
       <AppNav />
       <section className="section" style={{ maxWidth: 820, margin: "0 auto" }}>
-        <div style={{ display: "inline-block", fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--gold)", border: "1px solid rgba(197,160,89,0.4)", borderRadius: 999, padding: "0.35rem 0.9rem", marginBottom: "1.3rem" }}>
-          Leep Unlimited
+        <div style={{ display: "inline-block", fontFamily: "var(--sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--gold)", border: "1px solid color-mix(in srgb, var(--gold) 40%, transparent)", borderRadius: 999, padding: "0.35rem 0.9rem", marginBottom: "1.3rem" }}>
+          Lybry Unlimited
         </div>
 
         <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 3.4rem)", lineHeight: 1.1, letterSpacing: "-0.01em", marginBottom: "1rem" }}>
@@ -44,14 +48,16 @@ export default async function UnlimitedPage() {
           choose weekly, monthly or yearly, and keep the books you choose each cycle. Reading is always free to start.
         </p>
 
+        <TrialCard status={box} signedIn={!!user} />
+
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem", marginBottom: "2.6rem" }}>
           {perk("target", "Curated to you", "Tell us your genres and age rating — every box is drawn from what you love, not a firehose.")}
-          {perk("save", "Keep what you pick", "Each cycle you choose books to keep — they stay in your library, yours for good.")}
-          {perk("calendar", "Weekly, monthly, yearly", "Read a little or a lot. Switch cadence whenever you like; cancel anytime.")}
-          {perk("coins", "Writers still paid", "Your box shares back to the authors you actually read — 65% stays theirs.")}
+          {perk("save", "Keep what you pick", "Each cycle, keep books from the Unlimited shelf. They stay in your library for good, even if you stop.")}
+          {perk("calendar", "Weekly, monthly, yearly", "Pay for one period at a time. Nothing renews by itself, so there is nothing to cancel.")}
+          {perk("coins", "Writers choose", "Only books whose writers opted into Unlimited are on the shelf. Their 65% on regular sales is untouched.")}
         </div>
 
-        <div style={{ background: "var(--stone)", border: "1px solid rgba(197,160,89,0.35)", borderRadius: 18, padding: "1.8rem" }}>
+        <div style={{ background: "var(--stone)", border: "1px solid color-mix(in srgb, var(--gold) 35%, transparent)", borderRadius: 18, padding: "1.8rem" }}>
           {user ? (
             <UnlimitedPlans email={user.email ?? undefined} sub={sub} />
           ) : (

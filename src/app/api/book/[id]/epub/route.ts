@@ -34,8 +34,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!owned) return new Response("Buy this book to download your copy.", { status: 403 });
 
   const pr = await supabase.from("profiles").select("full_name, username").eq("id", user.id).maybeSingle();
-  const who = pr.data?.full_name || pr.data?.username || user.email || "a Leep reader";
-  const watermark = `Prepared for ${who}${user.email ? ` (${user.email})` : ""} via Leep on ${new Date().toISOString().slice(0, 10)}. This is your personal copy — please keep it to yourself.`;
+  const who = pr.data?.full_name || pr.data?.username || user.email || "a Lybry reader";
+  const watermark = `Prepared for ${who}${user.email ? ` (${user.email})` : ""} via Lybry on ${new Date().toISOString().slice(0, 10)}. This is your personal copy — please keep it to yourself.`;
 
   // Text is fetched server-side only after the ownership check above.
   const svc = serviceClient();

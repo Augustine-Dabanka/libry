@@ -14,17 +14,21 @@ import Mascot, { type MascotHat, type MascotMood } from "@/components/Mascot";
 //   newyear      fireworks over the year number
 //   valentines   hearts float up
 //   independence Ghana's flag waves, red-gold-green confetti
-//   collab       spotlights and "Leep × partner"
+//   july4        US Independence Day: fireworks in red, white and blue
+//   thanksgiving falling autumn leaves, a warm pie
+//   collab       spotlights and "Lybry × partner"
 
 type Cfg = { hat?: MascotHat; mood: MascotMood; greeting: (label: string) => string };
 const CFG: Record<string, Cfg> = {
-  christmas: { hat: "santa", mood: "wave", greeting: () => "Merry Christmas from Leep" },
+  christmas: { hat: "santa", mood: "wave", greeting: () => "Merry Christmas from Lybry" },
   halloween: { hat: "witch", mood: "idle", greeting: () => "Happy Halloween" },
   easter: { hat: "bunny", mood: "cheer", greeting: () => "Happy Easter" },
   newyear: { hat: "party", mood: "cheer", greeting: () => "Happy New Year" },
   valentines: { hat: "heart", mood: "wave", greeting: () => "Happy Valentine’s" },
   independence: { hat: "ghana", mood: "cheer", greeting: () => "Happy Independence Day, Ghana" },
-  collab: { hat: "party", mood: "wave", greeting: (l) => (l ? `Leep × ${l}` : "Something special is on") },
+  july4: { hat: "party", mood: "cheer", greeting: () => "Happy Fourth of July" },
+  thanksgiving: { hat: "beanie", mood: "wave", greeting: () => "Happy Thanksgiving" },
+  collab: { hat: "party", mood: "wave", greeting: (l) => (l ? `Lybry × ${l}` : "Something special is on") },
 };
 
 export const SEASON_KEYS = Object.keys(CFG);
@@ -79,6 +83,8 @@ function Scene({ season, label }: { season: string; label: string }) {
     case "newyear": return <NewYear />;
     case "valentines": return <Valentines />;
     case "independence": return <Independence />;
+    case "july4": return <July4 />;
+    case "thanksgiving": return <Thanksgiving />;
     case "collab": return <Collab label={label} />;
     default: return null;
   }
@@ -254,6 +260,40 @@ function Independence() {
   );
 }
 
+function July4() {
+  const bursts = [
+    { x: 90, y: 60, c: "#E63946" }, { x: 190, y: 40, c: "#FFFFFF" }, { x: 280, y: 70, c: "#4D7CFE" },
+    { x: 140, y: 100, c: "#4D7CFE" }, { x: 240, y: 110, c: "#E63946" },
+  ];
+  return (
+    <>
+      {bursts.map((b, i) => (
+        <g key={i} className="ss-burst" style={{ transformOrigin: `${b.x}px ${b.y}px`, animationDelay: `${i * 0.45}s` }}>
+          {Array.from({ length: 10 }, (_, k) => {
+            const a = (k / 10) * Math.PI * 2;
+            return <line key={k} x1={b.x + Math.cos(a) * 6} y1={b.y + Math.sin(a) * 6} x2={b.x + Math.cos(a) * 22} y2={b.y + Math.sin(a) * 22} stroke={b.c} strokeWidth="3" strokeLinecap="round" />;
+          })}
+        </g>
+      ))}
+    </>
+  );
+}
+
+function Thanksgiving() {
+  const leaves = ["#C8471F", "#E8A33D", "#9C4A1A", "#D96A42"];
+  return (
+    <>
+      {Array.from({ length: 14 }, (_, i) => (
+        <ellipse key={i} className="ss-confetti" cx={(i * 27 + 13) % 360} cy={-8} rx="7" ry="4" fill={leaves[i % 4]}
+          style={{ animationDelay: `${(i * 0.4) % 3.2}s`, animationDuration: `${3.4 + (i % 3) * 0.7}s` }} />
+      ))}
+      <ellipse cx="300" cy="196" rx="34" ry="8" fill="#7A4A23" />
+      <path d="M268 194 q32 -30 64 0 z" fill="#E8A33D" />
+      <path d="M276 190 q24 -18 48 0" stroke="#C8471F" strokeWidth="3" fill="none" />
+    </>
+  );
+}
+
 function Collab({ label }: { label: string }) {
   return (
     <>
@@ -261,7 +301,7 @@ function Collab({ label }: { label: string }) {
       <path className="ss-beam ss-beam2" d="M320 220 L200 0 L240 0 Z" fill="#E8C170" opacity="0.18" />
       {label ? (
         <text x="180" y="40" textAnchor="middle" fontFamily="Georgia, serif" fontWeight="700" fontSize="22" fill="#F5EFE4">
-          Leep <tspan fill="#E8C170">×</tspan> {label}
+          Lybry <tspan fill="#E8C170">×</tspan> {label}
         </text>
       ) : null}
       {[60, 300, 110, 250].map((x, i) => (
