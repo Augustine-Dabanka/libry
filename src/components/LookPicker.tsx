@@ -34,9 +34,16 @@ export default function LookPicker() {
     window.addEventListener("focus", applyAutomaticSeason);
     document.addEventListener("visibilitychange", applyAutomaticSeason);
 
-    const now = new Date();
-    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
-    const timer = window.setTimeout(applyAutomaticSeason, Math.max(1000, nextMidnight - now.getTime() + 250));
+    let timer = 0;
+    const scheduleNextMidnight = () => {
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+      timer = window.setTimeout(() => {
+        applyAutomaticSeason();
+        scheduleNextMidnight();
+      }, Math.max(1000, nextMidnight - now.getTime() + 250));
+    };
+    scheduleNextMidnight();
 
     return () => {
       window.clearTimeout(timer);
