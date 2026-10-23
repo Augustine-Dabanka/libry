@@ -38,7 +38,9 @@ export default function LookPicker() {
     if (!next) {
       document.documentElement.removeAttribute("data-season");
       try { localStorage.setItem("libry-manual-season", "auto"); setManualSeason("auto"); } catch { /* storage blocked */ }
-    } else if (manualSeason === "auto") {
+    } else if (manualSeason !== "auto") {
+      document.documentElement.setAttribute("data-season", manualSeason);
+    } else {
       const active = seasonFor(DEFAULT_SEASONS, new Date());
       if (active) document.documentElement.setAttribute("data-season", active);
     }
