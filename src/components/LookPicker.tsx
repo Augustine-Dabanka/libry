@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DEFAULT_SEASONS, LOOKS } from "@/lib/themes";
+import { DEFAULT_SEASONS, LOOKS, seasonFor } from "@/lib/themes";
 
 // Genre looks (full palette in dark mode, accent in light mode) plus the
 // switch for automatic seasonal themes. Saved on this device.
@@ -39,8 +39,8 @@ export default function LookPicker() {
       document.documentElement.removeAttribute("data-season");
       try { localStorage.setItem("libry-manual-season", "auto"); setManualSeason("auto"); } catch { /* storage blocked */ }
     } else if (manualSeason === "auto") {
-      // Automatic selection is recomputed on the next navigation/pre-paint.
-      window.location.reload();
+      const active = seasonFor(DEFAULT_SEASONS, new Date());
+      if (active) document.documentElement.setAttribute("data-season", active);
     }
   }
 
@@ -49,7 +49,10 @@ export default function LookPicker() {
     try { localStorage.setItem("libry-manual-season", key); } catch { /* storage blocked */ }
     if (key === "auto") {
       document.documentElement.removeAttribute("data-season");
-      window.location.reload();
+      if (seasonal) {
+        const active = seasonFor(DEFAULT_SEASONS, new Date());
+        if (active) document.documentElement.setAttribute("data-season", active);
+      }
       return;
     }
     document.documentElement.setAttribute("data-season", key);
