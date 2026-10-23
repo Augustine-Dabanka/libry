@@ -2261,3 +2261,60 @@ html.has-amb { background: var(--charcoal); }
 .m-cheer .m-tail { animation-duration: 0.9s; }
 @keyframes m-tail { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-7deg); } }
 @media (prefers-reduced-motion: reduce) { .m-tail { animation: none; } }
+
+
+/* Shared motion contract: small, consistent, composable transitions. */
+:root {
+  --motion-fast: 150ms;
+  --motion-normal: 250ms;
+  --motion-slow: 400ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Decorative movement must not consume resources in a background tab. */
+:root[data-page-hidden="true"] .bgfx-item,
+:root[data-page-hidden="true"] .bg-shape,
+:root[data-page-hidden="true"] .bg-book,
+:root[data-page-hidden="true"] .bg-cloud,
+:root[data-page-hidden="true"] .m-tail {
+  animation-play-state: paused !important;
+}
+
+/* Settings > Reduce motion and the operating-system preference both win. */
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .bgfx-item, .bg-shape, .bg-book, .bg-cloud, .m-tail { animation: none !important; }
+}
+
+/* Halloween atmosphere stays behind content and never captures input. */
+:root[data-season="halloween"] body {
+  background-image:
+    radial-gradient(ellipse at 82% 0%, rgba(112, 64, 154, 0.09), transparent 48%),
+    radial-gradient(ellipse at 8% 32%, rgba(242, 139, 53, 0.055), transparent 44%);
+  background-attachment: fixed;
+}
+:root[data-season="halloween"] .app-bg,
+:root[data-season="halloween"] .bgfx {
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .bgfx-item:nth-child(n+7) { display: none; }
+  .bg-cloud { filter: none; }
+}
