@@ -53,7 +53,7 @@ function ruleWindow(rule: HolidayRule, year: number): [Date, Date] | null {
   if (rule.type === "easter") { const e = easterSunday(year); const start = new Date(e); start.setDate(start.getDate() + (rule.offsetStart ?? 0)); const end = new Date(e); end.setDate(end.getDate() + (rule.offsetEnd ?? 0)); return [start, end]; }
   const x = rule.dates[year]; if (!x) return null;
   const start = dateAt(year, x.month, x.day);
-  return [start, dateAt(x.endMonth ?? x.month, x.endDay ?? x.day, year)];
+  return [start, dateAt(year, x.endMonth ?? x.month, x.endDay ?? x.day)];
 }
 
 export function holidayIsActive(holiday: HolidayTheme, date: Date): boolean {
