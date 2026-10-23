@@ -21,23 +21,31 @@ export default function BackgroundFX() {
   useEffect(() => {
     const read = () => {
       try {
-        setKind((localStorage.getItem("libry-bg") as BgKind) || "none");
+        const saved = localStorage.getItem("libry-bg");
+        setKind(saved === "shapes" || saved === "books" || saved === "clouds" ? saved : "none");
       } catch {}
     };
     read();
     const onChange = () => read();
+    const syncVisibility = () => {
+      if (document.hidden) document.documentElement.setAttribute("data-page-hidden", "true");
+      else document.documentElement.removeAttribute("data-page-hidden");
+    };
+    syncVisibility();
+    document.addEventListener("visibilitychange", syncVisibility);
     window.addEventListener("libry:bg", onChange);
     window.addEventListener("storage", onChange);
     return () => {
       window.removeEventListener("libry:bg", onChange);
       window.removeEventListener("storage", onChange);
+      document.removeEventListener("visibilitychange", syncVisibility);
     };
   }, []);
 
-  if (kind === "none" || pathname?.startsWith("/reader")) return null;
+  if (kind === "none" || !GLYPHS[kind] || pathname?.startsWith("/reader")) return null;
 
   const glyphs = GLYPHS[kind];
-  const items = Array.from({ length: 18 }, (_, i) => ({
+  const items = Array.from({ length: 12 }, (_, i) => ({
     glyph: glyphs[i % glyphs.length],
     left: (i * 53) % 100,
     size: 18 + ((i * 13) % 30),

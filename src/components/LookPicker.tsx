@@ -1,20 +1,56 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LOOKS } from "@/lib/themes";
+import { DEFAULT_SEASONS, LOOKS, seasonFor } from "@/lib/themes";
 
 // Genre looks (full palette in dark mode, accent in light mode) plus the
 // switch for automatic seasonal themes. Saved on this device.
 export default function LookPicker() {
   const [look, setLook] = useState<string>("");
   const [seasonal, setSeasonal] = useState(true);
+  const [manualSeason, setManualSeason] = useState("auto");
 
   useEffect(() => {
     try {
       setLook(localStorage.getItem("libry-look") || "");
       setSeasonal(localStorage.getItem("libry-seasonal") !== "off");
+      setManualSeason(localStorage.getItem("libry-manual-season") || "auto");
     } catch { /* storage blocked */ }
   }, []);
+
+  // Keep automatic themes in sync even when the tab stays open across midnight.
+  // Manual previews remain in control until the reader chooses Automatic again.
+  useEffect(() => {
+    if (!seasonal || manualSeason !== "auto") return;
+
+    const applyAutomaticSeason = () => {
+      if (document.visibilityState === "hidden") return;
+      const active = seasonFor(DEFAULT_SEASONS, new Date());
+      if (active) document.documentElement.setAttribute("data-season", active);
+      else document.documentElement.removeAttribute("data-season");
+    };
+
+    applyAutomaticSeason();
+    window.addEventListener("focus", applyAutomaticSeason);
+    document.addEventListener("visibilitychange", applyAutomaticSeason);
+
+    let timer = 0;
+    const scheduleNextMidnight = () => {
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+      timer = window.setTimeout(() => {
+        applyAutomaticSeason();
+        scheduleNextMidnight();
+      }, Math.max(1000, nextMidnight - now.getTime() + 250));
+    };
+    scheduleNextMidnight();
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("focus", applyAutomaticSeason);
+      document.removeEventListener("visibilitychange", applyAutomaticSeason);
+    };
+  }, [seasonal, manualSeason]);
 
   function pick(key: string) {
     setLook(key);
@@ -33,7 +69,29 @@ export default function LookPicker() {
     try { localStorage.setItem("libry-seasonal", next ? "on" : "off"); } catch { /* storage blocked */ }
     // Turning it off removes today's holiday theme right away; turning it on
     // takes effect on the next page load (the boot script checks the date).
-    if (!next) document.documentElement.removeAttribute("data-season");
+    if (!next) {
+      document.documentElement.removeAttribute("data-season");
+      try { localStorage.setItem("libry-manual-season", "auto"); setManualSeason("auto"); } catch { /* storage blocked */ }
+    } else if (manualSeason !== "auto") {
+      document.documentElement.setAttribute("data-season", manualSeason);
+    } else {
+      const active = seasonFor(DEFAULT_SEASONS, new Date());
+      if (active) document.documentElement.setAttribute("data-season", active);
+    }
+  }
+
+  function pickSeason(key: string) {
+    setManualSeason(key);
+    try { localStorage.setItem("libry-manual-season", key); } catch { /* storage blocked */ }
+    if (key === "auto") {
+      document.documentElement.removeAttribute("data-season");
+      if (seasonal) {
+        const active = seasonFor(DEFAULT_SEASONS, new Date());
+        if (active) document.documentElement.setAttribute("data-season", active);
+      }
+      return;
+    }
+    document.documentElement.setAttribute("data-season", key);
   }
 
   const options = [{ key: "", name: "None", accent: "var(--border)", blurb: "Use your accent theme" }, ...LOOKS];
@@ -57,6 +115,14 @@ export default function LookPicker() {
           );
         })}
       </div>
+      <section aria-label="Seasonal theme preview" style={{ display: "grid", gap: "0.55rem" }}>
+        <b style={{ fontFamily: "var(--sans)" }}>Seasonal theme preview</b>
+        <p style={{ color: "var(--muted)", fontSize: "0.82rem" }}>Choose a theme temporarily, or return to the automatic holiday calendar.</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          <button type="button" className="btn btn-outline" aria-pressed={manualSeason === "auto"} onClick={() => pickSeason("auto")}>Automatic</button>
+          {DEFAULT_SEASONS.filter((s) => s.key !== "collab").map((s) => <button key={s.key} type="button" className="btn btn-outline" aria-pressed={manualSeason === s.key} onClick={() => pickSeason(s.key)}>{s.name}</button>)}
+        </div>
+      </section>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", padding: "0.8rem 1rem", border: "1px solid var(--border)", borderRadius: 14 }}>
         <span id="seasonal-lbl" style={{ fontFamily: "var(--sans)", fontSize: "0.9rem" }}>
           <b>Holiday themes</b>
