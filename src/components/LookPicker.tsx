@@ -18,6 +18,33 @@ export default function LookPicker() {
     } catch { /* storage blocked */ }
   }, []);
 
+  // Keep automatic themes in sync even when the tab stays open across midnight.
+  // Manual previews remain in control until the reader chooses Automatic again.
+  useEffect(() => {
+    if (!seasonal || manualSeason !== "auto") return;
+
+    const applyAutomaticSeason = () => {
+      if (document.visibilityState === "hidden") return;
+      const active = seasonFor(DEFAULT_SEASONS, new Date());
+      if (active) document.documentElement.setAttribute("data-season", active);
+      else document.documentElement.removeAttribute("data-season");
+    };
+
+    applyAutomaticSeason();
+    window.addEventListener("focus", applyAutomaticSeason);
+    document.addEventListener("visibilitychange", applyAutomaticSeason);
+
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+    const timer = window.setTimeout(applyAutomaticSeason, Math.max(1000, nextMidnight - now.getTime() + 250));
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("focus", applyAutomaticSeason);
+      document.removeEventListener("visibilitychange", applyAutomaticSeason);
+    };
+  }, [seasonal, manualSeason]);
+
   function pick(key: string) {
     setLook(key);
     try {
