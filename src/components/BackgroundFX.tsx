@@ -21,7 +21,8 @@ export default function BackgroundFX() {
   useEffect(() => {
     const read = () => {
       try {
-        setKind((localStorage.getItem("libry-bg") as BgKind) || "none");
+        const saved = localStorage.getItem("libry-bg");
+        setKind(saved === "shapes" || saved === "books" || saved === "clouds" ? saved : "none");
       } catch {}
     };
     read();
@@ -34,10 +35,10 @@ export default function BackgroundFX() {
     };
   }, []);
 
-  if (kind === "none" || pathname?.startsWith("/reader")) return null;
+  if (kind === "none" || !GLYPHS[kind] || pathname?.startsWith("/reader")) return null;
 
   const glyphs = GLYPHS[kind];
-  const items = Array.from({ length: 18 }, (_, i) => ({
+  const items = Array.from({ length: 12 }, (_, i) => ({
     glyph: glyphs[i % glyphs.length],
     left: (i * 53) % 100,
     size: 18 + ((i * 13) % 30),
