@@ -27,11 +27,18 @@ export default function BackgroundFX() {
     };
     read();
     const onChange = () => read();
+    const syncVisibility = () => {
+      if (document.hidden) document.documentElement.setAttribute("data-page-hidden", "true");
+      else document.documentElement.removeAttribute("data-page-hidden");
+    };
+    syncVisibility();
+    document.addEventListener("visibilitychange", syncVisibility);
     window.addEventListener("libry:bg", onChange);
     window.addEventListener("storage", onChange);
     return () => {
       window.removeEventListener("libry:bg", onChange);
       window.removeEventListener("storage", onChange);
+      document.removeEventListener("visibilitychange", syncVisibility);
     };
   }, []);
 
