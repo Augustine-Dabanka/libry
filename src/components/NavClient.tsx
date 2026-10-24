@@ -118,7 +118,10 @@ export default function NavClient({
     return () => { window.cancelAnimationFrame(frame); unsubscribe(); };
   }, []);
 
-  useEffect(() => { setWishN(wishCount); }, [wishCount]);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setWishN(wishCount));
+    return () => window.cancelAnimationFrame(frame);
+  }, [wishCount]);
   useEffect(() => {
     const onWish = (e: Event) => setWishN((n) => Math.max(0, n + ((e as CustomEvent).detail || 0)));
     window.addEventListener("libry:wishlist-change", onWish);
