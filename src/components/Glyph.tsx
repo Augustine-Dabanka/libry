@@ -3,7 +3,8 @@ import Icon, { type IconName } from "@/components/Icon";
 // Emoji -> Lybry icon. Old data (community icons saved in the database, picker
 // options, notification kinds) still stores emoji; render it through <Glyph>
 // and it shows as a crisp icon in the current icon style instead of whatever
-// emoji font the phone has. Unknown values render as plain text.
+// emoji font the phone has. Unknown UI glyphs fall back to a preset icon; story text
+// is rendered by story components, not this icon-only component.
 export const EMOJI_ICON: Record<string, IconName> = {
   "🌙": "moon", "☀": "sun", "🖥": "monitor", "📖": "book-open", "📕": "book", "📗": "book", "📘": "book",
   "📚": "library-big", "☁": "cloud", "✍": "pen-line", "✒": "feather", "⚡": "zap", "🛒": "shopping-cart",
@@ -31,7 +32,7 @@ export function iconFor(value: string | null | undefined): IconName | null {
 export default function Glyph({
   e,
   size = "1.1em",
-  fallback = "book-open",
+  fallback = "sparkles",
   label,
   style,
 }: {
@@ -41,7 +42,7 @@ export default function Glyph({
   label?: string;
   style?: React.CSSProperties;
 }) {
-  const name = iconFor(e) ?? (e ? null : fallback);
+  const name = iconFor(e) ?? fallback;
   if (name) return <Icon name={name} size={size} label={label} style={style} />;
-  return e ? <span style={style}>{e}</span> : null;
+  return null;
 }

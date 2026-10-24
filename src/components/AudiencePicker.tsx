@@ -3,6 +3,8 @@
 import { useState } from "react";
 import BookMini from "@/components/BookMini";
 import { type Book } from "@/lib/types";
+import { Sparkles } from "lucide-react";
+import Glyph from "@/components/Glyph";
 
 export type AudienceGroup = { key: string; label: string; emoji: string; books: Book[] };
 
@@ -21,7 +23,7 @@ export default function AudiencePicker({ groups }: { groups: AudienceGroup[] }) 
   return (
     <section className="carousel-section">
       <div className="carousel-head" style={{ marginBottom: "0.7rem" }}>
-        <h2 style={{ fontSize: "clamp(1.1rem,3.4vw,1.4rem)", margin: 0 }}>✦ For you</h2>
+        <h2 style={{ fontSize: "clamp(1.1rem,3.4vw,1.4rem)", margin: 0 }}><Sparkles size={18} strokeWidth={2} aria-hidden="true" /> For you</h2>
       </div>
 
       <div style={{ display: "flex", gap: "0.5rem", overflowX: "auto", paddingBottom: "0.5rem", marginBottom: "0.4rem" }}>
@@ -52,7 +54,7 @@ export default function AudiencePicker({ groups }: { groups: AudienceGroup[] }) 
                 whiteSpace: "nowrap",
               }}
             >
-              <span aria-hidden="true">{g.emoji}</span> {g.label}
+              <span aria-hidden="true" style={{ display: "inline-flex" }}><Glyph e={g.emoji} size={16} /></span> {g.label}
             </button>
           );
         })}

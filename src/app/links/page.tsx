@@ -1,5 +1,6 @@
 import { BRAND, socials } from "@/lib/brand";
 import { SocialIcon } from "@/components/SocialIcons";
+import { ArrowRight } from "lucide-react";
 
 import Glyph from "@/components/Glyph";
 export const metadata = {
@@ -63,7 +64,7 @@ export default function LinksPage() {
                 <span style={{ display: "block", fontFamily: "var(--sans)", fontWeight: 700, fontSize: "1rem", color: l.primary ? "#12100E" : "var(--ivory)" }}>{l.title}</span>
                 <span style={{ display: "block", fontFamily: "var(--sans)", fontSize: "0.82rem", color: l.primary ? "rgba(18,16,14,0.72)" : "var(--muted)" }}>{l.sub}</span>
               </span>
-              <span style={{ color: l.primary ? "#12100E" : "var(--muted)", fontSize: "1.1rem" }}>→</span>
+              <span style={{ color: l.primary ? "#12100E" : "var(--muted)", display: "inline-flex", flexShrink: 0 }}><ArrowRight size={18} strokeWidth={2} aria-hidden="true" /></span>
             </a>
           ))}
         </div>

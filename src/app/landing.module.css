@@ -153,3 +153,39 @@
 .footSocial svg { width: 17px; height: 17px; }
 .footBar { border-top: 1px solid var(--line2); padding-top: 1.4rem; display: flex; justify-content: space-between; gap: 0.6rem 1rem; flex-wrap: wrap; color: var(--muted); font-size: 0.82rem; }
 @media (max-width: 560px) { .footBar { justify-content: center; text-align: center; } }
+
+
+/* Warm, low-contrast gradient motion: an ambient layer, never a text overlay. */
+@keyframes lybry-landing-gradient {
+  0%, 100% { background-position: 0% 50%, 100% 50%, 0% 50%; }
+  50% { background-position: 100% 50%, 0% 50%, 100% 50%; }
+}
+@keyframes lybry-cta-sheen {
+  0%, 60%, 100% { background-position: 180% 0, 0% 50%; }
+  80% { background-position: -80% 0, 100% 50%; }
+}
+.hero { isolation: isolate; }
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: -14% -6%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 15% 20%, color-mix(in srgb, var(--gold) 13%, transparent), transparent 44%),
+    radial-gradient(ellipse at 84% 74%, rgba(232, 106, 64, .10), transparent 43%),
+    linear-gradient(120deg, transparent, rgba(200, 71, 31, .035), transparent);
+  background-size: 160% 160%, 160% 160%, 220% 220%;
+  animation: lybry-landing-gradient 20s ease-in-out infinite;
+}
+.btnGold {
+  background-image:
+    linear-gradient(110deg, transparent 0%, rgba(255,255,255,.04) 35%, rgba(255,255,255,.22) 50%, rgba(255,255,255,.025) 65%, transparent 100%),
+    linear-gradient(125deg, var(--gold), var(--goldSoft), var(--gold));
+  background-size: 240% 100%, 220% 220%;
+  animation: lybry-cta-sheen 9s ease-in-out infinite;
+}
+.btnGold:hover { filter: saturate(1.06) brightness(1.025); }
+@media (prefers-reduced-motion: reduce) {
+  .hero::before, .btnGold { animation: none !important; }
+}

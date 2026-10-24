@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-import Glyph from "@/components/Glyph";
+import { Monitor, Moon, Sun } from "lucide-react";
 type Mode = "dark" | "light" | "system";
 
 function apply(mode: Mode) {
@@ -17,9 +16,27 @@ export default function AppearanceMode() {
   const [mode, setMode] = useState<Mode>("light");
 
   useEffect(() => {
-    try {
-      setMode((localStorage.getItem("libry-theme") as Mode) || "light");
-    } catch {}
+    const sync = () => {
+      try { setMode((localStorage.getItem("libry-theme") as Mode) || "light"); } catch {}
+    };
+    const frame = window.requestAnimationFrame(sync);
+    window.addEventListener("storage", sync);
+    window.addEventListener("libry:theme-change", sync);
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onSystemChange = () => {
+      try {
+        if (localStorage.getItem("libry-theme") === "system") {
+          document.documentElement.setAttribute("data-theme", media.matches ? "dark" : "light");
+        }
+      } catch {}
+    };
+    media.addEventListener("change", onSystemChange);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("libry:theme-change", sync);
+      media.removeEventListener("change", onSystemChange);
+    };
   }, []);
 
   function pick(m: Mode) {
@@ -30,10 +47,10 @@ export default function AppearanceMode() {
     apply(m);
   }
 
-  const opts: { v: Mode; label: string; icon: string }[] = [
-    { v: "light", label: "Light", icon: "☀️" },
-    { v: "dark", label: "Dark", icon: "🌙" },
-    { v: "system", label: "System", icon: "🖥️" },
+  const opts = [
+    { v: "light" as const, label: "Light", Icon: Sun },
+    { v: "dark" as const, label: "Dark", Icon: Moon },
+    { v: "system" as const, label: "System", Icon: Monitor },
   ];
 
   return (
@@ -56,7 +73,7 @@ export default function AppearanceMode() {
             color: mode === o.v ? "var(--gold)" : "var(--ivory-muted)",
           }}
         >
-          <span style={{ marginRight: "0.4rem", display: "inline-flex", verticalAlign: "middle" }}><Glyph e={o.icon} /></span>
+          <span style={{ marginRight: "0.4rem", display: "inline-flex", verticalAlign: "middle" }}><o.Icon size={18} strokeWidth={2} fill={mode === o.v && o.v !== "system" ? "currentColor" : "none"} /></span>
           {o.label}
         </button>
       ))}
