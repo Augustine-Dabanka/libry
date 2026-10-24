@@ -650,10 +650,17 @@ export default function ReaderView({
         </>
       ) : paragraphs.length > 0 ? (
         paragraphs.map((p, i) => {
+          const checkpoint = quizIndexes.get(i);
+          const withCheckpoint = (node: React.ReactNode) => (
+            <Fragment key={i}>
+              {node}
+              {checkpoint ? <MidReadQuiz bookId={bookId} checkpoint={checkpoint} /> : null}
+            </Fragment>
+          );
           const md = p.match(/^!\[(.*?)\]\((https?:\/\/[^\s)]+)\)$/);
           const url = md ? md[2] : /^https?:\/\/\S+\.(png|jpe?g|gif|webp|svg)(\?\S*)?$/i.test(p) ? p : null;
           if (url) {
-            return (
+            return withCheckpoint(
               <figure key={i} style={{ margin: "1.6rem 0" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt={md?.[1] || ""} style={{ maxWidth: "100%", borderRadius: 12, display: "block", margin: "0 auto" }} />
@@ -665,7 +672,7 @@ export default function ReaderView({
           }
           const isHeading = /^chapter\b/i.test(p) && p.length <= 60;
           if (isHeading) {
-            return (
+            return withCheckpoint(
               <div key={i} className="rd-chapter">
                 <div className="rd-orn" aria-hidden="true">❦ ❦ ❦</div>
                 <h2 id={`rd-ch-${i}`} style={{ fontFamily: "var(--serif)", textAlign: "center", fontSize: `${Math.min(1.6, fontSize * 1.25)}rem`, lineHeight: 1.3, margin: "0.4rem 0 1.4rem", scrollMarginTop: "70px" }}>{p}</h2>
@@ -674,7 +681,7 @@ export default function ReaderView({
           }
           const cs = commentsByPara.get(i) ?? [];
           const showChip = cs.length > 0 || p.length >= 120;
-          return (
+          return withCheckpoint(
             <p key={i} className={`rd-p${i === firstBodyIndex ? " rd-drop" : ""}`} style={{ fontFamily: "var(--serif)", fontSize: `${fontSize}rem`, lineHeight: 1.95, marginBottom: "1.3rem" }}>
               {p}
               {showChip ? (
