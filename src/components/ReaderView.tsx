@@ -89,12 +89,12 @@ const READER_ENHANCE_CSS = `
    the Contents drawer is open (the overlay used to cover the bar and swallow the
    Back click). */
 .rd-toc-overlay {
-  position: fixed; top: 54px; left: 0; right: 0; bottom: 0; z-index: 40; background: rgba(0,0,0,0.4);
+  position: fixed; top: 54px; left: 0; right: 0; bottom: 0; z-index: var(--z-drawer, 400); background: rgba(0,0,0,0.4);
   opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
 }
 .rd-toc-overlay.open { opacity: 1; pointer-events: auto; }
 .rd-toc-panel {
-  position: fixed; top: 54px; bottom: 0; left: 0; width: min(320px, 82vw); z-index: 41;
+  position: fixed; top: 54px; bottom: 0; left: 0; width: min(320px, 82vw); z-index: var(--z-drawer-panel, 410);
   padding: 1.2rem 1.2rem 1.4rem; overflow-y: auto; transform: translateX(-100%); visibility: hidden;
   transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), visibility 0.28s;
   box-shadow: 12px 0 40px -12px rgba(0,0,0,0.5);
