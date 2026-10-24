@@ -2632,3 +2632,18 @@ button[aria-busy="true"],
 :root[data-motion="reduce"] .lybry-gradient-text {
   animation: none !important;
 }
+
+
+/* Single background-position timeline per surface avoids competing CSS animations. */
+@keyframes lybry-button-motion {
+  0%, 100% { background-position: 180% 0, 0 0, 0% 50%; }
+  58% { background-position: 180% 0, 0 0, 48% 50%; }
+  78% { background-position: -80% 0, 0 0, 100% 50%; }
+}
+.btn-gold,
+.btn-terracotta {
+  animation: lybry-button-motion 8s ease-in-out infinite;
+}
+.btn-outline {
+  animation: lybry-button-motion 10s ease-in-out infinite;
+}
