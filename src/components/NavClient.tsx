@@ -131,10 +131,10 @@ export default function NavClient({
 
   useEffect(() => {
     const syncTheme = () => setActiveTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
-    syncTheme();
+    const frame = window.requestAnimationFrame(syncTheme);
     window.addEventListener("storage", syncTheme);
     window.addEventListener("libry:theme-change", syncTheme);
-    return () => { window.removeEventListener("storage", syncTheme); window.removeEventListener("libry:theme-change", syncTheme); };
+    return () => { window.cancelAnimationFrame(frame); window.removeEventListener("storage", syncTheme); window.removeEventListener("libry:theme-change", syncTheme); };
   }, []);
 
   function toggleTheme() {
