@@ -236,3 +236,12 @@
     animation: none !important;
   }
 }
+
+@keyframes landing-button-motion {
+  0%, 100% { background-position: 180% 0, 0% 50%; }
+  58% { background-position: 180% 0, 48% 50%; }
+  78% { background-position: -80% 0, 100% 50%; }
+}
+.btnGold {
+  animation: landing-button-motion 8s ease-in-out infinite;
+}
