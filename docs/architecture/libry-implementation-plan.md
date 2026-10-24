@@ -34,8 +34,9 @@ Status: planning and implementation branch only. Do not enable production paymen
 
 ## Staff authorization baseline
 
-- `ultra_admin`: CEO-level administration and staff/security controls.
-- `super_admin`: broad administration, unable to change Ultra Admin or Super Admin roles.
+- `ceo_ultra_admin`: CEO-only owner authority, including security settings and all staff roles. Never assign this role through ordinary staff management.
+- `ultra_admin`: standard Ultra Admin with broad administration, but unable to assign or promote anyone to CEO Ultra Admin or change CEO-only controls.
+- `super_admin`: broad administration, unable to change CEO Ultra Admin or standard Ultra Admin roles.
 - `admin`: general operations and approved permissions.
 - `manager`: limited operational management.
 - `moderator`: content and report moderation.
@@ -45,7 +46,7 @@ Status: planning and implementation branch only. Do not enable production paymen
 - `creator`: own content, creator tools, and eligible monetization; no admin access.
 - `reader`: reader product access only.
 
-The existing repository role names are retained for compatibility. Before expanding permissions, reconcile this baseline with `src/lib/staff.ts`, all server actions, and RLS policies. Keep high-impact actions least-privilege and auditable.
+The existing repository role names are retained for compatibility; `ultra_admin` now means the standard edition, and `ceo_ultra_admin` is a separate highest role. Migration 0050 expands both `staff_roles` and `staff_roster` constraints while preserving existing role assignments. The application role map and all server actions/RLS policies must be reviewed together. Keep high-impact actions least-privilege and auditable.
 
 ## Release gates
 
