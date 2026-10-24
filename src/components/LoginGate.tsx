@@ -424,10 +424,10 @@ export default function LoginGate({
         padding: "2rem",
         position: "relative",
         overflow: "hidden",
-        background: "var(--charcoal)",
+        background: "radial-gradient(900px 620px at 12% 8%, color-mix(in srgb, var(--gold) 18%, transparent), transparent 62%), radial-gradient(760px 560px at 92% 88%, rgba(91, 67, 126, 0.18), transparent 62%), var(--charcoal)",
       }}
     >
-      {/* ambient floating motes */}
+      {/* cinematic ambient lighting and floating motes */}
       <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
         {[
           { top: "18%", left: "14%", s: 26, r: -12 },
@@ -451,11 +451,13 @@ export default function LoginGate({
           position: "relative",
           width: "100%",
           maxWidth: 440,
-          background: "var(--stone)",
-          border: "2px solid var(--border)",
+          background: "color-mix(in srgb, var(--stone) 76%, transparent)",
+          border: "1px solid color-mix(in srgb, var(--ivory) 18%, transparent)",
           borderRadius: 28,
           padding: "2.3rem 2.1rem",
-          boxShadow: "0 6px 0 var(--edge)",
+          boxShadow: "0 28px 90px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.10)",
+          backdropFilter: "blur(26px) saturate(145%)",
+          WebkitBackdropFilter: "blur(26px) saturate(145%)",
           overflow: "hidden",
         }}
       >
