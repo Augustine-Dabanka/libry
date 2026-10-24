@@ -159,7 +159,7 @@ img {
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: var(--z-nav, 300);
   backdrop-filter: blur(14px);
 }
 
@@ -334,7 +334,7 @@ img {
   position: absolute; right: 0; top: calc(100% + 0.6rem);
   background: var(--stone); border: 1px solid var(--border);
   border-radius: 12px; padding: 0.4rem; min-width: 200px;
-  box-shadow: var(--shadow); display: none; z-index: 1100;
+  box-shadow: var(--shadow); display: none; z-index: var(--z-dropdown, 200);
 }
 .user-menu.open { display: block; animation: menuIn 0.16s ease; }
 @keyframes menuIn { from { opacity: 0; transform: translateY(0); } to { opacity: 1; transform: translateY(0); } }
@@ -397,7 +397,7 @@ img {
   background: var(--charcoal);
   border-bottom: 1px solid var(--border);
   padding: 1.2rem 5% 1.5rem;
-  z-index: 999;
+  z-index: var(--z-nav, 300);
   flex-direction: column;
   gap: 0.6rem;
   box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.55);
@@ -513,7 +513,7 @@ img {
 .mob-user-menu {
   position: absolute; top: calc(100% + 8px); right: 0; min-width: 210px;
   background: var(--stone); border: 1px solid var(--border); border-radius: 12px;
-  padding: 0.4rem; box-shadow: var(--shadow); z-index: 1002;
+  padding: 0.4rem; box-shadow: var(--shadow); z-index: var(--z-dropdown, 200);
   opacity: 0; visibility: hidden; transform: translateY(6px);
   transition: opacity 0.16s ease, transform 0.18s ease, visibility 0.16s;
 }
@@ -535,7 +535,7 @@ body.has-rail { padding-left: var(--rail-w); }
   position: fixed;
   top: 0; left: 0; bottom: 0;
   width: var(--rail-w);
-  z-index: 1200;
+  z-index: var(--z-nav, 300);
   display: flex;
   flex-direction: column;
   padding: 0.75rem 0.5rem 0.9rem;
@@ -634,7 +634,7 @@ body.has-rail { padding-left: var(--rail-w); }
   box-shadow: var(--shadow);
   opacity: 0; visibility: hidden; transform: translateX(-6px);
   transition: opacity 0.16s ease, transform 0.18s ease, visibility 0.16s;
-  z-index: 20;
+  z-index: var(--z-dropdown, 200);
 }
 .rail-item-wrap:hover .rail-flyout, .rail-item-wrap:focus-within .rail-flyout { opacity: 1; visibility: visible; transform: none; }
 .rail-flyout h6 { font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; font-weight: 700; }
@@ -650,7 +650,7 @@ body.has-rail { padding-left: var(--rail-w); }
   background: var(--stone); border: 1px solid var(--border); box-shadow: var(--shadow);
   opacity: 0; visibility: hidden; transform: translateY(6px);
   transition: opacity 0.16s ease, transform 0.18s ease, visibility 0.16s;
-  z-index: 30;
+  z-index: var(--z-dropdown, 200);
 }
 .rail-usermenu.open { opacity: 1; visibility: visible; transform: none; }
 .rail-usermenu-head { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.55rem 0.7rem; border-bottom: 1px solid var(--border); margin-bottom: 0.35rem; }
@@ -1169,7 +1169,7 @@ footer a:hover {
 .nav-dd-btn .caret { font-size: 0.7rem; }
 .nav-dd-menu { position: absolute; top: calc(100% + 8px); left: 0; min-width: 230px; background: var(--stone);
   border: 1px solid var(--border); border-radius: 12px; padding: 0.4rem; box-shadow: 0 22px 50px rgba(0,0,0,0.45);
-  display: none; z-index: 1200; }
+  display: none; z-index: var(--z-dropdown, 200); }
 .nav-dd-menu.open { display: block; }
 .nav-dd-menu a { display: block; padding: 0.6rem 0.7rem; border-radius: 8px; color: var(--ivory);
   font-family: var(--sans); font-size: 0.9rem; }
@@ -1187,7 +1187,7 @@ footer a:hover {
 .nav-mega { position: absolute; top: calc(100% + 8px); left: 0; display: grid;
   grid-template-columns: minmax(220px, 2fr) 1fr 1fr; gap: 0.2rem 1.8rem;
   min-width: 540px; background: var(--stone); border: 1px solid var(--border);
-  border-radius: 12px; padding: 1.1rem 1.3rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 60;
+  border-radius: 12px; padding: 1.1rem 1.3rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: var(--z-dropdown, 200);
   opacity: 0; visibility: hidden; transform: translateY(-8px); pointer-events: none;
   transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.4,0,0.2,1), visibility 0.2s; }
 .nav-mega.open { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
@@ -1253,7 +1253,7 @@ footer a:hover {
   font-family: var(--sans); font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
 
 /* Cookie consent banner */
-.cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2000; background: var(--stone);
+.cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-cookie, 600); background: var(--stone);
   border-top: 1px solid var(--border); box-shadow: 0 -12px 44px -22px rgba(0,0,0,0.65); }
 .cookie-inner { max-width: 1100px; margin: 0 auto; padding: 1rem 5%; display: flex; align-items: center;
   gap: 1.3rem; flex-wrap: wrap; }
@@ -1604,7 +1604,7 @@ body { overflow-x: clip; }
 /* ══════════ Glass welcome (AppSplash) ══════════ */
 /* Hidden unless <html class="leep-splash"> (set before paint after sign-up/log-in).
    The page loads underneath, blurred; on exit the blur clears and the card floats away. */
-.app-splash { display: none; position: fixed; inset: 0; z-index: 9999; place-items: center; overflow: hidden;
+.app-splash { display: none; position: fixed; inset: 0; z-index: var(--z-splash, 700); place-items: center; overflow: hidden;
   background: color-mix(in srgb, var(--charcoal, #FFFCF7) 55%, transparent);
   -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%); }
 html.leep-splash .app-splash { display: grid; animation: as-in .45s ease both, as-failsafe 0.3s ease 9s forwards; }
@@ -1696,7 +1696,7 @@ html.leep-splash-out .as-glass { animation: as-card-out .6s cubic-bezier(.22,1,.
 .mobtab-label { line-height: 1; }
 @media (max-width: 900px) {
   .mobtabs {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-mobile-nav, 300);
     display: flex; justify-content: space-around; align-items: stretch;
     background: var(--stone);
     border-top: 2px solid var(--border);
@@ -1806,7 +1806,7 @@ html.leep-splash-out .as-glass { animation: as-card-out .6s cubic-bezier(.22,1,.
    8s loop: "?" (0-22%) -> flips sideways to the koala with a "?" overhead
    (28%) -> the "?" pops away (48-56%) -> the koala waves (56-84%) -> flips
    back (92%) -> repeats. Transform/opacity only. */
-.hb-wrap { position: fixed; right: clamp(0.9rem, 3vw, 1.5rem); bottom: calc(1.1rem + env(safe-area-inset-bottom)); z-index: 60; display: flex; flex-direction: column; align-items: flex-end; gap: 0.7rem; }
+.hb-wrap { position: fixed; right: clamp(0.9rem, 3vw, 1.5rem); bottom: calc(1.1rem + env(safe-area-inset-bottom)); z-index: var(--z-floating, 350); display: flex; flex-direction: column; align-items: flex-end; gap: 0.7rem; }
 @media (max-width: 900px) { body.has-mobtabs .hb-wrap { bottom: calc(56px + 0.9rem + env(safe-area-inset-bottom)); } }
 .hb-fab { width: 56px; height: 56px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; perspective: 420px; -webkit-tap-highlight-color: transparent; transition: transform 120ms ease; }
 .hb-fab:active { transform: scale(0.92); }
@@ -2123,7 +2123,7 @@ html.ui-switching * { transition: background-color .35s ease, box-shadow .35s ea
 @media (prefers-reduced-motion: reduce) { .su-shake, .su-stamp { animation: none; } }
 
 /* Guest "save your progress" bar (GuestSaveBanner). Sits above the phone tabs. */
-.guest-save { position: fixed; z-index: 54; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(560px, calc(100% - 24px));
+.guest-save { position: fixed; z-index: var(--z-floating, 350); left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(560px, calc(100% - 24px));
   display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 0.6rem 0.7rem 1rem; border-radius: 16px; background: var(--stone); color: var(--ivory);
   border: 2px solid var(--border); box-shadow: 0 4px 0 var(--edge), 0 12px 30px rgba(0,0,0,0.12); font-family: var(--sans); font-size: 0.92rem; }
 .guest-save > div { flex: 1; }
@@ -2186,7 +2186,7 @@ html.has-amb { background: var(--charcoal); }
 .amb-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
 .amb-canvas, .amb-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .amb-scrim { position: absolute; inset: 0; background: color-mix(in srgb, var(--charcoal) 62%, transparent); }
-.amb-pill { position: fixed; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 60; display: flex; align-items: center; gap: .55rem; padding: .45rem .5rem .45rem .8rem; border-radius: 999px;
+.amb-pill { position: fixed; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: var(--z-floating, 350); display: flex; align-items: center; gap: .55rem; padding: .45rem .5rem .45rem .8rem; border-radius: 999px;
   background: color-mix(in srgb, var(--stone) 88%, transparent); border: 2px solid var(--edge); box-shadow: 0 4px 0 var(--edge); font-family: var(--sans); font-weight: 800; font-size: .82rem; color: var(--ivory);
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); max-width: calc(100vw - 32px); }
 .amb-pill .amb-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2199,7 +2199,7 @@ html.has-amb { background: var(--charcoal); }
 @keyframes amb-eq { 0%, 100% { height: 4px; } 50% { height: 14px; } }
 
 /* ══════════ Settings tabs ══════════ */
-.st-tabs { display: flex; gap: .35rem; overflow-x: auto; scrollbar-width: none; padding: .3rem; margin-bottom: 1.2rem; border-radius: 18px; background: var(--charcoal); border: 2px solid var(--border); position: sticky; top: calc(64px + env(safe-area-inset-top)); z-index: 5; }
+.st-tabs { display: flex; gap: .35rem; overflow-x: auto; scrollbar-width: none; padding: .3rem; margin-bottom: 1.2rem; border-radius: 18px; background: var(--charcoal); border: 2px solid var(--border); position: sticky; top: calc(64px + env(safe-area-inset-top)); z-index: var(--z-sticky, 100); }
 .st-tabs::-webkit-scrollbar { display: none; }
 .st-tab { flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; border: none; border-radius: 14px; padding: .6rem .9rem; background: transparent; color: var(--muted); font-family: var(--sans); font-weight: 900; font-size: .9rem; cursor: pointer; white-space: nowrap; }
 .st-tab[aria-selected="true"] { background: var(--stone); color: var(--gold); box-shadow: 0 3px 0 var(--edge); }
@@ -2317,4 +2317,112 @@ html.has-amb { background: var(--charcoal); }
 @media (max-width: 600px) {
   .bgfx-item:nth-child(n+7) { display: none; }
   .bg-cloud { filter: none; }
+}
+
+
+/* ══════════ Site-wide layout and stacking contract ══════════
+   Keep these levels centralized so menus, navigation, drawers and system
+   overlays cannot drift into competing arbitrary z-index values. */
+:root {
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-nav: 300;
+  --z-mobile-nav: 300;
+  --z-floating: 350;
+  --z-drawer: 400;
+  --z-drawer-panel: 410;
+  --z-modal: 500;
+  --z-cookie: 600;
+  --z-splash: 700;
+}
+
+/* Prevent grid/flex children from forcing pages wider than the viewport. */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+}
+
+body {
+  overflow-x: clip;
+}
+
+main,
+[role="main"],
+main > *,
+.book-grid,
+.book-grid-mini,
+.book-hero,
+.book-detail,
+.stats-grid,
+.docs-grid,
+.community-room-grid,
+.communities-grid,
+.product-grid {
+  min-width: 0;
+}
+
+/* Navigation and account menus share the same predictable layer. */
+.navbar,
+.railnav,
+#mobile-menu {
+  z-index: var(--z-nav);
+}
+
+.user-menu,
+.mob-user-menu,
+.nav-dd-menu,
+.nav-mega,
+.nav-ac,
+.rail-flyout,
+.rail-usermenu {
+  z-index: var(--z-dropdown);
+}
+
+.mobtabs {
+  z-index: var(--z-mobile-nav);
+}
+
+.hb-wrap,
+.guest-save,
+.amb-pill {
+  z-index: var(--z-floating);
+}
+
+.cookie-banner {
+  z-index: var(--z-cookie);
+}
+
+.app-splash {
+  z-index: var(--z-splash);
+}
+
+/* Keep keyboard focus visible even when a control is inside a dense layout. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline-color: var(--gold);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .section,
+  .book-detail {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .data-table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cookie-inner {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
 }
