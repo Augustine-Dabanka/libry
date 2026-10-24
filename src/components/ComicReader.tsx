@@ -23,6 +23,7 @@ export default function ComicReader({
   signedIn = false,
   price,
   defaultMode = "scroll",
+  recommendations = [],
 }: {
   bookId: string;
   title: string;
@@ -34,6 +35,7 @@ export default function ComicReader({
   signedIn?: boolean;
   price?: number | null;
   defaultMode?: Mode;
+  recommendations?: { slug: string; title: string; category: string }[];
 }) {
   const [mode, setModeState] = useState<Mode>(defaultMode);
   // Remember the reader's layout choice per comic.
@@ -196,6 +198,27 @@ export default function ComicReader({
             ),
           )}
           {LockCta}
+          <section style={{ margin: "2rem 1rem 3rem", padding: "1.5rem", border: "1px solid var(--border)", borderRadius: 18, background: "var(--stone)", textAlign: "center" }}>
+            <div style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontSize: ".7rem", fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase" }}>The End</div>
+            <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.7rem", margin: ".45rem 0" }}>You finished {title}</h2>
+            <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", lineHeight: 1.6, maxWidth: 480, margin: "0 auto 1.2rem" }}>Keep the story going with another original visual adventure.</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: ".65rem", flexWrap: "wrap" }}>
+              <a href="/comics" className="btn btn-gold">Explore all comics →</a>
+              <a href="/discover" className="btn btn-outline">Discover books</a>
+            </div>
+            {recommendations.length ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: ".75rem", marginTop: "1.5rem", textAlign: "left" }}>
+                {recommendations.slice(0, 3).map((item) => (
+                  <a key={item.slug} href={"/comics/original/" + item.slug} style={{ textDecoration: "none", color: "var(--ivory)" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={"/api/comic-art?slug=" + encodeURIComponent(item.slug) + "&page=0"} alt={"Cover of " + item.title} loading="lazy" style={{ display: "block", width: "100%", aspectRatio: "2 / 3", objectFit: "cover", borderRadius: 9, border: "1px solid var(--border)" }} />
+                    <div style={{ fontFamily: "var(--serif)", marginTop: ".4rem", fontSize: ".9rem", lineHeight: 1.3 }}>{item.title}</div>
+                    <div style={{ fontFamily: "var(--sans)", marginTop: ".2rem", fontSize: ".72rem", color: "var(--muted)" }}>{item.category}</div>
+                  </a>
+                ))}
+              </div>
+            ) : null}
+          </section>
           <div style={{ height: "3rem" }} />
         </div>
       ) : (
