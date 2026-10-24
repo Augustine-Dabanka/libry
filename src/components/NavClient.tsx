@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Moon, Sun } from "lucide-react";
+import { BookOpen, Bell, Compass, Heart, Home, LibraryBig, Medal, Moon, PenLine, Settings, ShoppingCart, Sparkles, Sun, Users, type LucideIcon } from "lucide-react";
 import CartDrawer from "@/components/CartDrawer";
 import LogoutSurvey from "@/components/LogoutSurvey";
 import StreakCard from "@/components/StreakCard";
@@ -12,25 +12,33 @@ import LibryIcon from "@/components/Icon";
 import GuestSync from "@/components/GuestSync";
 import GuestSaveBanner from "@/components/GuestSaveBanner";
 
-/* ── line icons (22px, stroke = currentColor) ─────────────────────────────── */
+/* Shared Lucide icon presets: consistent geometry, with a filled active state. */
 type IconName = "home" | "browse" | "spark" | "compass" | "library" | "medal" | "pen" | "heart" | "cart" | "theme" | "cog" | "community" | "bell";
-function Icon({ name }: { name: IconName }) {
-  const p: React.SVGProps<SVGSVGElement> = { width: 21, height: 21, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
-  switch (name) {
-    case "home": return (<svg {...p}><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h14V9.5" /><path d="M9.5 21v-6h5v6" /></svg>);
-    case "browse": return (<svg {...p}><rect x="3" y="4" width="7" height="16" rx="1.2" /><path d="M13 4h3.4a1 1 0 0 1 1 1l2.2 13a1 1 0 0 1-.8 1.16l-2.5.42a1 1 0 0 1-1.15-.8L13 4Z" /></svg>);
-    case "spark": return (<svg {...p}><path d="M12 3v4M12 17v4M3 12h4M17 12h4M12 8.5 13.4 11 16 12l-2.6 1L12 15.5 10.6 13 8 12l2.6-1L12 8.5Z" /></svg>);
-    case "compass": return (<svg {...p}><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" /></svg>);
-    case "library": return (<svg {...p}><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-3.2L5 20V5a1 1 0 0 1 1-1Z" /></svg>);
-    case "medal": return (<svg {...p}><circle cx="12" cy="14" r="5" /><path d="M9 9.2 7 3h10l-2 6.2M12 12v1.6l1.3.8-.5-1.5" /></svg>);
-    case "pen": return (<svg {...p}><path d="M15.5 5.5 18.5 8.5M4 20l1-4L16 5a1.4 1.4 0 0 1 2 0l1 1a1.4 1.4 0 0 1 0 2L8 19l-4 1Z" /></svg>);
-    case "heart": return (<svg {...p}><path d="M12 20s-7-4.3-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7-2.3c0 5-7 9.3-7 9.3Z" /></svg>);
-    case "cart": return (<svg {...p}><path d="M4 5h2l1.6 10.5a1 1 0 0 0 1 .85h8.2a1 1 0 0 0 1-.8L20 8H7" /><circle cx="9.5" cy="20" r="1.1" /><circle cx="17.5" cy="20" r="1.1" /></svg>);
-    case "theme": return (<svg {...p}><circle cx="12" cy="12" r="4.2" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" /></svg>);
-    case "cog": return (<svg {...p}><circle cx="12" cy="12" r="3" /><path d="M12 3v2.2M12 18.8V21M4.2 7l1.9 1.1M17.9 15.9 19.8 17M4.2 17l1.9-1.1M17.9 8.1 19.8 7" /></svg>);
-    case "community": return (<svg {...p}><circle cx="9" cy="9" r="3" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 6.2a3 3 0 0 1 0 5.6M17.5 19a5.5 5.5 0 0 0-3-4.9" /></svg>);
-    case "bell": return (<svg {...p}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></svg>);
-  }
+const NAV_ICONS: Record<IconName, LucideIcon> = {
+  home: Home,
+  browse: BookOpen,
+  spark: Sparkles,
+  compass: Compass,
+  library: LibraryBig,
+  medal: Medal,
+  pen: PenLine,
+  heart: Heart,
+  cart: ShoppingCart,
+  theme: Sun,
+  cog: Settings,
+  community: Users,
+  bell: Bell,
+};
+function Icon({ name, active = false }: { name: IconName; active?: boolean }) {
+  const Preset = NAV_ICONS[name];
+  return (
+    <Preset
+      size={21}
+      strokeWidth={active ? 2.2 : 1.7}
+      fill={active ? "currentColor" : "none"}
+      aria-hidden="true"
+    />
+  );
 }
 
 type RailItem = { href: string; label: string; icon: IconName; match?: (path: string, q: string) => boolean };
@@ -190,7 +198,7 @@ export default function NavClient({
               return (
                 <div key={it.href} className="rail-item-wrap" data-dd-root>
                   <a href={it.href} className={`rail-item${active ? " active" : ""}`} aria-current={active ? "page" : undefined}>
-                    <span className="rail-ico"><Icon name={it.icon} /></span>
+                    <span className="rail-ico"><Icon name={it.icon} active={active} /></span>
                     <span className="rail-label">{it.label}</span>
                   </a>
                   <div className="rail-flyout" role="menu">
@@ -222,7 +230,7 @@ export default function NavClient({
                 <div key={it.href} className="rail-item-wrap" data-dd-root>
                   <a href={it.href} className={`rail-item${active ? " active" : ""}`} aria-current={active ? "page" : undefined}>
                     <span className="rail-ico">
-                      <Icon name={it.icon} />
+                      <Icon name={it.icon} active={active} />
                       {notifN > 0 ? <span className="rail-dot">{notifN}</span> : null}
                     </span>
                     <span className="rail-label">{it.label}</span>
@@ -378,7 +386,7 @@ export default function NavClient({
           const on = pathname === t.href || pathname.startsWith(t.href + "/");
           return (
             <a key={t.href} href={t.href} className={`mobtab${on ? " active" : ""}`} aria-current={on ? "page" : undefined}>
-              <span className="mobtab-ico">{t.icon ? <Icon name={t.icon} /> : <span className="mobtab-avatar">{signedIn ? avatar : "+"}</span>}</span>
+              <span className="mobtab-ico">{t.icon ? <Icon name={t.icon} active={on} /> : <span className="mobtab-avatar">{signedIn ? avatar : "+"}</span>}</span>
               <span className="mobtab-label">{t.label}</span>
             </a>
           );
