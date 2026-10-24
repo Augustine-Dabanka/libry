@@ -2521,3 +2521,173 @@ button[aria-busy="true"],
     transform: none !important;
   }
 }
+
+
+/* ══════════ Fabric-inspired tactile button surface ══════════
+   A restrained, layered texture gives primary actions a soft, pressed
+   material feel without images, canvas, JavaScript, or a permanent animation. */
+.btn {
+  --btn-fabric-radius: 14px;
+  border-radius: var(--btn-fabric-radius);
+  background-repeat: no-repeat, repeat;
+  background-position: center, 0 0;
+  background-size: 100% 100%, 8px 8px;
+  transform-origin: 50% 55%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  will-change: transform;
+}
+
+.btn-gold,
+.btn-terracotta {
+  background-image:
+    linear-gradient(155deg, rgba(255,255,255,.19), transparent 42%, rgba(0,0,0,.11)),
+    repeating-linear-gradient(112deg, rgba(255,255,255,.035) 0 1px, rgba(0,0,0,.035) 1px 2px, transparent 2px 5px);
+  background-blend-mode: soft-light, overlay;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -2px 0 rgba(0,0,0,.08),
+    0 4px 0 var(--gold-shade);
+  transition:
+    transform 180ms cubic-bezier(.2,.8,.2,1),
+    scale 180ms cubic-bezier(.2,.8,.2,1),
+    border-radius 220ms cubic-bezier(.2,.8,.2,1),
+    background-position 260ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+.btn-outline {
+  background-image:
+    linear-gradient(155deg, rgba(255,255,255,.07), transparent 48%, rgba(0,0,0,.035)),
+    repeating-linear-gradient(112deg, rgba(255,255,255,.025) 0 1px, transparent 1px 5px);
+  background-blend-mode: soft-light, normal;
+  transition:
+    transform 180ms cubic-bezier(.2,.8,.2,1),
+    scale 180ms cubic-bezier(.2,.8,.2,1),
+    border-radius 220ms cubic-bezier(.2,.8,.2,1),
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-gold:hover:not(:disabled):not([aria-disabled="true"]),
+  .btn-terracotta:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-position: center, 4px 2px;
+    border-radius: 17px 13px 16px 14px;
+    filter: saturate(1.06) brightness(1.025);
+  }
+
+  .btn-outline:hover:not(:disabled):not([aria-disabled="true"]) {
+    border-radius: 16px 13px 15px 14px;
+    background-position: center, 3px 2px;
+  }
+}
+
+/* The tactile response is triggered by a real press/tap, not hover alone. */
+.btn-gold:active:not(:disabled):not([aria-disabled="true"]),
+.btn-terracotta:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(3px) scale(.985);
+  scale: 1;
+  border-radius: 19px 13px 17px 14px;
+  background-position: center, 2px 1px;
+  filter: saturate(1.08) brightness(.985);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.14),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 1px 0 var(--gold-shade);
+}
+
+.btn-outline:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(3px) scale(.99);
+  border-radius: 17px 13px 16px 14px;
+}
+
+/* Prevent disabled or loading actions from appearing interactive. */
+.btn:disabled,
+.btn[aria-disabled="true"],
+.btn[aria-busy="true"] {
+  will-change: auto;
+  filter: none;
+}
+
+/* Keep the app inside the real visible viewport as mobile browser chrome moves. */
+html {
+  min-height: 100%;
+  min-height: 100svh;
+  min-height: 100dvh;
+}
+
+body {
+  min-height: 100%;
+  min-height: 100svh;
+  min-height: 100dvh;
+}
+
+/* Landscape phones and compact tablet windows: preserve usable controls while
+   reclaiming vertical space. No forced orientation or fixed content heights. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .navbar {
+    padding-top: max(.45rem, env(safe-area-inset-top));
+    padding-bottom: .45rem;
+  }
+
+  #mobile-menu {
+    top: 52px;
+    max-height: calc(100dvh - 52px - env(safe-area-inset-bottom));
+    padding-top: .65rem;
+    padding-bottom: max(.75rem, env(safe-area-inset-bottom));
+  }
+
+  .mobtabs {
+    padding-bottom: max(.35rem, env(safe-area-inset-bottom));
+  }
+
+  .amb-pill {
+    bottom: max(.65rem, env(safe-area-inset-bottom));
+  }
+
+  /* Compact spacing only; do not shrink touch targets below comfortable size. */
+  .section {
+    scroll-margin-top: calc(56px + env(safe-area-inset-top));
+  }
+}
+
+@media (max-width: 860px) {
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    touch-action: manipulation;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn-gold,
+  .btn-terracotta,
+  .btn-outline {
+    will-change: auto;
+    background-position: center, 0 0;
+    filter: none !important;
+    transition: none !important;
+  }
+
+  .btn-gold:active:not(:disabled),
+  .btn-terracotta:active:not(:disabled),
+  .btn-outline:active:not(:disabled) {
+    transform: none !important;
+    scale: 1 !important;
+  }
+}
+
+:root[data-motion="reduce"] .btn,
+:root[data-motion="reduce"] .btn-gold,
+:root[data-motion="reduce"] .btn-terracotta,
+:root[data-motion="reduce"] .btn-outline {
+  will-change: auto;
+  filter: none !important;
+  transition: none !important;
+}
