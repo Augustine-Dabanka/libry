@@ -31,8 +31,8 @@ export const ROLES: { key: Role; rank: number; name: string; does: string }[] = 
 
 const P: Record<Role, Perm[]> = {
   ceo_ultra_admin: ["chat", "calls", "users.warn", "users.suspend", "users.ban", "content.moderate", "creators.review", "creators.freeze", "promo.manage", "site.settings", "finance.view", "finance.send", "finance.grant", "roles.assign", "audit.view", "announce"],
-  ultra_admin: ["chat", "calls", "users.warn", "users.suspend", "users.ban", "content.moderate", "creators.review", "creators.freeze", "promo.manage", "site.settings", "finance.view", "finance.send", "finance.grant", "roles.assign", "audit.view", "announce"],
-  super_admin: ["chat", "calls", "users.warn", "users.suspend", "users.ban", "content.moderate", "creators.review", "creators.freeze", "promo.manage", "site.settings", "finance.view", "finance.send", "finance.grant", "roles.assign", "audit.view", "announce"],
+  ultra_admin: ["chat", "calls", "users.warn", "users.suspend", "users.ban", "content.moderate", "creators.review", "creators.freeze", "promo.manage", "finance.view", "finance.send", "roles.assign", "audit.view", "announce"],
+  super_admin: ["chat", "calls", "users.warn", "users.suspend", "users.ban", "content.moderate", "creators.review", "creators.freeze", "promo.manage", "finance.view", "finance.send", "roles.assign", "audit.view", "announce"],
   admin: ["chat", "calls", "users.warn", "users.suspend", "users.ban", "content.moderate", "creators.review", "creators.freeze", "promo.manage", "finance.view", "roles.assign", "audit.view", "announce"],
   manager: ["chat", "calls", "users.warn", "users.suspend", "content.moderate", "creators.review", "promo.manage", "roles.assign", "audit.view"],
   moderator: ["chat", "calls", "users.warn", "users.suspend", "content.moderate"],
