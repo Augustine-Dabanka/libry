@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import AppNav from "@/components/AppNav";
 import ComicReader from "@/components/ComicReader";
-import { getOriginalComic } from "@/lib/originalComics";
+import { getOriginalComic, ORIGINAL_COMICS } from "@/lib/originalComics";
 import { isMatureRating } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +53,7 @@ export default async function OriginalComicPage({ params }: { params: Promise<{ 
       signedIn={!!user}
       price={0}
       defaultMode="scroll"
+      recommendations={ORIGINAL_COMICS.filter((item) => item.slug !== comic.slug && !isMatureRating(item.ageRating)).slice(0, 3)}
     />
   );
 }
