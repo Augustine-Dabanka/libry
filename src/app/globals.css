@@ -2686,3 +2686,49 @@ body {
   filter: none !important;
   transition: none !important;
 }
+
+
+/* Lybry gradient system — one source of truth, layered over the existing
+   Laterite theme tokens. Keep the reading canvas calm; use motion as texture. */
+@keyframes lybry-gradient-drift {
+  0%, 100% { background-position: 180% 0, 0 0, 0% 50%; }
+  58% { background-position: 180% 0, 0 0, 52% 50%; }
+  78% { background-position: -80% 0, 0 0, 100% 50%; }
+}
+@keyframes lybry-surface-glow {
+  0%, 100% { opacity: .38; transform: translate3d(-1%, 0, 0) scale(1); }
+  50% { opacity: .62; transform: translate3d(1%, -0.5%, 0) scale(1.015); }
+}
+.btn-gold,
+.btn-terracotta {
+  background-image:
+    linear-gradient(110deg, transparent 0%, rgba(255,255,255,.03) 34%, rgba(255,255,255,.2) 50%, rgba(255,255,255,.025) 66%, transparent 100%),
+    repeating-linear-gradient(112deg, rgba(255,255,255,.025) 0 1px, transparent 1px 5px),
+    linear-gradient(125deg, var(--gold), var(--gold-hover), var(--gold));
+  background-size: 240% 100%, 8px 8px, 220% 220%;
+  animation: lybry-gradient-drift 9s ease-in-out infinite;
+}
+.btn-outline {
+  background-image:
+    linear-gradient(110deg, transparent 0%, color-mix(in srgb, var(--gold) 3%, transparent) 42%, color-mix(in srgb, var(--gold) 11%, transparent) 50%, transparent 58%),
+    repeating-linear-gradient(112deg, rgba(255,255,255,.018) 0 1px, transparent 1px 5px),
+    linear-gradient(125deg, var(--stone), color-mix(in srgb, var(--gold) 5%, var(--stone)), var(--stone));
+  background-size: 240% 100%, 8px 8px, 220% 220%;
+  animation: lybry-gradient-drift 12s ease-in-out infinite;
+}
+:where(.card, .panel, .book-card, .bookCard, .feature-card, .settings-card, .stat-card, .creator-card) {
+  background-image:
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--gold) 5%, transparent), transparent 55%);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-gold:hover:not(:disabled):not([aria-disabled="true"]),
+  .btn-terracotta:hover:not(:disabled):not([aria-disabled="true"]) {
+    filter: saturate(1.06) brightness(1.025);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-gold, .btn-terracotta, .btn-outline { animation: none !important; background-position: 50% 50%, 0 0, 50% 50%; }
+}
+:root[data-motion="reduce"] .btn-gold,
+:root[data-motion="reduce"] .btn-terracotta,
+:root[data-motion="reduce"] .btn-outline { animation: none !important; }
