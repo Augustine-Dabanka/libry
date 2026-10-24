@@ -106,12 +106,16 @@ export default function NavClient({
     };
   }, [signedIn]);
 
-  useEffect(() => setSearch(typeof window !== "undefined" ? window.location.search : ""), [pathname]);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setSearch(window.location.search));
+    return () => window.cancelAnimationFrame(frame);
+  }, [pathname]);
 
   useEffect(() => {
     const sync = () => setCartN(cartCount());
-    sync();
-    return onCartChange(sync);
+    const frame = window.requestAnimationFrame(sync);
+    const unsubscribe = onCartChange(sync);
+    return () => { window.cancelAnimationFrame(frame); unsubscribe(); };
   }, []);
 
   useEffect(() => { setWishN(wishCount); }, [wishCount]);
