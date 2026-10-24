@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { Moon, Sun } from "lucide-react";
 import CartDrawer from "@/components/CartDrawer";
 import LogoutSurvey from "@/components/LogoutSurvey";
 import StreakCard from "@/components/StreakCard";
@@ -70,6 +71,7 @@ export default function NavClient({
   const [wishN, setWishN] = useState(wishCount);
   const [notifN, setNotifN] = useState(notifCount);
   const [search, setSearch] = useState("");
+  const [activeTheme, setActiveTheme] = useState<"light" | "dark">("light");
 
   // Live notification badge (Supabase Realtime). notifications RLS is scoped to
   // user_id = auth.uid(), so an unfiltered subscription only delivers this
@@ -127,13 +129,21 @@ export default function NavClient({
     };
   }, []);
 
+  useEffect(() => {
+    const syncTheme = () => setActiveTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
+    syncTheme();
+    window.addEventListener("storage", syncTheme);
+    window.addEventListener("libry:theme-change", syncTheme);
+    return () => { window.removeEventListener("storage", syncTheme); window.removeEventListener("libry:theme-change", syncTheme); };
+  }, []);
+
   function toggleTheme() {
     const root = document.documentElement;
     const next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
     root.setAttribute("data-theme", next);
-    try {
-      localStorage.setItem("libry-theme", next);
-    } catch {}
+    setActiveTheme(next);
+    try { localStorage.setItem("libry-theme", next); } catch {}
+    window.dispatchEvent(new CustomEvent("libry:theme-change", { detail: next }));
   }
 
   function isActive(it: RailItem) {
@@ -317,7 +327,7 @@ export default function NavClient({
             <LibryIcon name="search" size={20} />
           </a>
 
-          <button type="button" className="nav-icon-btn" title="Cart" aria-label={`Cart, ${cartN} item${cartN === 1 ? "" : "s"}`} onClick={openCart} style={{ position: "relative" }}>
+          <button type="button" className="nav-icon-btn" onClick={toggleTheme} title={activeTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"} aria-label={activeTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>\n            {activeTheme === "dark" ? <Moon size={20} strokeWidth={1.8} /> : <Sun size={20} strokeWidth={1.8} />}\n          </button>\n\n          <button type="button" className="nav-icon-btn" title="Cart" aria-label={`Cart, ${cartN} item${cartN === 1 ? "" : "s"}`} onClick={openCart} style={{ position: "relative" }}>
             <Icon name="cart" />
             {cartN > 0 ? <span className="badge-count" style={{ position: "absolute", top: -4, right: -4 }}>{cartN}</span> : null}
           </button>
