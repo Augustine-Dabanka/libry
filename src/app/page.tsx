@@ -10,6 +10,7 @@ import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 import s from "./landing.module.css";
 import PreviewClip from "@/components/PreviewClip";
+import LandingThemeToggle from "@/components/LandingThemeToggle";
 
 // Public marketing landing. Signed-in users are sent straight to their app home.
 export default async function Landing() {
@@ -77,6 +78,7 @@ export default async function Landing() {
             <a href="#comics">Comics</a>
           </div>
           <div className={s.navRight}>
+            <LandingThemeToggle />
             <a href="/login" className={s.txt}>
               Log in
             </a>
