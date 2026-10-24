@@ -19,7 +19,7 @@ function Content({ tab }: { tab: string }) {
           <li>Books you publish, your author profile and bio, and interactions like likes, reviews, comments, and wishlists.</li>
         </ul>
         <h4>Email</h4>
-        <p>We send transactional email (such as a waitlist confirmation) through our email provider. We don&apos;t send marketing email without your consent.</p>
+        <p>We send transactional email through our email provider. We don&apos;t send marketing email without your consent.</p>
         <h4>Cookies</h4>
         <p>Your session lives in a secure, http-only cookie — not in the browser&apos;s localStorage. We also use short-lived cookies to remember an onboarding choice, a referral, or a reader/writer selection while you sign in.</p>
         <h4>What we don&apos;t do</h4>

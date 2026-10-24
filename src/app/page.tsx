@@ -402,11 +402,6 @@ export default async function Landing() {
           <a className={`${s.btn} ${s.btnGold} ${s.btnLg}`} href="/onboarding">
             Start reading free
           </a>
-          <div style={{ marginTop: "1rem" }}>
-            <a href="/waitlist" className="fx" style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontSize: "0.95rem" }}>
-              Not ready yet? Join the early-access waitlist →
-            </a>
-          </div>
         </div>
       </section>
 
@@ -421,8 +416,8 @@ export default async function Landing() {
               <div className={s.news}>
                 <span className={s.newsLabel}>Stay in the story</span>
                 <p className={s.newsText}>New releases, interactive drops and creator spotlights — a quiet note, now and then.</p>
-                <a className={`${s.btn} ${s.btnGold}`} href="/waitlist" style={{ marginTop: "0.7rem" }}>
-                  Join the list →
+                <a className={`${s.btn} ${s.btnGold}`} href="/login?auth=signup" style={{ marginTop: "0.7rem" }}>
+                  Create an account →
                 </a>
               </div>
               <SocialIcons className={s.footSocial} />

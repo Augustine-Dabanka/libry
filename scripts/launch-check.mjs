@@ -12,7 +12,7 @@ const recommended = [
   ["NEXT_PUBLIC_SITE_URL", "links in emails/sitemap fall back to the old vercel.app address"],
   ["NEXT_PUBLIC_CONTACT_EMAIL", "contact goes only through the /contact form"],
   ["NEXT_PUBLIC_SOCIAL_HANDLE", "no social icons are shown"],
-  ["RESEND_API_KEY", "contact messages and waitlist emails are not emailed"],
+  ["RESEND_API_KEY", "contact messages are not emailed"],
 ];
 const payments = ["PAYSTACK_SECRET_KEY", "NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY", "NEXT_PUBLIC_PAYSTACK_ENABLED", "NEXT_PUBLIC_PAYSTACK_CURRENCY"];
 const problems = [];

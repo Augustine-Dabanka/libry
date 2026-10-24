@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-// Same Formspree form as the waitlist — reports arrive with their own subject.
+// Reports use the configured Formspree endpoint with their own subject.
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mppzqqpy";
 
 // File a trust-and-safety report on a book. Emails the team (Formspree) and, if

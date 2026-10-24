@@ -1,7 +1,6 @@
 import { BRAND } from "@/lib/brand";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import WaitlistForm from "@/components/WaitlistForm";
 
 import Glyph from "@/components/Glyph";
 export const metadata = { title: "Programs & Opportunities — Lybry Creators" };
@@ -69,19 +68,16 @@ export default async function CreatorOpportunities() {
           </div>
         </div>
 
-        {/* Newsletter */}
+        {/* Creator updates: use the existing contact flow instead of collecting new waitlist records. */}
         <div style={{ background: "var(--stone)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.6rem 1.8rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.4rem" }}>
             <span style={{ fontSize: "1.3rem" }}><Glyph e="✉" /></span>
-            <h3 style={{ fontSize: "1.3rem" }}>Lybry Creators</h3>
+            <h3 style={{ fontSize: "1.3rem" }}>Creator updates</h3>
           </div>
           <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: "0.95rem", marginBottom: "1.1rem", maxWidth: 460 }}>
-            Get opportunities, contest updates, and creator resources delivered to your inbox.
+            Contact the Libry team about creator opportunities, contests, and publishing support.
           </p>
-          <div style={{ maxWidth: 420 }}>
-            <WaitlistForm role="creator" cta="Subscribe" />
-          </div>
-          <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.8rem", marginTop: "0.9rem" }}>Join a growing circle of creators building with Lybry.</p>
+          <a className="btn btn-gold" href="/contact?topic=creators">Contact the creator team →</a>
         </div>
       </section>
     </>
