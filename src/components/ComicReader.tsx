@@ -259,6 +259,27 @@ export default function ComicReader({
           {pageAt >= total - 1 && locked ? <div style={{ position: "absolute", inset: 0, background: "rgba(12,11,10,0.82)", display: "grid", placeItems: "center" }}>{LockCta}</div> : null}
         </div>
       )}
+      {mode !== "scroll" && pageAt >= total - 1 ? (
+        <section style={{ margin: "1.5rem 1rem 3rem", padding: "1.5rem", border: "1px solid var(--border)", borderRadius: 18, background: "var(--stone)", textAlign: "center" }}>
+          <div style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontSize: ".7rem", fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase" }}>The End</div>
+          <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.7rem", margin: ".45rem 0" }}>You finished {title}</h2>
+          <div style={{ display: "flex", justifyContent: "center", gap: ".65rem", flexWrap: "wrap", marginTop: "1rem" }}>
+            <a href="/comics" className="btn btn-gold">Explore all comics →</a>
+            <a href="/discover" className="btn btn-outline">Discover books</a>
+          </div>
+          {recommendations.length ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: ".75rem", marginTop: "1.5rem", textAlign: "left" }}>
+              {recommendations.slice(0, 3).map((item) => (
+                <a key={item.slug} href={"/comics/original/" + item.slug} style={{ textDecoration: "none", color: "var(--ivory)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={"/api/comic-art?slug=" + encodeURIComponent(item.slug) + "&page=0"} alt={"Cover of " + item.title} loading="lazy" style={{ display: "block", width: "100%", aspectRatio: "2 / 3", objectFit: "cover", borderRadius: 9, border: "1px solid var(--border)" }} />
+                  <div style={{ fontFamily: "var(--serif)", marginTop: ".4rem", fontSize: ".9rem", lineHeight: 1.3 }}>{item.title}</div>
+                </a>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
     </div>
   );
 }
