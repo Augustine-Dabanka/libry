@@ -14,11 +14,10 @@ async function guard(perm: Perm, action: string, target: string | null = null) {
   return null;
 }
 
-// Staff area. Access = a signed-in account that is an owner (ADMIN_EMAILS,
-// set in Vercel, never in code) or holds a staff rank (0049). There is no
-// shared passcode. Every action re-checks the caller's permission.
-// Any staff rank (0049) or an owner email gets into /admin; what they can do
-// there is checked per action with requirePerm (see src/lib/staff.ts).
+// Staff area. Access = the configured CEO identity (CEO_ADMIN_EMAIL, with a
+// safe default) or a standard Ultra Admin listed in ADMIN_EMAILS, or an account
+// with a staff rank (0049). There is no shared passcode. Every action re-checks
+// the caller's permission in src/lib/staff.ts.
 export async function isAdmin(): Promise<boolean> {
   return !!(await getStaff());
 }

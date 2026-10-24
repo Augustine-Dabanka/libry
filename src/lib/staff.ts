@@ -63,24 +63,43 @@ function ownerEmails(): string[] {
   return (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
 }
 
-// The signed-in staff member, or null. Owners (ADMIN_EMAILS) are always CEO Ultra Admin.
+function ceoEmail(): string {
+  return (process.env.CEO_ADMIN_EMAIL || "gamehigh31@gmail.com").trim().toLowerCase();
+}
+
+// The CEO is a single, explicitly configured identity. ADMIN_EMAILS is only a
+// compatibility allowlist for standard Ultra Admin accounts, never a way to
+// grant CEO-only authority to every address in the list.
 export async function getStaff(): Promise<Staff | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email || !user.email_confirmed_at) return null;
-  const owner = ownerEmails().includes(user.email.toLowerCase());
-  let role: Role | null = owner ? "ceo_ultra_admin" : null;
-  let financeAccess = owner;
+
+  const email = user.email.toLowerCase();
+  const isCeo = email === ceoEmail();
+  const isAllowlistedAdmin = ownerEmails().includes(email);
+  let role: Role | null = isCeo ? "ceo_ultra_admin" : isAllowlistedAdmin ? "ultra_admin" : null;
+  let financeAccess = isCeo;
   const s = svc();
-  if (!owner && s) {
+
+  // Explicit environment allowlists take precedence over database rows. For
+  // everyone else, reject a CEO role unless the authenticated email is the
+  // configured CEO identity; this prevents accidental database promotion.
+  if (!isCeo && !isAllowlistedAdmin && s) {
     const { data } = await s.from("staff_roles").select("role, finance_access").eq("user_id", user.id).maybeSingle();
-    if (data) { role = data.role as Role; financeAccess = !!data.finance_access; }
+    if (data) {
+      const dbRole = data.role as Role;
+      if (dbRole !== "ceo_ultra_admin") {
+        role = dbRole;
+        financeAccess = !!data.finance_access;
+      }
+    }
   }
   if (!role) return null;
-  const isOwner = owner || role === "ceo_ultra_admin";
+
   const perms = new Set(P[role]);
   if (role === "accountant_2" && financeAccess) perms.add("finance.send");
-  return { userId: user.id, email: user.email, role, rank: rankOf(role), name: ROLES.find((r) => r.key === role)!.name, perms, financeAccess, owner: isOwner };
+  return { userId: user.id, email: user.email, role, rank: rankOf(role), name: ROLES.find((r) => r.key === role)!.name, perms, financeAccess, owner: isCeo };
 }
 
 export async function requirePerm(perm: Perm): Promise<Staff | { error: string }> {
