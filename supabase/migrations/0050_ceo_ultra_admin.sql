@@ -75,12 +75,18 @@ BEGIN
   ON CONFLICT (user_id) DO UPDATE
     SET role = 'ceo_ultra_admin',
         finance_access = true,
+        staff_code = CASE
+          WHEN staff_roles.staff_code IS NULL THEN NULL
+          ELSE left(staff_roles.staff_code, length(staff_roles.staff_code) - 1) || '1'
+        END,
         updated_at = now();
 
-  -- Keep a matching roster role if this user already has a roster entry.
+  -- Keep matching roster role and rank suffix if a roster entry already exists.
   UPDATE public.staff_roster
-     SET role = 'ceo_ultra_admin'
-   WHERE user_id = v_user_id;
+     SET role = 'ceo_ultra_admin',
+         staff_code = left(staff_code, length(staff_code) - 1) || '1'
+   WHERE user_id = v_user_id
+     AND staff_code IS NOT NULL;
 END $$;
 
 -- Verify CEO role.
