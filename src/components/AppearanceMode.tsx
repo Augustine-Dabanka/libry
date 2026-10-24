@@ -16,7 +16,26 @@ export default function AppearanceMode() {
   const [mode, setMode] = useState<Mode>("light");
 
   useEffect(() => {
-    try { setMode((localStorage.getItem("libry-theme") as Mode) || "light"); } catch {}
+    const sync = () => {
+      try { setMode((localStorage.getItem("libry-theme") as Mode) || "light"); } catch {}
+    };
+    sync();
+    window.addEventListener("storage", sync);
+    window.addEventListener("libry:theme-change", sync);
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onSystemChange = () => {
+      try {
+        if (localStorage.getItem("libry-theme") === "system") {
+          document.documentElement.setAttribute("data-theme", media.matches ? "dark" : "light");
+        }
+      } catch {}
+    };
+    media.addEventListener("change", onSystemChange);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("libry:theme-change", sync);
+      media.removeEventListener("change", onSystemChange);
+    };
   }, []);
 
   function pick(m: Mode) {
