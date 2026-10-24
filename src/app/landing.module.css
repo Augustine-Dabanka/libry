@@ -189,3 +189,83 @@
 @media (prefers-reduced-motion: reduce) {
   .hero::before, .btnGold { animation: none !important; }
 }
+
+
+/* Landing-page theme palette. The header toggle updates html[data-theme], and
+   these scoped tokens recolor the entire marketing page without touching app routes. */
+:global(html[data-theme="dark"]) .page {
+  --ink: #F4EEE8;
+  --body: #D5C9C0;
+  --muted: #A99A90;
+  --paper: #151311;
+  --card: #211D1A;
+  --card2: #29231F;
+  --gold: #E27655;
+  --goldSoft: #F08A68;
+  --goldEdge: #74341F;
+  --terra: #E27655;
+  --terraSoft: #F08A68;
+  --peach: #2B211D;
+  --sky: #28221F;
+  --line: #39302B;
+  --line2: #302924;
+  --edge: #514038;
+  --shadow: 0 14px 34px rgba(0, 0, 0, .24);
+  background: var(--paper);
+  color: var(--ink);
+}
+:global(html[data-theme="dark"]) .page .nav {
+  background: rgba(21, 19, 17, .94);
+  border-bottom-color: var(--line);
+  backdrop-filter: blur(18px);
+}
+:global(html[data-theme="dark"]) .page .topbar {
+  background: #2B211D;
+  border-bottom-color: var(--line);
+  color: #E9B09A;
+}
+:global(html[data-theme="dark"]) .page .topbar b,
+:global(html[data-theme="dark"]) .page .topbar a { color: var(--ink); }
+:global(html[data-theme="dark"]) .page .trust,
+:global(html[data-theme="dark"]) .page .band,
+:global(html[data-theme="dark"]) .page .footer {
+  background-color: var(--paper);
+  color: var(--body);
+}
+:global(html[data-theme="dark"]) .page .btnGhost {
+  background: var(--card);
+  color: var(--ink);
+  border-color: var(--edge);
+  box-shadow: 0 4px 0 var(--edge);
+}
+:global(html[data-theme="dark"]) .page .hero::before {
+  background:
+    radial-gradient(ellipse at 15% 20%, color-mix(in srgb, var(--gold) 19%, transparent), transparent 44%),
+    radial-gradient(ellipse at 84% 74%, rgba(226, 118, 85, .13), transparent 43%),
+    linear-gradient(120deg, transparent, rgba(226, 118, 85, .055), transparent);
+}
+.page :global(.landing-theme-toggle) {
+  gap: .4rem;
+  padding: 0 .75rem;
+  min-width: 42px;
+  color: var(--ink);
+  border-color: var(--edge);
+  transition: transform .18s ease, background .2s ease, border-color .2s ease, color .2s ease;
+}
+.page :global(.landing-theme-toggle):hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: translateY(-1px);
+}
+.page :global(.landing-theme-toggle):active { transform: scale(.97); }
+.page :global(.landing-theme-toggle):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--gold) 60%, transparent);
+  outline-offset: 3px;
+}
+@media (max-width: 560px) {
+  .navRight { gap: .45rem; }
+  .page :global(.landing-theme-toggle) { width: 40px; height: 40px; flex-basis: 40px; padding: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page :global(.landing-theme-toggle) { transition: none; }
+}
