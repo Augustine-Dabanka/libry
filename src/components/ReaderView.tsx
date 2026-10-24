@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeHtml, looksLikeHtml } from "@/lib/sanitize";
@@ -13,7 +13,8 @@ import ReaderCompanion from "@/components/ReaderCompanion";
 import ReadingSyncToast from "@/components/ReadingSyncToast";
 
 import Glyph from "@/components/Glyph";
-import { formatPrice } from "@/lib/types";
+import { bookCover, formatPrice, genCover } from "@/lib/types";
+import MidReadQuiz from "@/components/MidReadQuiz";
 import { markGuestBook } from "@/lib/guest";
 type Theme = "dark" | "sepia";
 
@@ -148,6 +149,7 @@ export default function ReaderView({
   locked = false,
   price = null,
   inUnlimited = false,
+  recommendedBooks = [],
 }: {
   bookId: string;
   title: string;
@@ -162,6 +164,7 @@ export default function ReaderView({
   locked?: boolean;
   price?: number | null;
   inUnlimited?: boolean;
+  recommendedBooks?: { id: number | string; title: string; author: string | null; cover_url?: string | null; cover?: string | null; price?: number | null; type?: string | null; category?: string | null }[];
 }) {
   const router = useRouter();
   const [theme, setTheme] = useState<Theme>("dark");
@@ -611,6 +614,16 @@ export default function ReaderView({
       if (el && stepRef.current > 0) setPage(Math.max(0, Math.round((el.offsetLeft - PAD) / stepRef.current)));
     } else {
       document.getElementById(`rd-ch-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  // Long prose books get optional comprehension checkpoints at 25/50/75%.
+  // If AI questions are unavailable, the checkpoint falls back to a reflection prompt.
+  const quizIndexes = new Map<number, 25 | 50 | 75>();
+  if (signedIn && !sample && !isHtml && readingMinutes >= 10 && paragraphs.length >= 24) {
+    for (const checkpoint of [25, 50, 75] as const) {
+      const index = Math.min(paragraphs.length - 1, Math.max(0, Math.floor(paragraphs.length * checkpoint / 100) - 1));
+      quizIndexes.set(index, checkpoint);
     }
   }
 
