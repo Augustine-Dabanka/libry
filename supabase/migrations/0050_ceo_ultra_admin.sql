@@ -88,7 +88,7 @@ BEGIN
     RAISE EXCEPTION 'No confirmed Supabase Auth account found for gamehigh31@gmail.com.';
   END IF;
 
-  INSERT INTO public.staff_roles
+  INSERT INTO public.staff_roles AS existing_staff
     (user_id, role, finance_access, granted_by, updated_at)
   VALUES
     (v_user_id, 'ceo_ultra_admin', true, NULL, now())
@@ -96,8 +96,8 @@ BEGIN
     SET role = 'ceo_ultra_admin',
         finance_access = true,
         staff_code = CASE
-          WHEN public.staff_roles.staff_code IS NULL THEN NULL
-          ELSE left(public.staff_roles.staff_code, length(public.staff_roles.staff_code) - 1) || '1'
+          WHEN existing_staff.staff_code IS NULL THEN NULL
+          ELSE left(existing_staff.staff_code, length(existing_staff.staff_code) - 1) || '1'
         END,
         updated_at = now();
 
