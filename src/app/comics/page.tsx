@@ -5,6 +5,8 @@ import { allowedRatings } from "@/lib/content";
 import { type Book } from "@/lib/types";
 
 import Glyph from "@/components/Glyph";
+import { ORIGINAL_COMICS } from "@/lib/originalComics";
+import { agePill } from "@/lib/content";
 export const metadata = { title: "Comics — Lybry" };
 
 // First-class Comics browse surface. Comics are ordinary books with a comic
@@ -33,6 +35,8 @@ export default async function ComicsPage() {
     }
   }
 
+  const originalComics = ORIGINAL_COMICS.filter((comic) => allowed.includes(comic.ageRating));
+
   return (
     <>
       <AppNav />
@@ -43,22 +47,48 @@ export default async function ComicsPage() {
           Read panel by panel, or scroll the whole thing webtoon-style — your place is kept either way.
         </p>
 
-        {comics.length === 0 ? (
-          <div style={{ border: "1px solid var(--border)", borderRadius: 16, padding: "3rem 2rem", textAlign: "center", background: "var(--stone)" }}>
-            <div style={{ fontSize: "2rem", marginBottom: "0.6rem" }}><Glyph e="💥" /></div>
-            <p style={{ fontSize: "1.15rem", marginBottom: "0.4rem", color: "var(--ivory)" }}>No comics published yet.</p>
-            <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", maxWidth: 440, margin: "0 auto 1.3rem" }}>
-              Comics land here the moment a creator publishes one. Want to be first?
-            </p>
-            <a href="/creator" className="btn btn-gold">Publish a comic →</a>
+        <section style={{ marginBottom: "3rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+            <div>
+              <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.65rem", margin: "0 0 .3rem" }}>Lybry Originals</h2>
+              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: ".86rem", margin: 0 }}>Original visual stories across fantasy, sci-fi, comedy, mystery, school life, and more.</p>
+            </div>
+            <span style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontSize: ".78rem" }}>{originalComics.length} original stories</span>
           </div>
-        ) : (
           <div className="book-grid-mini">
-            {comics.map((b) => (
-              <BookMini key={b.id} book={b} />
+            {originalComics.map((comic) => (
+              <a key={comic.slug} href={"/comics/original/" + comic.slug} className="book-card book-card-v2" style={{ display: "block", padding: "1rem", textDecoration: "none" }}>
+                <div style={{ position: "relative", aspectRatio: "2 / 3", borderRadius: 10, overflow: "hidden", background: "var(--stone)", border: "1px solid color-mix(in srgb, var(--gold) 28%, transparent)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={"/api/comic-art?slug=" + encodeURIComponent(comic.slug) + "&page=0"} alt={"Original cover art for " + comic.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+                <div style={{ padding: ".85rem .25rem .2rem" }}>
+                  <h3 style={{ fontFamily: "var(--serif)", fontSize: "1.02rem", color: "var(--ivory)", lineHeight: 1.25, margin: "0 0 .35rem" }}>{comic.title}</h3>
+                  <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: ".78rem", marginBottom: ".5rem" }}>{comic.category}</div>
+                  <p style={{ color: "var(--ivory-muted)", fontFamily: "var(--sans)", fontSize: ".8rem", lineHeight: 1.5, margin: "0 0 .6rem" }}>{comic.logline}</p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: ".4rem", flexWrap: "wrap" }}>
+                    <span className="badge">Original</span><span className="badge">{agePill(comic.ageRating)}</span>
+                  </div>
+                </div>
+              </a>
             ))}
           </div>
-        )}
+        </section>
+
+        <section>
+          <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.65rem", margin: "0 0 1rem" }}>Community comics</h2>
+          {comics.length === 0 ? (
+            <div style={{ border: "1px solid var(--border)", borderRadius: 16, padding: "2rem 1.5rem", textAlign: "center", background: "var(--stone)" }}>
+              <p style={{ fontSize: "1.05rem", marginBottom: "0.4rem", color: "var(--ivory)" }}>No community comics published yet.</p>
+              <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", maxWidth: 440, margin: "0 auto 1.1rem" }}>Create your own comic and upload original panels, or publish artwork you have permission to use.</p>
+              <a href="/creator" className="btn btn-gold">Publish a comic →</a>
+            </div>
+          ) : (
+            <div className="book-grid-mini">
+              {comics.map((b) => <BookMini key={b.id} book={b} />)}
+            </div>
+          )}
+        </section>
       </section>
       <div style={{ paddingBottom: "3rem" }} />
     </>

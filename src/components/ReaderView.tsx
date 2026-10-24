@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeHtml, looksLikeHtml } from "@/lib/sanitize";
@@ -13,7 +13,8 @@ import ReaderCompanion from "@/components/ReaderCompanion";
 import ReadingSyncToast from "@/components/ReadingSyncToast";
 
 import Glyph from "@/components/Glyph";
-import { formatPrice } from "@/lib/types";
+import { bookCover, formatPrice, genCover } from "@/lib/types";
+import MidReadQuiz from "@/components/MidReadQuiz";
 import { markGuestBook } from "@/lib/guest";
 type Theme = "dark" | "sepia";
 
@@ -148,6 +149,7 @@ export default function ReaderView({
   locked = false,
   price = null,
   inUnlimited = false,
+  recommendedBooks = [],
 }: {
   bookId: string;
   title: string;
@@ -162,6 +164,7 @@ export default function ReaderView({
   locked?: boolean;
   price?: number | null;
   inUnlimited?: boolean;
+  recommendedBooks?: { id: number | string; title: string; author: string | null; cover_url?: string | null; cover?: string | null; price?: number | null; type?: string | null; category?: string | null }[];
 }) {
   const router = useRouter();
   const [theme, setTheme] = useState<Theme>("dark");
@@ -614,6 +617,16 @@ export default function ReaderView({
     }
   }
 
+  // Long prose books get optional comprehension checkpoints at 25/50/75%.
+  // If AI questions are unavailable, the checkpoint falls back to a reflection prompt.
+  const quizIndexes = new Map<number, 25 | 50 | 75>();
+  if (signedIn && !sample && !isHtml && readingMinutes >= 10 && paragraphs.length >= 24) {
+    for (const checkpoint of [25, 50, 75] as const) {
+      const index = Math.min(paragraphs.length - 1, Math.max(0, Math.floor(paragraphs.length * checkpoint / 100) - 1));
+      quizIndexes.set(index, checkpoint);
+    }
+  }
+
   // The book content, shared by both scroll and paged layouts.
   const bodyContent = (
     <>
@@ -637,10 +650,17 @@ export default function ReaderView({
         </>
       ) : paragraphs.length > 0 ? (
         paragraphs.map((p, i) => {
+          const checkpoint = quizIndexes.get(i);
+          const withCheckpoint = (node: React.ReactNode) => (
+            <Fragment key={i}>
+              {node}
+              {checkpoint ? <MidReadQuiz bookId={bookId} checkpoint={checkpoint} /> : null}
+            </Fragment>
+          );
           const md = p.match(/^!\[(.*?)\]\((https?:\/\/[^\s)]+)\)$/);
           const url = md ? md[2] : /^https?:\/\/\S+\.(png|jpe?g|gif|webp|svg)(\?\S*)?$/i.test(p) ? p : null;
           if (url) {
-            return (
+            return withCheckpoint(
               <figure key={i} style={{ margin: "1.6rem 0" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt={md?.[1] || ""} style={{ maxWidth: "100%", borderRadius: 12, display: "block", margin: "0 auto" }} />
@@ -652,7 +672,7 @@ export default function ReaderView({
           }
           const isHeading = /^chapter\b/i.test(p) && p.length <= 60;
           if (isHeading) {
-            return (
+            return withCheckpoint(
               <div key={i} className="rd-chapter">
                 <div className="rd-orn" aria-hidden="true">❦ ❦ ❦</div>
                 <h2 id={`rd-ch-${i}`} style={{ fontFamily: "var(--serif)", textAlign: "center", fontSize: `${Math.min(1.6, fontSize * 1.25)}rem`, lineHeight: 1.3, margin: "0.4rem 0 1.4rem", scrollMarginTop: "70px" }}>{p}</h2>
@@ -661,7 +681,7 @@ export default function ReaderView({
           }
           const cs = commentsByPara.get(i) ?? [];
           const showChip = cs.length > 0 || p.length >= 120;
-          return (
+          return withCheckpoint(
             <p key={i} className={`rd-p${i === firstBodyIndex ? " rd-drop" : ""}`} style={{ fontFamily: "var(--serif)", fontSize: `${fontSize}rem`, lineHeight: 1.95, marginBottom: "1.3rem" }}>
               {p}
               {showChip ? (
@@ -728,9 +748,30 @@ export default function ReaderView({
             You&apos;ve reached the end of <span style={{ fontStyle: "italic" }}>{title}</span>.
           </p>
           <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <button type="button" onClick={goBackToBook} className="btn btn-gold">← Back to the book</button>
-            <a href={`/api/book/${bookId}/epub`} className="btn btn-outline">↓ Download EPUB</a>
+            <button type="button" onClick={goBackToBook} className="btn btn-gold">Done reading · Back to book</button>
+            <a href="/discover" className="btn btn-outline">Discover more stories →</a>
           </div>
+          {recommendedBooks.length > 0 ? (
+            <section aria-label="Recommended next reads" style={{ margin: "2.2rem auto 0", maxWidth: 760, textAlign: "left" }}>
+              <h3 style={{ fontFamily: "var(--serif)", fontSize: "1.35rem", color: pal.fg, margin: "0 0 .35rem" }}>Your next story is waiting</h3>
+              <p style={{ color: pal.muted, fontSize: ".88rem", margin: "0 0 1rem" }}>A few more reads picked from the Lybry library.</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: ".8rem" }}>
+                {recommendedBooks.slice(0, 4).map((book) => {
+                  const cover = bookCover(book) || genCover(book.title, book.author);
+                  return (
+                    <a key={String(book.id)} href={`/book/${book.id}`} style={{ color: pal.fg, textDecoration: "none", minWidth: 0 }}>
+                      <div style={{ aspectRatio: "2 / 3", overflow: "hidden", borderRadius: 10, border: `1px solid ${pal.bar}`, background: "var(--stone)" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={cover} alt={`Cover of ${book.title}`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                      <div style={{ fontFamily: "var(--serif)", fontSize: ".95rem", lineHeight: 1.3, marginTop: ".5rem" }}>{book.title}</div>
+                      <div style={{ fontFamily: "var(--sans)", fontSize: ".76rem", color: pal.muted, marginTop: ".2rem" }}>{book.author || "Lybry reader"}</div>
+                    </a>
+                  );
+                })}
+              </div>
+            </section>
+          ) : null}
         </div>
       ) : null}
     </>
