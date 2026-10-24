@@ -53,6 +53,7 @@ export default function ComicReader({
   const rtl = mode === "manga";
   const imageIndexes = useMemo(() => pages.map((p, i) => (p.kind === "image" ? i : -1)).filter((i) => i >= 0), [pages]);
   const total = imageIndexes.length;
+  const backHref = bookId.startsWith("original-") ? "/comics" : `/book/${bookId}`;
   const [pageAt, setPageAt] = useState(0); // index into imageIndexes (pages mode)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -144,7 +145,7 @@ export default function ComicReader({
 
   const bar = (
     <div style={{ position: "sticky", top: 0, zIndex: 20, display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.7rem 1rem", background: "rgba(18,16,14,0.86)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-      <a href={`/book/${bookId}`} aria-label="Back" style={{ color: "var(--ivory)", textDecoration: "none", fontSize: "1.2rem", flexShrink: 0 }}>←</a>
+      <a href={backHref} aria-label="Back" style={{ color: "var(--ivory)", textDecoration: "none", fontSize: "1.2rem", flexShrink: 0 }}>←</a>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: "var(--serif)", color: "var(--ivory)", fontSize: "0.98rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</div>
         <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.75rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{author}</div>
