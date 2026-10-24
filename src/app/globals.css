@@ -2716,9 +2716,15 @@ body {
   background-size: 240% 100%, 8px 8px, 220% 220%;
   animation: lybry-gradient-drift 12s ease-in-out infinite;
 }
-:where(.card, .panel, .book-card, .bookCard, .feature-card, .settings-card, .stat-card, .creator-card) {
+:where(.card:not(.book-card), .panel, .feature-card, .settings-card, .stat-card, .creator-card) {
+  border-color: color-mix(in srgb, var(--border) 78%, var(--gold) 22%);
+}
+.lybry-gradient-surface {
+  position: relative;
+  isolation: isolate;
   background-image:
-    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--gold) 5%, transparent), transparent 55%);
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--gold) 10%, transparent), transparent 56%),
+    linear-gradient(135deg, color-mix(in srgb, var(--stone) 96%, var(--gold) 4%), var(--stone));
 }
 @media (hover: hover) and (pointer: fine) {
   .btn-gold:hover:not(:disabled):not([aria-disabled="true"]),
