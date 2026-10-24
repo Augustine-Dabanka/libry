@@ -748,9 +748,30 @@ export default function ReaderView({
             You&apos;ve reached the end of <span style={{ fontStyle: "italic" }}>{title}</span>.
           </p>
           <div style={{ display: "flex", gap: "0.7rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <button type="button" onClick={goBackToBook} className="btn btn-gold">← Back to the book</button>
-            <a href={`/api/book/${bookId}/epub`} className="btn btn-outline">↓ Download EPUB</a>
+            <button type="button" onClick={goBackToBook} className="btn btn-gold">Done reading · Back to book</button>
+            <a href="/discover" className="btn btn-outline">Discover more stories →</a>
           </div>
+          {recommendedBooks.length > 0 ? (
+            <section aria-label="Recommended next reads" style={{ margin: "2.2rem auto 0", maxWidth: 760, textAlign: "left" }}>
+              <h3 style={{ fontFamily: "var(--serif)", fontSize: "1.35rem", color: pal.fg, margin: "0 0 .35rem" }}>Your next story is waiting</h3>
+              <p style={{ color: pal.muted, fontSize: ".88rem", margin: "0 0 1rem" }}>A few more reads picked from the Lybry library.</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: ".8rem" }}>
+                {recommendedBooks.slice(0, 4).map((book) => {
+                  const cover = bookCover(book) || genCover(book.title, book.author);
+                  return (
+                    <a key={String(book.id)} href={`/book/${book.id}`} style={{ color: pal.fg, textDecoration: "none", minWidth: 0 }}>
+                      <div style={{ aspectRatio: "2 / 3", overflow: "hidden", borderRadius: 10, border: `1px solid ${pal.bar}`, background: "var(--stone)" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={cover} alt={`Cover of ${book.title}`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                      <div style={{ fontFamily: "var(--serif)", fontSize: ".95rem", lineHeight: 1.3, marginTop: ".5rem" }}>{book.title}</div>
+                      <div style={{ fontFamily: "var(--sans)", fontSize: ".76rem", color: pal.muted, marginTop: ".2rem" }}>{book.author || "Lybry reader"}</div>
+                    </a>
+                  );
+                })}
+              </div>
+            </section>
+          ) : null}
         </div>
       ) : null}
     </>
