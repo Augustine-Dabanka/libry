@@ -19,7 +19,7 @@ export default function AppearanceMode() {
     const sync = () => {
       try { setMode((localStorage.getItem("libry-theme") as Mode) || "light"); } catch {}
     };
-    sync();
+    const frame = window.requestAnimationFrame(sync);
     window.addEventListener("storage", sync);
     window.addEventListener("libry:theme-change", sync);
     const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -32,6 +32,7 @@ export default function AppearanceMode() {
     };
     media.addEventListener("change", onSystemChange);
     return () => {
+      window.cancelAnimationFrame(frame);
       window.removeEventListener("storage", sync);
       window.removeEventListener("libry:theme-change", sync);
       media.removeEventListener("change", onSystemChange);
