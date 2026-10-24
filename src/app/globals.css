@@ -2426,3 +2426,98 @@ main > *,
     padding-right: max(1rem, env(safe-area-inset-right));
   }
 }
+
+
+/* ══════════ Interaction polish: buttons, controls and focus states ══════════
+   Shared motion is short and purposeful: hover feedback is subtle, press
+   feedback is immediate, and no state depends on animation to be understood. */
+:where(
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="radio"],
+  summary,
+  input[type="button"]:not(:disabled),
+  input[type="submit"]:not(:disabled)
+) {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+:where(button:not(.btn):not(:disabled), [role="button"]:not([aria-disabled="true"]):not(.btn), [role="tab"], [role="radio"], summary) {
+  transition:
+    scale 140ms cubic-bezier(0.2, 0.75, 0.25, 1),
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.btn {
+  transform-origin: center;
+  transition:
+    transform 110ms cubic-bezier(0.2, 0.75, 0.25, 1),
+    scale 140ms cubic-bezier(0.2, 0.75, 0.25, 1),
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 110ms ease,
+    opacity 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled):not([aria-disabled="true"]) {
+    scale: 1.012;
+  }
+
+  :where(button:not(.btn):not(:disabled), [role="button"]:not([aria-disabled="true"]):not(.btn), [role="tab"], [role="radio"], summary):hover {
+    scale: 1.015;
+  }
+
+  .btn-gold:hover:not(:disabled),
+  .btn-terracotta:hover:not(:disabled) {
+    box-shadow: 0 5px 0 var(--gold-shade);
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    box-shadow: 0 5px 0 var(--edge);
+  }
+}
+
+.btn:active:not(:disabled):not([aria-disabled="true"]) {
+  scale: 0.985;
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"],
+button:disabled,
+button[aria-disabled="true"],
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+button[aria-busy="true"],
+[role="button"][aria-busy="true"] {
+  cursor: progress;
+}
+
+:where(button, [role="button"], [role="tab"], summary, a):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--gold) 78%, transparent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  :where(button, [role="button"], [role="tab"], [role="radio"], summary) {
+    transition: none !important;
+  }
+
+  .btn:hover,
+  .btn:active,
+  :where(button, [role="button"], [role="tab"], [role="radio"], summary):hover,
+  :where(button, [role="button"], [role="tab"], [role="radio"], summary):active {
+    scale: 1 !important;
+    transform: none !important;
+  }
+}
