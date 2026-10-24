@@ -5,12 +5,12 @@ import { ArrowRight } from "lucide-react";
 import Glyph from "@/components/Glyph";
 export const metadata = {
   title: "Lybry — links",
-  description: "The bookstore that actually pays its writers. Read free, join the waitlist, or publish your own story.",
+  description: "The bookstore that actually pays its writers. Read free or publish your own story.",
 };
 
 
 const LINKS = [
-  { emoji: "⭐", title: "Join the early-access waitlist", sub: "Be first through the door", href: "/waitlist", primary: true },
+  { emoji: "📖", title: "Create your free account", sub: "Start reading and publishing", href: "/login?auth=signup", primary: true },
   { emoji: "📚", title: "Read free", sub: "Classics & interactive stories, no card", href: "/catalog" },
   { emoji: "🌿", title: "Interactive stories", sub: "Choose-your-path tales", href: "/catalog?type=Interactive" },
   { emoji: "✦", title: "Lybry Unlimited", sub: "Your genres, your book box. Try it free for 7 days", href: "/unlimited" },
