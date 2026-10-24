@@ -416,8 +416,8 @@ export default async function Landing() {
               <div className={s.news}>
                 <span className={s.newsLabel}>Stay in the story</span>
                 <p className={s.newsText}>New releases, interactive drops and creator spotlights — a quiet note, now and then.</p>
-                <a className={`${s.btn} ${s.btnGold}`} href="/waitlist" style={{ marginTop: "0.7rem" }}>
-                  Join the list →
+                <a className={`${s.btn} ${s.btnGold}`} href="/login?auth=signup" style={{ marginTop: "0.7rem" }}>
+                  Create an account →
                 </a>
               </div>
               <SocialIcons className={s.footSocial} />
