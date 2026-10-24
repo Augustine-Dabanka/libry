@@ -2333,7 +2333,7 @@ html.has-amb { background: var(--charcoal); }
   --z-drawer-panel: 410;
   --z-modal: 500;
   --z-cookie: 600;
-  --z-splash: 700;
+  --z-splash: 9999;
 }
 
 /* Prevent grid/flex children from forcing pages wider than the viewport. */
