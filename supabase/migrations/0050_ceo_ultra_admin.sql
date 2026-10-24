@@ -149,6 +149,36 @@ SELECT u.email, sr.role, sr.finance_access
 -- accountant, accountant_2, staff. Do not assign ceo_ultra_admin except to the CEO.
 );
 
+-- Keep existing staff-code rank suffixes aligned with the new hierarchy.
+UPDATE public.staff_roles
+SET staff_code = left(staff_code, length(staff_code) - 1) ||
+  CASE role
+    WHEN 'ceo_ultra_admin' THEN '1'
+    WHEN 'ultra_admin' THEN '2'
+    WHEN 'super_admin' THEN '3'
+    WHEN 'admin' THEN '4'
+    WHEN 'manager' THEN '5'
+    WHEN 'moderator' THEN '6'
+    WHEN 'accountant' THEN '7'
+    WHEN 'accountant_2' THEN '8'
+    WHEN 'staff' THEN '9'
+  END
+WHERE staff_code IS NOT NULL;
+
+UPDATE public.staff_roster
+SET staff_code = left(staff_code, length(staff_code) - 1) ||
+  CASE role
+    WHEN 'ceo_ultra_admin' THEN '1'
+    WHEN 'ultra_admin' THEN '2'
+    WHEN 'super_admin' THEN '3'
+    WHEN 'admin' THEN '4'
+    WHEN 'manager' THEN '5'
+    WHEN 'moderator' THEN '6'
+    WHEN 'accountant' THEN '7'
+    WHEN 'accountant_2' THEN '8'
+    WHEN 'staff' THEN '9'
+  END;
+
 -- Grant CEO Ultra Admin to the existing, confirmed Auth account.
 -- This is idempotent. It does not create an Auth account.
 DO $$
