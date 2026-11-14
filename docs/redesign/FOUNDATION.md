@@ -85,7 +85,7 @@ A section can be marked complete only when all of these are true:
 
 ## First implementation target: Landing page
 
-Do not start a full visual rewrite until Phase 0 audit is recorded and the landing-page direction is approved.
+Phase 0 audit is recorded. Phase 1 design proposal is documented in [`PHASE-1-LANDING-DESIGN.md`](./PHASE-1-LANDING-DESIGN.md). Source implementation begins after owner visual approval.
 
 Landing page scope:
 - Brand wordmark and navigation
