@@ -97,3 +97,46 @@ Landing page scope:
 - Responsive footer and legal/help navigation
 
 The landing page must not pretend that video, channels, monetization or catalog categories are fully available if their underlying features are not production-ready.
+
+
+## Master specification
+
+The complete approved project-wide evolution brief is maintained in
+[`LIBRY-MASTER-IMPLEMENTATION-PROMPT.md`](./LIBRY-MASTER-IMPLEMENTATION-PROMPT.md).
+Use it alongside this foundation document. If a future instruction appears to
+conflict with the existing product trajectory, stop and request clarification
+rather than silently pivoting or removing established capabilities.
+
+## Additional owner decisions to carry into design
+
+- The target market is global; do not constrain discovery, creator onboarding,
+  pricing architecture or product assumptions to Ghana or Africa.
+- Preserve Libry's identity and established charcoal, ivory and muted-gold
+  visual language. Refine it into a disciplined, premium editorial system.
+- Content destinations must be distinct: books, comics, manga and manhwa.
+  Do not mix all formats into one undifferentiated shelf.
+- Comic and graphic-story artwork must meet a professional visual-quality
+  bar. Reject placeholder stick figures and generic AI-looking artwork.
+  Initial art directions include cinematic Western comics, detailed
+  anime-inspired work and realistic graphic novels, with deliberate,
+  consistent style per title or series.
+- Premium titles may receive enhanced presentation, but the free experience
+  must remain useful and visually respected.
+- Creator-owned original works and properly licensed/public-domain works
+  may be onboarded. Never scrape or redistribute copyrighted catalogs
+  without authorization; verify rights and attribution.
+- Video and creator channels are part of the long-term ecosystem, but should
+  be phased behind the literary core and shipped only with real playback,
+  creator controls, moderation, reporting, privacy and rights handling.
+- Personalization must be user-controlled and transparent. Do not infer
+  sensitive identity attributes or target product updates based on gender
+  identity, including transgender status. Let users explicitly choose
+  interests and content preferences, and allow them to change those choices.
+- Updates should distinguish optional product changes from critical security,
+  compatibility, legal or data-integrity updates. Offer version choice and
+  clear release notes where feasible; critical fixes cannot be indefinitely
+  declined if doing so would expose accounts or the platform to material risk.
+- Add features incrementally. A completed section remains covered by
+  regression tests and cannot be casually reopened or degraded by later work.
+- Preserve the current Supabase data. No wipe, reset, or destructive
+  migration without a separately approved, verified backup and rollback plan.
