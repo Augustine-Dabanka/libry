@@ -23,6 +23,7 @@ export default function ComicReader({
   signedIn = false,
   price,
   defaultMode = "scroll",
+  recommendations = [],
 }: {
   bookId: string;
   title: string;
@@ -34,6 +35,7 @@ export default function ComicReader({
   signedIn?: boolean;
   price?: number | null;
   defaultMode?: Mode;
+  recommendations?: { slug: string; title: string; category: string }[];
 }) {
   const [mode, setModeState] = useState<Mode>(defaultMode);
   // Remember the reader's layout choice per comic.
@@ -51,6 +53,7 @@ export default function ComicReader({
   const rtl = mode === "manga";
   const imageIndexes = useMemo(() => pages.map((p, i) => (p.kind === "image" ? i : -1)).filter((i) => i >= 0), [pages]);
   const total = imageIndexes.length;
+  const backHref = bookId.startsWith("original-") ? "/comics" : `/book/${bookId}`;
   const [pageAt, setPageAt] = useState(0); // index into imageIndexes (pages mode)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -142,7 +145,7 @@ export default function ComicReader({
 
   const bar = (
     <div style={{ position: "sticky", top: 0, zIndex: 20, display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.7rem 1rem", background: "rgba(18,16,14,0.86)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-      <a href={`/book/${bookId}`} aria-label="Back" style={{ color: "var(--ivory)", textDecoration: "none", fontSize: "1.2rem", flexShrink: 0 }}>←</a>
+      <a href={backHref} aria-label="Back" style={{ color: "var(--ivory)", textDecoration: "none", fontSize: "1.2rem", flexShrink: 0 }}>←</a>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: "var(--serif)", color: "var(--ivory)", fontSize: "0.98rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</div>
         <div style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.75rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{author}</div>
@@ -196,6 +199,27 @@ export default function ComicReader({
             ),
           )}
           {LockCta}
+          <section style={{ margin: "2rem 1rem 3rem", padding: "1.5rem", border: "1px solid var(--border)", borderRadius: 18, background: "var(--stone)", textAlign: "center" }}>
+            <div style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontSize: ".7rem", fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase" }}>The End</div>
+            <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.7rem", margin: ".45rem 0" }}>You finished {title}</h2>
+            <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", lineHeight: 1.6, maxWidth: 480, margin: "0 auto 1.2rem" }}>Keep the story going with another original visual adventure.</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: ".65rem", flexWrap: "wrap" }}>
+              <a href="/comics" className="btn btn-gold">Explore all comics →</a>
+              <a href="/discover" className="btn btn-outline">Discover books</a>
+            </div>
+            {recommendations.length ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: ".75rem", marginTop: "1.5rem", textAlign: "left" }}>
+                {recommendations.slice(0, 3).map((item) => (
+                  <a key={item.slug} href={"/comics/original/" + item.slug} style={{ textDecoration: "none", color: "var(--ivory)" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={"/api/comic-art?slug=" + encodeURIComponent(item.slug) + "&page=0"} alt={"Cover of " + item.title} loading="lazy" style={{ display: "block", width: "100%", aspectRatio: "2 / 3", objectFit: "cover", borderRadius: 9, border: "1px solid var(--border)" }} />
+                    <div style={{ fontFamily: "var(--serif)", marginTop: ".4rem", fontSize: ".9rem", lineHeight: 1.3 }}>{item.title}</div>
+                    <div style={{ fontFamily: "var(--sans)", marginTop: ".2rem", fontSize: ".72rem", color: "var(--muted)" }}>{item.category}</div>
+                  </a>
+                ))}
+              </div>
+            ) : null}
+          </section>
           <div style={{ height: "3rem" }} />
         </div>
       ) : (
@@ -236,6 +260,27 @@ export default function ComicReader({
           {pageAt >= total - 1 && locked ? <div style={{ position: "absolute", inset: 0, background: "rgba(12,11,10,0.82)", display: "grid", placeItems: "center" }}>{LockCta}</div> : null}
         </div>
       )}
+      {mode !== "scroll" && pageAt >= total - 1 ? (
+        <section style={{ margin: "1.5rem 1rem 3rem", padding: "1.5rem", border: "1px solid var(--border)", borderRadius: 18, background: "var(--stone)", textAlign: "center" }}>
+          <div style={{ color: "var(--gold)", fontFamily: "var(--sans)", fontSize: ".7rem", fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase" }}>The End</div>
+          <h2 style={{ fontFamily: "var(--serif)", fontSize: "1.7rem", margin: ".45rem 0" }}>You finished {title}</h2>
+          <div style={{ display: "flex", justifyContent: "center", gap: ".65rem", flexWrap: "wrap", marginTop: "1rem" }}>
+            <a href="/comics" className="btn btn-gold">Explore all comics →</a>
+            <a href="/discover" className="btn btn-outline">Discover books</a>
+          </div>
+          {recommendations.length ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: ".75rem", marginTop: "1.5rem", textAlign: "left" }}>
+              {recommendations.slice(0, 3).map((item) => (
+                <a key={item.slug} href={"/comics/original/" + item.slug} style={{ textDecoration: "none", color: "var(--ivory)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={"/api/comic-art?slug=" + encodeURIComponent(item.slug) + "&page=0"} alt={"Cover of " + item.title} loading="lazy" style={{ display: "block", width: "100%", aspectRatio: "2 / 3", objectFit: "cover", borderRadius: 9, border: "1px solid var(--border)" }} />
+                  <div style={{ fontFamily: "var(--serif)", marginTop: ".4rem", fontSize: ".9rem", lineHeight: 1.3 }}>{item.title}</div>
+                </a>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
     </div>
   );
 }

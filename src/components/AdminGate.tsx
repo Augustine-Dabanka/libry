@@ -21,7 +21,7 @@ export default function AdminGate({ signedIn, email }: { signedIn: boolean; emai
             <p style={{ color: "var(--muted)", fontFamily: "var(--sans)", fontSize: "0.88rem", marginBottom: "1.3rem" }}>
               Sign in with your staff account to continue.
             </p>
-            <Link href="/login?next=/admin" className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }}>Sign in</Link>
+            <Link href="/admin/login" className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }}>Sign in</Link>
           </>
         )}
       </div>

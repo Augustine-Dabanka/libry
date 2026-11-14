@@ -6,7 +6,7 @@ import ComicReader from "@/components/ComicReader";
 import { firstChapterExcerpt } from "@/lib/chapters";
 import { parseInteractive } from "@/lib/interactive";
 import { parseComic, isComicType, defaultComicMode } from "@/lib/comic";
-import { isMatureRating } from "@/lib/content";
+import { allowedRatings, isMatureRating } from "@/lib/content";
 
 import Glyph from "@/components/Glyph";
 function Gate({ children }: { children: React.ReactNode }) {
@@ -166,6 +166,35 @@ export default async function ReaderPage({
     userName = pr.data?.full_name || pr.data?.username || (user.email ? user.email.split("@")[0] : null);
   }
 
+  // Recommend other published titles at the end of a full read. Respect the
+  // reader's mature-content preference; favour the current book's category.
+  let showMatureRecommendations = false;
+  if (user) {
+    const prefs = await supabase.from("my_profile").select("show_mature").eq("id", user.id).maybeSingle();
+    showMatureRecommendations = !!prefs.data?.show_mature;
+  }
+  const permittedRatings = allowedRatings(showMatureRecommendations);
+  const recResult = await supabase
+    .from("books")
+    .select("id, title, author, cover_url, cover, price, type, category, age_rating")
+    .eq("is_published", true)
+    .neq("id", book.id)
+    .limit(40);
+  const recommendedBooks = (recResult.data ?? [])
+    .filter((item) => permittedRatings.includes(String(item.age_rating ?? "Everyone").trim()))
+    .sort((a, b) => Number(b.category === book.category) - Number(a.category === book.category))
+    .slice(0, 4)
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      author: item.author,
+      cover_url: item.cover_url,
+      cover: item.cover,
+      price: item.price,
+      type: item.type,
+      category: item.category,
+    }));
+
   // Is this paid book part of Unlimited? (column from 0044; false if not migrated yet)
   let inUnlimited = false;
   if (locked && (book.price ?? 0) > 0) {
@@ -188,6 +217,7 @@ export default async function ReaderPage({
       locked={locked}
       price={book.price}
       inUnlimited={inUnlimited}
+      recommendedBooks={recommendedBooks}
     />
   );
 }
